@@ -1,0 +1,104 @@
+<p><span ng-if="t.tour.parentTour"><a ng-href="#/tour/{{t.tour.parentTour.id}}">{{t.tour.parentTour.title}}</a> / </span> <a ng-href="#/tour/{{t.tour.id}}">{{t.tour.title}}</a> / Вопрос № {{ t.task.numberInTour }}</p>
+<p><a href="" ng-click="t.previousTask()">&lt;&lt;Предыдущее задание</a>&nbsp;<a ng-href="#/tasks">Неразобранные задания</a>&nbsp;<a href="" ng-click="t.nextTask()">Следующее задание&gt;&gt;</a></p>
+<div>
+    <p>Текст задания</p>
+    <textarea rows="10" ng-model="t.task.text" ng-change="t.changed = true">{{ t.task.text }}</textarea>
+
+    <p>Картинки</p>
+    <table style="width: 100%; ">
+        <tr>
+            <td colspan="3"><img ng-repeat="pic in t.pictures" ng-src="{{pic.sourceUrl}}" height="200px"/></td>
+        </tr>
+        <tr ng-repeat="pic in t.pictures">
+            <td>
+                <input size="40" placeholder="URL картинки" type="text" ng-model="pic.sourceUrl" ng-change="t.changedPicture($index)">
+                <input size="40" placeholder="Подпись к картинке" type="text" ng-model="pic.caption" ng-change="t.changedPicture($index)">
+                <input size="5" placeholder="Местоположение картинки" type="text" ng-model="pic.position" ng-change="t.changedPicture($index)">
+            </td>
+            <td width="31px" style="padding-left: 0px; padding-right: 0px;">
+                <img src="app/pic/ok.png" ng-click="t.savePicture(pic)" style="cursor: pointer" ng-show="t.isPictureChanged($index)"/>
+            </td>
+            <td width="31px" style="padding-left: 0px; padding-right: 0px;">
+                <img src="app/pic/remove.png" ng-click="t.deletePicture($index,pic)" style="cursor: pointer"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+            <td width="31px" style="padding-left: 0px; padding-right: 0px;"><img src="app/pic/add.png" ng-click="t.addPicture()" style="cursor: pointer"/>
+            </td>
+        </tr>
+    </table>
+</div>
+<hr/>
+<div>
+    <p>Комментарий</p>
+    <textarea rows="10" ng-model="t.task.comment" ng-change="t.changed = true">{{ t.task.comment }}</textarea>
+</div>
+<p>Картинки</p>
+<table style="width: 100%; ">
+    <tr>
+        <td colspan="3"><img ng-repeat="pic in t.commentPictures" ng-src="{{pic.sourceUrl}}" height="200px"/></td>
+    </tr>
+    <tr ng-repeat="pic in t.commentPictures">
+        <td>
+            <input size="40" placeholder="URL картинки" type="text" ng-model="pic.sourceUrl" ng-change="t.changedCommentPicture($index)">
+            <input size="40" placeholder="Подпись к картинке" type="text" ng-model="pic.caption" ng-change="t.changedCommentPicture($index)">
+            <input size="5" placeholder="Местоположение картинки" type="text" ng-model="pic.position" ng-change="t.changedCommentPicture($index)">
+        </td>
+        <td width="31px" style="padding-left: 0px; padding-right: 0px;">
+            <img src="app/pic/ok.png" ng-click="t.saveCommentPicture(pic)" style="cursor: pointer" ng-show="t.isCommentPictureChanged($index)"/>
+        </td>
+        <td width="31px" style="padding-left: 0px; padding-right: 0px;">
+            <img src="app/pic/remove.png" ng-click="t.deleteCommentPicture($index,pic)" style="cursor: pointer"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td width="31px" style="padding-left: 0px; padding-right: 0px;"><img src="app/pic/add.png" ng-click="t.addCommentPicture()" style="cursor: pointer"/></td>
+    </tr>
+</table>
+<hr/>
+<div ng-if="!t.isNew()">
+    Статус:
+    <select ng-model="t.newStatus" ng-options="st.id as st.name for st in t.statuses" ng-change="t.statusChanged = true"></select>
+    <img src="app/pic/ok.png" ng-click="t.changeStatus()" style="cursor:pointer" ng-show="t.statusChanged"/>
+</div>
+<hr/>
+<div ng-if="!t.isNew()">
+    <p>Категории</p>
+    <ul>
+        <li ng-repeat="cat in t.categories">{{ cat.name }} <img src="app/pic/remove.png" ng-click="t.deleteCategory(cat)" style="cursor:pointer"/></li>
+    </ul>
+    <div ng-if="t.allCategories.length > 0">
+        <select ng-model="t.newCat" ng-options="cat.name for cat in t.allCategories"></select>
+        <img src="app/pic/add.png" ng-click="t.addCategory()" ng-show="t.newCat != null" style="cursor:pointer"/>
+    </div>
+
+</div>
+<hr/>
+<div>
+    <div ng-repeat="n in t.answers">
+        <table style="width:100%">
+            <tr>
+                <td><textarea rows="3" ng-model="n.text" ng-change="t.changed = true">{{ n.text }}</textarea></td>
+                <td><select ng-model="n.type" ng-options="ans.id as ans.name for ans in t.answerTypes" ng-change="t.changed = true"/></td>
+                <td><img src="app/pic/remove.png" ng-click="t.deleteAnswer($index,n)" style="cursor:pointer"/></td>
+            </tr>
+        </table>
+    </div>
+    <form ng-submit="t.addAnswer()">
+        <input class="btn-primary" type="submit" value="Добавить ответ">
+    </form>
+</div>
+
+<hr/>
+
+<form ng-submit="t.save()">
+    <input class="btn-primary" type="submit" value="Сохранить" ng-disabled="!t.changed">
+</form>
+<form ng-submit="t.sendTaskMessageToMe()">
+    <input class="btn-primary" type="submit" value="Отправить мне" ng-disabled="t.isNew()">
+</form>
+
+<p><a href="" ng-click="t.previousTask()">&lt;&lt;Предыдущее задание</a>&nbsp;<a ng-href="#/tasks">Неразобранные задания</a>&nbsp;<a href="" ng-click="t.nextTask()">Следующее задание&gt;&gt;</a></p>
+		

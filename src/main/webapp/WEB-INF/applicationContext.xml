@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <jee:jndi-lookup id="dataSource" jndi-name="java:/comp/env/jdbc/chgk"/>
+
+    <context:component-scan base-package="me.nizheg,info.chgk"/>
+
+    <task:annotation-driven/>
+
+    <!--task:scheduled-tasks>
+        <task:scheduled ref="messageReceiver" method="receive" fixed-delay="1000"/>
+    </task:scheduled-tasks-->
+
+    <bean id="taskDao" class="me.nizheg.chgk.repository.impl.JdbcTaskDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="propertyDao" class="me.nizheg.chgk.repository.impl.JdbcPropertyDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="answerDao" class="me.nizheg.chgk.repository.impl.JdbcAnswerDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="categoryDao" class="me.nizheg.chgk.repository.impl.JdbcCategoryDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="chatErrorDao" class="me.nizheg.chgk.repository.impl.JdbcChatErrorDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="chatDao" class="me.nizheg.chgk.repository.impl.JdbcChatDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="chatMappingDao" class="me.nizheg.chgk.repository.impl.JdbcChatMappingDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="telegramUserDao" class="me.nizheg.chgk.repository.impl.JdbcTelegramUserDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="feedbackMessageDao" class="me.nizheg.chgk.repository.impl.JdbcFeedbackMessageDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="pictureDao" class="me.nizheg.chgk.repository.impl.JdbcPictureDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="answerLogDao" class="me.nizheg.chgk.repository.impl.JdbcAnswerLogDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="taskRatingDao" class="me.nizheg.chgk.repository.impl.JdbcTaskRatingDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="tourDao" class="me.nizheg.chgk.repository.impl.JdbcTourDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="sceduledOperationDao" class="me.nizheg.chgk.repository.impl.JdbcScheduledOperationDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="paymentDao" class="me.nizheg.payments.repository.impl.JdbcPaymentDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="telegramApiClient" class="me.nizheg.chgk.telegram.TelegramApiClientWrapper">
+        <constructor-arg>
+            <bean class="me.nizheg.telegram.service.impl.TelegramApiClientImpl">
+                <constructor-arg value="#{ propertyService.getValue('api.token') }"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="vkApi" class="com.vk.impl.VkApiImpl">
+        <constructor-arg value="#{ propertyService.getValue('vk.access.token') }"/>
+    </bean>
+
+    <bean id="messageReceiver" class="me.nizheg.telegram.bot.service.impl.MessageReceiver" autowire="constructor">
+    </bean>
+
+    <bean id="messageParser" class="me.nizheg.telegram.bot.service.impl.MessageParserImpl">
+        <constructor-arg value="#{ propertyService.getValue('bot.name') }"/>
+        <constructor-arg ref="commandsHolder"/>
+    </bean>
+
+    <bean id="callbackQueryParser" class="me.nizheg.telegram.bot.service.impl.CallbackQueryParserImpl">
+        <constructor-arg ref="commandsHolder"/>
+    </bean>
+
+    <bean id="commandExecutor" class="me.nizheg.telegram.bot.service.impl.CommandExecutorImpl">
+        <constructor-arg ref="eventListenersHolder"/>
+        <constructor-arg ref="telegramApiClient"/>
+    </bean>
+
+    <bean id="updateHandler" class="me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl">
+        <constructor-arg ref="messageParser"/>
+        <constructor-arg ref="callbackQueryParser"/>
+        <constructor-arg ref="commandsHolder"/>
+        <constructor-arg ref="commandExecutor"/>
+    </bean>
+
+    <bean id="commandsHolder" class="me.nizheg.telegram.bot.service.impl.CommandsHolderImpl">
+        <constructor-arg>
+            <list>
+                <bean class="me.nizheg.chgk.command.StartCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.CategoryCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.RepeatCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.AnswerCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.HintCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.NextCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.StopCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.FeedbackCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.StatCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.TourCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.TournamentCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.TimerCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.ClearCurrentTaskAndSendNextCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.telegram.bot.service.command.HelpCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.DefaultCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.RatingCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+                <bean class="me.nizheg.chgk.command.DonateCommand">
+                    <constructor-arg ref="telegramApiClient"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="eventListenersHolder" class="me.nizheg.telegram.bot.service.impl.EventListenersHolderImpl">
+        <constructor-arg>
+            <list>
+                <ref bean="supergroupChatCreatedEventListener"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <task:scheduler id="taskScheduler" pool-size="10"/>
+
+    <bean id="transactionManager"
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations"> <list> <value>classpath:*</value> </list> </property>
+        </bean -->
+
+</beans>

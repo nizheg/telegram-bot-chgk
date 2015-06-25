@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <changeSet id="1" author="nzhegalin">
+        <createSequence sequenceName="property_seq"/>
+
+        <createTable tableName="property">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="key" type="java.sql.Types.VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="java.sql.Types.VARCHAR"></column>
+            <column name="chat_id" type="bigint"></column>
+        </createTable>
+        <addPrimaryKey tableName="property" columnNames="id"/>
+
+        <createTable tableName="chat">
+            <column name="id" type="bigint"></column>
+            <column name="description" type="java.sql.Types.VARCHAR"/>
+        </createTable>
+
+        <createSequence sequenceName="task_seq"/>
+
+        <createTable tableName="task">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_text" type="java.sql.Types.VARCHAR"/>
+            <column name="imported_task_text" type="java.sql.Types.VARCHAR"/>
+            <column name="comment" type="java.sql.Types.VARCHAR"/>
+            <column name="status" type="java.sql.Types.VARCHAR(15)"/>
+        </createTable>
+        <addPrimaryKey tableName="task" columnNames="id"/>
+        <addUniqueConstraint tableName="task" columnNames="task_text"/>
+        <addUniqueConstraint tableName="task" columnNames="imported_task_text"/>
+
+        <createTable tableName="used_task">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="using_time" type="timestamp with time zone" defaultValueDate="now()"></column>
+        </createTable>
+        <addPrimaryKey tableName="used_task" columnNames="task_id,chat_id"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="used_task"
+            constraintName="fk_used_task_task" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+
+        <createSequence sequenceName="answer_seq"/>
+
+        <createTable tableName="answer">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="answer_text" type="java.sql.Types.VARCHAR"/>
+            <column name="task_id" type="bigint"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="id" tableName="answer"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="answer"
+            constraintName="fk_answer_task" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+        <createIndex tableName="answer" indexName="answer_task_id_index">
+            <column name="task_id"/>
+        </createIndex>
+
+        <createTable tableName="category">
+            <column name="id" type="java.sql.Types.VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_name" type="java.sql.Types.VARCHAR"/>
+        </createTable>
+        <addPrimaryKey columnNames="id" tableName="category"/>
+
+        <createTable tableName="task_category">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="java.sql.Types.VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey columnNames="task_id,category_id" tableName="task_category"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_category"
+            constraintName="fk_task_category_task" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="task_category"
+            constraintName="fk_task_category_category" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="category"/>
+    </changeSet>
+
+    <changeSet id="2" author="nzhegalin">
+        <addDefaultValue
+            columnDataType="bigint"
+            columnName="id"
+            defaultValueSequenceNext="property_seq"
+            tableName="property"/>
+
+        <addDefaultValue
+            columnDataType="bigint"
+            columnName="id"
+            defaultValueSequenceNext="task_seq"
+            tableName="task"/>
+
+        <addDefaultValue
+            columnDataType="bigint"
+            columnName="id"
+            defaultValueSequenceNext="answer_seq"
+            tableName="answer"/>
+    </changeSet>
+
+    <changeSet id="3" author="nzhegalin">
+        <createSequence sequenceName="chat_error_seq"/>
+
+        <createTable tableName="chat_error">
+            <column name="id" type="bigint" defaultValueSequenceNext="chat_error_seq">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_time" type="timestamp with time zone" defaultValueDate="now()"></column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="error_code" type="java.sql.Types.VARCHAR(32)"/>
+            <column name="error_description" type="java.sql.Types.VARCHAR"/>
+        </createTable>
+
+        <addPrimaryKey tableName="chat_error" columnNames="id"/>
+    </changeSet>
+
+    <changeSet id="4" author="nzhegalin">
+        <addColumn tableName="property">
+            <column name="change_time" type="timestamp with time zone" defaultValueDate="now()">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="5" author="nzhegalin">
+        <addColumn tableName="chat">
+            <column name="username" type="java.sql.Types.VARCHAR(255)"></column>
+        </addColumn>
+        <addPrimaryKey tableName="chat" columnNames="id"/>
+        <addUniqueConstraint tableName="chat" columnNames="username"/>
+    </changeSet>
+
+    <changeSet id="6" author="nzhegalin">
+        <createTable tableName="chat_mapping">
+            <column name="group_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="supergroup_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="chat_mapping" columnNames="group_id"/>
+    </changeSet>
+
+    <changeSet id="7" author="nzhegalin">
+        <createTable tableName="telegram_user">
+            <column name="id" type="bigint"></column>
+            <column name="username" type="java.sql.Types.VARCHAR(255)"/>
+            <column name="firstname" type="java.sql.Types.VARCHAR"/>
+            <column name="lastname" type="java.sql.Types.VARCHAR"/>
+        </createTable>
+        <addPrimaryKey tableName="telegram_user" columnNames="id"/>
+    </changeSet>
+
+    <changeSet id="8" author="nzhegalin">
+        <createSequence sequenceName="feedback_message_seq"/>
+        <createTable tableName="feedback_message">
+            <column name="id" type="bigint" defaultValueSequenceNext="feedback_message_seq"></column>
+            <column name="telegram_user_id" type="bigint"/>
+            <column name="message" type="java.sql.Types.VARCHAR(2000)"></column>
+            <column name="message_time" type="timestamp with time zone" defaultValueDate="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="feedback_message" columnNames="id"/>
+        <addForeignKeyConstraint baseColumnNames="telegram_user_id" baseTableName="feedback_message"
+            constraintName="fk_feedback_message_telegram_user" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="telegram_user"/>
+    </changeSet>
+
+    <changeSet id="9" author="nzhegalin">
+        <createSequence sequenceName="picture_seq"/>
+        <createTable tableName="picture">
+            <column name="id" type="bigint" defaultValueSequenceNext="picture_seq">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="telegram_file_id" type="java.sql.Types.VARCHAR(255)"/>
+            <column name="source_url" type="java.sql.Types.VARCHAR(2000)"/>
+            <column name="caption" type="java.sql.Types.VARCHAR(200)"/>
+        </createTable>
+
+        <createTable tableName="task_picture">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="picture_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="position" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="task_id"
+            baseTableName="task_picture" constraintName="fk_task_picture_task"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+        <addForeignKeyConstraint baseColumnNames="picture_id"
+            baseTableName="task_picture" constraintName="fk_task_picture_picture"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
+        <addUniqueConstraint columnNames="task_id,picture_id" tableName="task_picture"/>
+
+        <createTable tableName="comment_picture">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="picture_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="position" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="task_id"
+            baseTableName="comment_picture" constraintName="fk_comment_picture_task"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+        <addForeignKeyConstraint baseColumnNames="picture_id"
+            baseTableName="comment_picture" constraintName="fk_comment_picture_picture"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
+        <addUniqueConstraint columnNames="task_id,picture_id" tableName="comment_picture"/>
+    </changeSet>
+
+    <changeSet id="10" author="nzhegalin">
+        <createSequence sequenceName="answer_log_seq"/>
+        <createTable tableName="answer_log">
+            <column name="id" type="bigint" defaultValueSequenceNext="answer_log_seq">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="telegram_user_id" type="bigint"></column>
+            <column name="chat_id" type="bigint"></column>
+            <column name="task_id" type="bigint"></column>
+            <column name="answer_time" type="timestamp with time zone" defaultValueDate="now()"></column>
+        </createTable>
+        <addForeignKeyConstraint baseColumnNames="telegram_user_id"
+            baseTableName="answer_log" constraintName="fk_answer_log_telegram_user"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="telegram_user"/>
+        <addForeignKeyConstraint baseColumnNames="task_id"
+            baseTableName="answer_log" constraintName="fk_answer_log_task"
+            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+
+        <addUniqueConstraint columnNames="chat_id,task_id" tableName="answer_log"/>
+    </changeSet>
+
+    <changeSet id="11" author="nzhegalin">
+        <sql>
+            CREATE INDEX used_task_using_time_index ON used_task(using_time desc);
+        </sql>
+        <dropPrimaryKey tableName="used_task"/>
+        <addPrimaryKey tableName="used_task" columnNames="chat_id,task_id"/>
+    </changeSet>
+
+    <changeSet id="12" author="nzhegalin">
+        <createTable tableName="used_task_archive">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="using_time" type="timestamp with time zone"></column>
+        </createTable>
+        <addPrimaryKey tableName="used_task_archive" columnNames="chat_id,task_id"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="used_task_archive"
+            constraintName="fk_used_task_archive_task" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+    </changeSet>
+
+    <changeSet id="13" author="nzhegalin">
+        <addColumn tableName="answer">
+            <column name="type" type="java.sql.Types.VARCHAR(100)" defaultValue="APPROXIMATE"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="14" author="nzhegalin">
+        <addColumn tableName="task">
+            <column name="tour_id" type="bigint"></column>
+            <column name="number_in_tour" type="integer"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="15" author="nzhegalin">
+        <createTable tableName="task_rating">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="telegram_user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="task_rating" columnNames="task_id,telegram_user_id"/>
+        <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_rating"
+            constraintName="fk_task_rating_task" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+    </changeSet>
+
+    <changeSet id="16" author="nzhegalin">
+        <createTable tableName="tour">
+            <column name="id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="bigint">
+            </column>
+            <column name="title" type="java.sql.Types.VARCHAR(1000)">
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="tour" columnNames="id"/>
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="tour"
+            constraintName="fk_tour_tour" deferrable="false" initiallyDeferred="false"
+            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="tour"/>
+    </changeSet>
+
+    <changeSet id="17" author="nzhegalin">
+        <addColumn tableName="tour">
+            <column name="number" type="integer"/>
+            <column name="status" type="java.sql.Types.VARCHAR(15)"/>
+            <column name="type" type="java.sql.Types.VARCHAR(20)"/>
+        </addColumn>
+        <createIndex tableName="tour" indexName="tour_parent_id_idx">
+            <column name="parent_id"></column>
+        </createIndex>
+        <createIndex tableName="task" indexName="task_tour_id_idx">
+            <column name="tour_id"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="18" author="nzhegalin">
+        <addColumn tableName="category">
+            <column name="position" type="integer"></column>
+        </addColumn>
+        <sql>
+            insert into category(id, category_name, position) values ('current', 'Показать текущую категорию', 0);
+            insert into category(id, category_name, position) values ('all', 'Все вопросы', 2147483647);
+        </sql>
+    </changeSet>
+
+    <changeSet id="19" author="nzhegalin">
+        <sql>
+            insert into category(id, category_name, position) values ('tournament', 'Турнир', 1);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20" author="nzhegalin">
+        <sql>
+            INSERT INTO category(id, category_name, position)
+            SELECT 'db_unknown', 'База: разное', 2
+            where not exists (select 1 from category where id = 'db_unknown')
+        </sql>
+    </changeSet>
+
+    <changeSet id="21" author="nzhegalin">
+        <addColumn tableName="tour">
+            <column name="played_at" type="timestamp with time zone"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="22" author="nzhegalin">
+        <createTable tableName="task_priority">
+            <column name="task_id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="priority" type="int"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="23" author="nzhegalin">
+        <createTable tableName="scheduled_operation">
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operation_id" type="java.sql.Types.VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduling_time" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="scheduled_operation" columnNames="chat_id"/>
+    </changeSet>
+
+    <changeSet id="24" author="nzhegalin">
+        <dropColumn tableName="chat" columnName="description"/>
+        <addColumn tableName="chat">
+            <column name="title" type="java.sql.Types.VARCHAR"/>
+            <column name="firstname" type="java.sql.Types.VARCHAR"/>
+            <column name="lastname" type="java.sql.Types.VARCHAR"/>
+            <column name="private" type="java.sql.Types.BOOLEAN"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="25" author="nzhegalin">
+        <sql>
+            insert into task(id,task_text,imported_task_text,status) values (-1,'Вопрос не выбран','Вопрос не выбран','DELETED');
+        </sql>
+    </changeSet>
+
+    <changeSet id="26" author="nzhegalin">
+        <createSequence sequenceName="payment_seq"/>
+        <createTable tableName="payment">
+            <column name="id" type="bigint" defaultValueSequenceNext="payment_seq">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="telegram_user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sum" type="java.sql.Types.DECIMAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="java.sql.Types.VARCHAR(50)"/>
+            <column name="result" type="java.sql.Types.VARCHAR(500)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

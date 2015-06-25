@@ -1,0 +1,24 @@
+<p><a ng-href="#">Домой</a> | <a ng-href="#/tours/new">Неразобранные турниры</a></p>
+<p ng-if="t.error" style="background: red; padding: 5px;">{{t.error}}</p>
+
+<p><span ng-if="t.tour.parentTour"><a ng-href="#/tour/{{t.tour.parentTour.id}}">{{t.tour.parentTour.title}}</a> / </span> {{t.tour.title}}</p>
+
+<div ng-if="t.isStatusVisible(t.tour)">
+    Статус:
+    <select ng-model="t.newStatus" ng-options="st.id as st.name for st in t.statuses" ng-change="t.statusChanged = true"></select>
+    <img src="app/pic/ok.png" ng-click="t.changeStatus()" style="cursor:pointer" ng-show="t.statusChanged"/>
+</div>
+
+<ul>
+    <li ng-repeat="childTour in t.tour.childTours">
+        <b ng-if="t.isStatusVisible(childTour)">{{t.tourStatusMap.get(childTour.status)}}</b> <a ng-href="#/tour/{{childTour.id}}">[{{childTour.id}}]</a>
+        {{childTour.title}}
+    </li>
+</ul>
+
+<ul>
+    <li ng-repeat="task in t.tour.tasks">
+        {{task.numberInTour}}. <a ng-href="#/task/{{task.id}}">[{{task.id}}]</a> <b>{{t.taskStatusMap.get(task.status)}}</b><br/> {{task.text}}
+    </li>
+</ul>
+		

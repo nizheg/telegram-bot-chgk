@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="tournament" type="tournament"/>
+    <xs:element name="search" type="search"/>
+    <xs:complexType name="search">
+        <xs:sequence>
+            <xs:element type="xs:int" name="total" minOccurs="0"/>
+            <xs:element type="question" name="question" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="tournament">
+        <xs:sequence>
+            <xs:element type="xs:long" name="Id"/>
+            <xs:element type="xs:long" name="ParentId" minOccurs="0"/>
+            <xs:element type="xs:string" name="Title"/>
+            <xs:element type="xs:int" name="Number"/>
+            <xs:element type="xs:string" name="TextId"/>
+            <xs:element type="xs:int" name="QuestionsNum"/>
+            <xs:element type="xs:string" name="Complexity"/>
+            <xs:element type="xs:string" name="Type"/>
+            <xs:element type="xs:string" name="Copyright"/>
+            <xs:element type="xs:string" name="Info"/>
+            <xs:element type="xs:string" name="URL"/>
+            <xs:element type="xs:string" name="FileName"/>
+            <xs:element type="xs:string" name="RatingId"/>
+            <xs:element type="xs:string" name="Editors"/>
+            <xs:element type="xs:string" name="EnteredBy"/>
+            <xs:element type="xs:dateTime" name="LastUpdated"/>
+            <xs:element type="xs:date" name="PlayedAt"/>
+            <xs:element type="xs:date" name="PlayedAt2"/>
+            <xs:element type="xs:string" name="KandId"/>
+            <xs:element type="xs:date" name="CreatedAt"/>
+            <xs:element type="xs:string" name="ChildrenNum"/>
+            <xs:element type="tour" name="tour" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element type="question" name="question" maxOccurs="unbounded" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="tour">
+        <xs:sequence>
+            <xs:element type="xs:long" name="Id"/>
+            <xs:element type="xs:long" name="ParentId"/>
+            <xs:element type="xs:string" name="Title"/>
+            <xs:element type="xs:int" name="Number"/>
+            <xs:element type="xs:string" name="TextId"/>
+            <xs:element type="xs:string" name="QuestionsNum"/>
+            <xs:element type="xs:string" name="Complexity"/>
+            <xs:element type="xs:string" name="Type"/>
+            <xs:element type="xs:string" name="Copyright"/>
+            <xs:element type="xs:string" name="Info"/>
+            <xs:element type="xs:string" name="URL"/>
+            <xs:element type="xs:string" name="FileName"/>
+            <xs:element type="xs:string" name="RatingId"/>
+            <xs:element type="xs:string" name="Editors"/>
+            <xs:element type="xs:string" name="EnteredBy"/>
+            <xs:element type="xs:string" name="LastUpdated"/>
+            <xs:element type="xs:string" name="PlayedAt"/>
+            <xs:element type="xs:string" name="PlayedAt2"/>
+            <xs:element type="xs:string" name="KandId"/>
+            <xs:element type="xs:string" name="CreatedAt"/>
+            <xs:element type="xs:string" name="ChildrenNum"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="question">
+        <xs:sequence>
+            <xs:element type="xs:string" name="tourFileName" minOccurs="0"/>
+            <xs:element type="xs:string" name="tournamentFileName" minOccurs="0"/>
+            <xs:element type="xs:long" name="QuestionId"/>
+            <xs:element type="xs:long" name="ParentId"/>
+            <xs:element type="xs:int" name="Number"/>
+            <xs:element type="xs:string" name="Type"/>
+            <xs:element type="xs:int" name="TypeNum"/>
+            <xs:element type="xs:string" name="TextId"/>
+            <xs:element type="xs:string" name="Question"/>
+            <xs:element type="xs:string" name="Answer"/>
+            <xs:element type="xs:string" name="PassCriteria"/>
+            <xs:element type="xs:string" name="Authors"/>
+            <xs:element type="xs:string" name="Sources"/>
+            <xs:element type="xs:string" name="Comments"/>
+            <xs:element type="xs:string" name="Rating"/>
+            <xs:element type="xs:string" name="RatingNumber"/>
+            <xs:element type="xs:string" name="Complexity"/>
+            <xs:element type="xs:string" name="Topic"/>
+            <xs:element type="xs:string" name="ProcessedBySearch"/>
+            <xs:element type="xs:long" name="tourId" minOccurs="0"/>
+            <xs:element type="xs:long" name="tournamentId" minOccurs="0"/>
+            <xs:element type="xs:string" name="tourTitle" minOccurs="0"/>
+            <xs:element type="xs:string" name="tournamentTitle" minOccurs="0"/>
+            <xs:element type="xs:string" name="tourType" minOccurs="0"/>
+            <xs:element type="xs:string" name="tournamentType" minOccurs="0"/>
+            <xs:element type="xs:string" name="tourPlayedAt" minOccurs="0"/>
+            <xs:element type="xs:string" name="tournamentPlayedAt" minOccurs="0"/>
+            <xs:element type="xs:string" name="tourPlayedAt2" minOccurs="0"/>
+            <xs:element type="xs:string" name="tournamentPlayedAt2" minOccurs="0"/>
+            <xs:element type="xs:string" name="Notices"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

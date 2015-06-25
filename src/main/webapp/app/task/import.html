@@ -1,0 +1,9 @@
+<p><a ng-href="#">Домой</a> | <a ng-href="#/tours/new">Неразобранные турниры</a> | <a ng-href="#/tasks">Неразобранные задания</a></p>
+<form action="api/dbTask" method="post">
+    <input type="text" name="complexity" value="1"/>
+    <input type="submit" value="Сложность"/>
+</form>
+<form action="api/dbTask/tour" method="post">
+    <input type="text" name="tour_id"/>
+    <input type="submit" value="Идентификатор турнира"/>
+</form>
