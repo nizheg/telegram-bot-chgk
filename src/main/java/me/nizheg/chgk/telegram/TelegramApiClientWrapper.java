@@ -14,6 +14,8 @@ import me.nizheg.telegram.model.GameHighScoreCollectionResponse;
 import me.nizheg.telegram.model.IntegerResponse;
 import me.nizheg.telegram.model.MessageOrBooleanResponse;
 import me.nizheg.telegram.model.MessageResponse;
+import me.nizheg.telegram.model.StickerSetResponse;
+import me.nizheg.telegram.model.StringResponse;
 import me.nizheg.telegram.model.UpdateCollectionResponse;
 import me.nizheg.telegram.model.UpdateType;
 import me.nizheg.telegram.model.UserProfilePhotosResponse;
@@ -21,21 +23,33 @@ import me.nizheg.telegram.model.UserResponse;
 import me.nizheg.telegram.model.WebhookInfoResponse;
 import me.nizheg.telegram.service.TelegramApiClient;
 import me.nizheg.telegram.service.TelegramApiException;
+import me.nizheg.telegram.service.param.AddingToSetSticker;
 import me.nizheg.telegram.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.service.param.Audio;
 import me.nizheg.telegram.service.param.ChatId;
 import me.nizheg.telegram.service.param.Contact;
 import me.nizheg.telegram.service.param.Document;
+import me.nizheg.telegram.service.param.EditedLiveLocation;
 import me.nizheg.telegram.service.param.EditedMessage;
 import me.nizheg.telegram.service.param.ForwardingMessage;
 import me.nizheg.telegram.service.param.Game;
 import me.nizheg.telegram.service.param.GameHighScoreRequest;
 import me.nizheg.telegram.service.param.GameScore;
 import me.nizheg.telegram.service.param.InlineAnswer;
+import me.nizheg.telegram.service.param.InputFile;
+import me.nizheg.telegram.service.param.Invoice;
+import me.nizheg.telegram.service.param.KickedChatMember;
 import me.nizheg.telegram.service.param.Location;
 import me.nizheg.telegram.service.param.Message;
+import me.nizheg.telegram.service.param.NewStickerSet;
 import me.nizheg.telegram.service.param.Photo;
+import me.nizheg.telegram.service.param.PinnedChatMessage;
+import me.nizheg.telegram.service.param.PreCheckoutQueryAnswer;
+import me.nizheg.telegram.service.param.PromotedChatMember;
+import me.nizheg.telegram.service.param.RestrictedChatMember;
+import me.nizheg.telegram.service.param.ShippingQueryAnswer;
 import me.nizheg.telegram.service.param.Sticker;
+import me.nizheg.telegram.service.param.StoppingLiveLocation;
 import me.nizheg.telegram.service.param.UserProfilePhotosRequest;
 import me.nizheg.telegram.service.param.Venue;
 import me.nizheg.telegram.service.param.Video;
@@ -62,6 +76,11 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     public TelegramApiClientWrapper(TelegramApiClient telegramApiClient) {
         Validate.notNull(telegramApiClient);
         this.telegramApiClient = telegramApiClient;
+    }
+
+    @Override
+    public String getToken() {
+        return telegramApiClient.getToken();
     }
 
     @Override
@@ -153,6 +172,36 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
+    public StickerSetResponse getStickerSet(String name) {
+        return telegramApiClient.getStickerSet(name);
+    }
+
+    @Override
+    public FileResponse uploadStickerFile(Long userId, InputFile pngSticker) {
+        return telegramApiClient.uploadStickerFile(userId, pngSticker);
+    }
+
+    @Override
+    public BooleanResponse createNewStickerSet(NewStickerSet stickerSet) {
+        return telegramApiClient.createNewStickerSet(stickerSet);
+    }
+
+    @Override
+    public BooleanResponse addStickerToSet(AddingToSetSticker addingToSetSticker) {
+        return telegramApiClient.addStickerToSet(addingToSetSticker);
+    }
+
+    @Override
+    public BooleanResponse setStickerPositionInSet(String sticker, Integer position) {
+        return telegramApiClient.setStickerPositionInSet(sticker, position);
+    }
+
+    @Override
+    public BooleanResponse deleteStickerFromSet(String sticker) {
+        return telegramApiClient.deleteStickerFromSet(sticker);
+    }
+
+    @Override
     public MessageResponse sendVideo(Video video) {
         try {
             return telegramApiClient.sendVideo(video);
@@ -207,8 +256,8 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse kickChatMember(ChatId chatId, Long userId) {
-        return telegramApiClient.kickChatMember(chatId, userId);
+    public BooleanResponse kickChatMember(KickedChatMember kickedChatMember) {
+        return telegramApiClient.kickChatMember(kickedChatMember);
     }
 
     @Override
@@ -219,6 +268,123 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     @Override
     public BooleanResponse unbanChatMember(ChatId chatId, Long userId) {
         return telegramApiClient.unbanChatMember(chatId, userId);
+    }
+
+    @Override
+    public BooleanResponse restrictChatMember(RestrictedChatMember restrictedChatMember) {
+        try {
+            return telegramApiClient.restrictChatMember(restrictedChatMember);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, restrictedChatMember.getChatId());
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, restrictedChatMember.getChatId());
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse promoteChatMember(PromotedChatMember promotedChatMember) {
+        try {
+            return telegramApiClient.promoteChatMember(promotedChatMember);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, promotedChatMember.getChatId());
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, promotedChatMember.getChatId());
+            throw ex;
+        }
+    }
+
+    @Override
+    public StringResponse exportChatInviteLink(ChatId chatId) {
+        try {
+            return telegramApiClient.exportChatInviteLink(chatId);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse setChatPhoto(ChatId chatId, InputFile photo) {
+        try {
+            return telegramApiClient.setChatPhoto(chatId, photo);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse deleteChatPhoto(ChatId chatId) {
+        try {
+            return telegramApiClient.deleteChatPhoto(chatId);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse setChatTitle(ChatId chatId, String title) {
+        try {
+            return telegramApiClient.setChatTitle(chatId, title);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse setChatDescription(ChatId chatId, String description) {
+        try {
+            return telegramApiClient.setChatDescription(chatId, description);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse pinChatMessage(PinnedChatMessage pinnedChatMessage) {
+        try {
+            return telegramApiClient.pinChatMessage(pinnedChatMessage);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, pinnedChatMessage.getChatId());
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, pinnedChatMessage.getChatId());
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse unpinChatMessage(ChatId chatId) {
+        try {
+            return telegramApiClient.unpinChatMessage(chatId);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
     }
 
     @Override
@@ -239,6 +405,32 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     @Override
     public ChatMemberResponse getChatMember(ChatId chatId, Long userId) {
         return telegramApiClient.getChatMember(chatId, userId);
+    }
+
+    @Override
+    public BooleanResponse setChatStickerSet(ChatId chatId, String stickerSetName) {
+        try {
+            return telegramApiClient.setChatStickerSet(chatId, stickerSetName);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse deleteChatStickerSet(ChatId chatId) {
+        try {
+            return telegramApiClient.deleteChatStickerSet(chatId);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, chatId);
+            throw ex;
+        }
     }
 
     @Override
@@ -316,6 +508,29 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
+    public MessageResponse sendInvoice(Invoice invoice) {
+        try {
+            return telegramApiClient.sendInvoice(invoice);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, new ChatId(invoice.getChatId()));
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, new ChatId(invoice.getChatId()));
+            throw ex;
+        }
+    }
+
+    @Override
+    public BooleanResponse answerShippingQuery(ShippingQueryAnswer shippingQueryAnswer) {
+        return telegramApiClient.answerShippingQuery(shippingQueryAnswer);
+    }
+
+    @Override
+    public BooleanResponse answerPreCheckoutQuery(PreCheckoutQueryAnswer preCheckoutQueryAnswer) {
+        return telegramApiClient.answerPreCheckoutQuery(preCheckoutQueryAnswer);
+    }
+
+    @Override
     public MessageResponse sendLocation(Location location) {
         try {
             return telegramApiClient.sendLocation(location);
@@ -324,6 +539,32 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
             throw ex;
         } catch (RuntimeException ex) {
             storeFail(ex, location.getChatId());
+            throw ex;
+        }
+    }
+
+    @Override
+    public MessageOrBooleanResponse editMessageLiveLocation(EditedLiveLocation editedLiveLocation) {
+        try {
+            return telegramApiClient.editMessageLiveLocation(editedLiveLocation);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, editedLiveLocation.getChatId());
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, editedLiveLocation.getChatId());
+            throw ex;
+        }
+    }
+
+    @Override
+    public MessageOrBooleanResponse stopMessageLiveLocation(StoppingLiveLocation stoppingLiveLocation) {
+        try {
+            return telegramApiClient.stopMessageLiveLocation(stoppingLiveLocation);
+        } catch (TelegramApiException ex) {
+            storeFail(ex, stoppingLiveLocation.getChatId());
+            throw ex;
+        } catch (RuntimeException ex) {
+            storeFail(ex, stoppingLiveLocation.getChatId());
             throw ex;
         }
     }

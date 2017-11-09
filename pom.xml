@@ -13,7 +13,7 @@
         <dependency>
             <groupId>telegram-bot</groupId>
             <artifactId>telegram-bot</artifactId>
-            <version>1.0</version>
+            <version>3.4</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
