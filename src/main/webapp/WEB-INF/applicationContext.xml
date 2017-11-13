@@ -21,59 +21,59 @@
         <task:scheduled ref="messageReceiver" method="receive" fixed-delay="1000"/>
     </task:scheduled-tasks-->
 
-    <bean id="taskDao" class="me.nizheg.chgk.repository.impl.JdbcTaskDao">
+    <bean id="taskDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcTaskDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="propertyDao" class="me.nizheg.chgk.repository.impl.JdbcPropertyDao">
+    <bean id="propertyDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcPropertyDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="answerDao" class="me.nizheg.chgk.repository.impl.JdbcAnswerDao">
+    <bean id="answerDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcAnswerDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="categoryDao" class="me.nizheg.chgk.repository.impl.JdbcCategoryDao">
+    <bean id="categoryDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcCategoryDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="chatErrorDao" class="me.nizheg.chgk.repository.impl.JdbcChatErrorDao">
+    <bean id="chatErrorDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcChatErrorDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="chatDao" class="me.nizheg.chgk.repository.impl.JdbcChatDao">
+    <bean id="chatDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcChatDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="chatMappingDao" class="me.nizheg.chgk.repository.impl.JdbcChatMappingDao">
+    <bean id="chatMappingDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcChatMappingDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="telegramUserDao" class="me.nizheg.chgk.repository.impl.JdbcTelegramUserDao">
+    <bean id="telegramUserDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcTelegramUserDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="feedbackMessageDao" class="me.nizheg.chgk.repository.impl.JdbcFeedbackMessageDao">
+    <bean id="feedbackMessageDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcFeedbackMessageDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="pictureDao" class="me.nizheg.chgk.repository.impl.JdbcPictureDao">
+    <bean id="pictureDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcPictureDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="answerLogDao" class="me.nizheg.chgk.repository.impl.JdbcAnswerLogDao">
+    <bean id="answerLogDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcAnswerLogDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="taskRatingDao" class="me.nizheg.chgk.repository.impl.JdbcTaskRatingDao">
+    <bean id="taskRatingDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcTaskRatingDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="tourDao" class="me.nizheg.chgk.repository.impl.JdbcTourDao">
+    <bean id="tourDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcTourDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="sceduledOperationDao" class="me.nizheg.chgk.repository.impl.JdbcScheduledOperationDao">
+    <bean id="sceduledOperationDao" class="me.nizheg.telegram.bot.chgk.repository.impl.JdbcScheduledOperationDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
@@ -81,7 +81,7 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="telegramApiClient" class="me.nizheg.chgk.telegram.TelegramApiClientWrapper">
+    <bean id="telegramApiClient" class="me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper">
         <constructor-arg>
             <bean class="me.nizheg.telegram.service.impl.TelegramApiClientImpl">
                 <constructor-arg value="#{ propertyService.getValue('api.token') }"/>
@@ -120,55 +120,55 @@
     <bean id="commandsHolder" class="me.nizheg.telegram.bot.service.impl.CommandsHolderImpl">
         <constructor-arg>
             <list>
-                <bean class="me.nizheg.chgk.command.StartCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.StartCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.CategoryCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.CategoryCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.RepeatCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.RepeatCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.AnswerCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.AnswerCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.HintCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.HintCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.NextCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.NextCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.StopCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.StopCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.FeedbackCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.FeedbackCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.StatCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.StatCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.TourCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.TourCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.TournamentCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.TournamentCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.TimerCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.TimerCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.ClearCurrentTaskAndSendNextCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
                 <bean class="me.nizheg.telegram.bot.service.command.HelpCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.DefaultCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.DefaultCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.RatingCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.RatingCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.chgk.command.DonateCommand">
+                <bean class="me.nizheg.telegram.bot.chgk.command.DonateCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
             </list>
