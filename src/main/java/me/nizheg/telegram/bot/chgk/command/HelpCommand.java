@@ -7,7 +7,7 @@ import me.nizheg.telegram.service.TelegramApiClient;
  *
  * @author Nikolay Zhegalin
  */
-public class HelpCommand extends me.nizheg.telegram.bot.service.command.HelpCommand {
+public class HelpCommand extends me.nizheg.telegram.bot.command.HelpCommand {
     public HelpCommand(TelegramApiClient telegramApiClient) {
         super(telegramApiClient);
     }

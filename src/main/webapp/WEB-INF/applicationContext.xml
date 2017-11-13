@@ -159,7 +159,7 @@
                 <bean class="me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
-                <bean class="me.nizheg.telegram.bot.service.command.HelpCommand">
+                <bean class="me.nizheg.telegram.bot.command.HelpCommand">
                     <constructor-arg ref="telegramApiClient"/>
                 </bean>
                 <bean class="me.nizheg.telegram.bot.chgk.command.DefaultCommand">

@@ -1,9 +1,9 @@
-package me.nizheg.telegram.bot.chgk.service.event;
+package me.nizheg.telegram.bot.chgk.event;
 
 import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.bot.service.event.ChatEventListener;
-import me.nizheg.telegram.bot.service.event.Events;
-import me.nizheg.telegram.bot.service.event.SupergroupChatCreatedEvent;
+import me.nizheg.telegram.bot.event.ChatEventListener;
+import me.nizheg.telegram.bot.event.Events;
+import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

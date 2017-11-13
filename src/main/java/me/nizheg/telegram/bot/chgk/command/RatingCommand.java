@@ -5,9 +5,9 @@ import java.util.regex.Pattern;
 
 import me.nizheg.telegram.bot.chgk.dto.TaskRating;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
-import me.nizheg.telegram.bot.service.command.ChatCommand;
-import me.nizheg.telegram.bot.service.command.CommandContext;
-import me.nizheg.telegram.bot.service.command.CommandException;
+import me.nizheg.telegram.bot.command.ChatCommand;
+import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.service.TelegramApiClient;
 import me.nizheg.telegram.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.util.Emoji;

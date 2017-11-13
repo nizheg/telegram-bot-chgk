@@ -2,9 +2,9 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.bot.service.command.ChatCommand;
-import me.nizheg.telegram.bot.service.command.CommandContext;
-import me.nizheg.telegram.bot.service.command.CommandException;
+import me.nizheg.telegram.bot.command.ChatCommand;
+import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.service.TelegramApiClient;
 
 import org.springframework.beans.factory.annotation.Autowired;

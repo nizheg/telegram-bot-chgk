@@ -1,6 +1,6 @@
 package me.nizheg.telegram.bot.chgk.exception;
 
-import me.nizheg.telegram.bot.service.command.CommandException;
+import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.model.ParseMode;
 import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.TelegramApiUtil;
