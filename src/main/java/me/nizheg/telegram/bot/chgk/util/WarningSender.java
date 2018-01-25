@@ -1,10 +1,10 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.WarningOperation;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.Emoji;
 
 import org.springframework.beans.factory.annotation.Autowired;

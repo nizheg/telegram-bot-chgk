@@ -1,8 +1,8 @@
 package me.nizheg.telegram.bot.chgk.dto;
 
-import me.nizheg.telegram.model.User;
-
 import java.io.Serializable;
+
+import me.nizheg.telegram.bot.api.model.User;
 
 /**
  * //todo add comments

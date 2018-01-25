@@ -1,6 +1,6 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import me.nizheg.telegram.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 
 /**
  * //todo add comments

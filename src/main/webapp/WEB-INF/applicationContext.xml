@@ -83,7 +83,7 @@
 
     <bean id="telegramApiClient" class="me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper">
         <constructor-arg>
-            <bean class="me.nizheg.telegram.service.impl.TelegramApiClientImpl">
+            <bean class="me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl">
                 <constructor-arg value="#{ propertyService.getValue('api.token') }"/>
             </bean>
         </constructor-arg>

@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.service.TourService;
-import me.nizheg.telegram.model.InlineKeyboardButton;
-import me.nizheg.telegram.model.InlineKeyboardMarkup;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.Emoji;
-import me.nizheg.telegram.util.TelegramHtmlUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

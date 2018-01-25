@@ -2,59 +2,56 @@ package me.nizheg.telegram.bot.chgk.telegram;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
+import me.nizheg.telegram.bot.api.model.Chat;
+import me.nizheg.telegram.bot.api.model.ChatAction;
+import me.nizheg.telegram.bot.api.model.ChatMember;
+import me.nizheg.telegram.bot.api.model.CollectionResponse;
+import me.nizheg.telegram.bot.api.model.File;
+import me.nizheg.telegram.bot.api.model.GameHighScore;
+import me.nizheg.telegram.bot.api.model.MessageOrBooleanResponse;
+import me.nizheg.telegram.bot.api.model.StickerSet;
+import me.nizheg.telegram.bot.api.model.Update;
+import me.nizheg.telegram.bot.api.model.UpdateType;
+import me.nizheg.telegram.bot.api.model.User;
+import me.nizheg.telegram.bot.api.model.UserProfilePhotos;
+import me.nizheg.telegram.bot.api.model.WebhookInfo;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.TelegramApiException;
+import me.nizheg.telegram.bot.api.service.param.AddingToSetSticker;
+import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
+import me.nizheg.telegram.bot.api.service.param.Audio;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
+import me.nizheg.telegram.bot.api.service.param.Contact;
+import me.nizheg.telegram.bot.api.service.param.Document;
+import me.nizheg.telegram.bot.api.service.param.EditedLiveLocation;
+import me.nizheg.telegram.bot.api.service.param.EditedMessage;
+import me.nizheg.telegram.bot.api.service.param.ForwardingMessage;
+import me.nizheg.telegram.bot.api.service.param.Game;
+import me.nizheg.telegram.bot.api.service.param.GameHighScoreRequest;
+import me.nizheg.telegram.bot.api.service.param.GameScore;
+import me.nizheg.telegram.bot.api.service.param.InlineAnswer;
+import me.nizheg.telegram.bot.api.service.param.InputFile;
+import me.nizheg.telegram.bot.api.service.param.Invoice;
+import me.nizheg.telegram.bot.api.service.param.KickedChatMember;
+import me.nizheg.telegram.bot.api.service.param.Location;
+import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.api.service.param.NewStickerSet;
+import me.nizheg.telegram.bot.api.service.param.Photo;
+import me.nizheg.telegram.bot.api.service.param.PinnedChatMessage;
+import me.nizheg.telegram.bot.api.service.param.PreCheckoutQueryAnswer;
+import me.nizheg.telegram.bot.api.service.param.PromotedChatMember;
+import me.nizheg.telegram.bot.api.service.param.RestrictedChatMember;
+import me.nizheg.telegram.bot.api.service.param.ShippingQueryAnswer;
+import me.nizheg.telegram.bot.api.service.param.Sticker;
+import me.nizheg.telegram.bot.api.service.param.StoppingLiveLocation;
+import me.nizheg.telegram.bot.api.service.param.UserProfilePhotosRequest;
+import me.nizheg.telegram.bot.api.service.param.Venue;
+import me.nizheg.telegram.bot.api.service.param.Video;
+import me.nizheg.telegram.bot.api.service.param.VideoNote;
+import me.nizheg.telegram.bot.api.service.param.Voice;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.model.BooleanResponse;
-import me.nizheg.telegram.model.ChatAction;
-import me.nizheg.telegram.model.ChatMemberCollectionResponse;
-import me.nizheg.telegram.model.ChatMemberResponse;
-import me.nizheg.telegram.model.ChatResponse;
-import me.nizheg.telegram.model.FileResponse;
-import me.nizheg.telegram.model.GameHighScoreCollectionResponse;
-import me.nizheg.telegram.model.IntegerResponse;
-import me.nizheg.telegram.model.MessageOrBooleanResponse;
-import me.nizheg.telegram.model.MessageResponse;
-import me.nizheg.telegram.model.StickerSetResponse;
-import me.nizheg.telegram.model.StringResponse;
-import me.nizheg.telegram.model.UpdateCollectionResponse;
-import me.nizheg.telegram.model.UpdateType;
-import me.nizheg.telegram.model.UserProfilePhotosResponse;
-import me.nizheg.telegram.model.UserResponse;
-import me.nizheg.telegram.model.WebhookInfoResponse;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.TelegramApiException;
-import me.nizheg.telegram.service.param.AddingToSetSticker;
-import me.nizheg.telegram.service.param.AnswerCallbackRequest;
-import me.nizheg.telegram.service.param.Audio;
-import me.nizheg.telegram.service.param.ChatId;
-import me.nizheg.telegram.service.param.Contact;
-import me.nizheg.telegram.service.param.Document;
-import me.nizheg.telegram.service.param.EditedLiveLocation;
-import me.nizheg.telegram.service.param.EditedMessage;
-import me.nizheg.telegram.service.param.ForwardingMessage;
-import me.nizheg.telegram.service.param.Game;
-import me.nizheg.telegram.service.param.GameHighScoreRequest;
-import me.nizheg.telegram.service.param.GameScore;
-import me.nizheg.telegram.service.param.InlineAnswer;
-import me.nizheg.telegram.service.param.InputFile;
-import me.nizheg.telegram.service.param.Invoice;
-import me.nizheg.telegram.service.param.KickedChatMember;
-import me.nizheg.telegram.service.param.Location;
-import me.nizheg.telegram.service.param.Message;
-import me.nizheg.telegram.service.param.NewStickerSet;
-import me.nizheg.telegram.service.param.Photo;
-import me.nizheg.telegram.service.param.PinnedChatMessage;
-import me.nizheg.telegram.service.param.PreCheckoutQueryAnswer;
-import me.nizheg.telegram.service.param.PromotedChatMember;
-import me.nizheg.telegram.service.param.RestrictedChatMember;
-import me.nizheg.telegram.service.param.ShippingQueryAnswer;
-import me.nizheg.telegram.service.param.Sticker;
-import me.nizheg.telegram.service.param.StoppingLiveLocation;
-import me.nizheg.telegram.service.param.UserProfilePhotosRequest;
-import me.nizheg.telegram.service.param.Venue;
-import me.nizheg.telegram.service.param.Video;
-import me.nizheg.telegram.service.param.VideoNote;
-import me.nizheg.telegram.service.param.Voice;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
@@ -84,17 +81,17 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public UserResponse getMe() {
+    public AtomicResponse<User> getMe() {
         return telegramApiClient.getMe();
     }
 
     @Override
-    public WebhookInfoResponse getWebhookInfo() {
+    public AtomicResponse<WebhookInfo> getWebhookInfo() {
         return telegramApiClient.getWebhookInfo();
     }
 
     @Override
-    public MessageResponse sendMessage(Message message) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendMessage(Message message) {
         try {
             return telegramApiClient.sendMessage(message);
         } catch (TelegramApiException ex) {
@@ -107,7 +104,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse forwardMessage(ForwardingMessage message) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> forwardMessage(ForwardingMessage message) {
         try {
             return telegramApiClient.forwardMessage(message);
         } catch (TelegramApiException ex) {
@@ -120,7 +117,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendPhoto(Photo photo) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendPhoto(Photo photo) {
         try {
             return telegramApiClient.sendPhoto(photo);
         } catch (TelegramApiException ex) {
@@ -133,7 +130,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendAudio(Audio audio) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendAudio(Audio audio) {
         try {
             return telegramApiClient.sendAudio(audio);
         } catch (TelegramApiException ex) {
@@ -146,7 +143,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendDocument(Document document) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendDocument(Document document) {
         try {
             return telegramApiClient.sendDocument(document);
         } catch (TelegramApiException ex) {
@@ -159,7 +156,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendSticker(Sticker sticker) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendSticker(Sticker sticker) {
         try {
             return telegramApiClient.sendSticker(sticker);
         } catch (TelegramApiException ex) {
@@ -172,37 +169,37 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public StickerSetResponse getStickerSet(String name) {
+    public AtomicResponse<StickerSet> getStickerSet(String name) {
         return telegramApiClient.getStickerSet(name);
     }
 
     @Override
-    public FileResponse uploadStickerFile(Long userId, InputFile pngSticker) {
+    public AtomicResponse<File> uploadStickerFile(Long userId, InputFile pngSticker) {
         return telegramApiClient.uploadStickerFile(userId, pngSticker);
     }
 
     @Override
-    public BooleanResponse createNewStickerSet(NewStickerSet stickerSet) {
+    public AtomicResponse<Boolean> createNewStickerSet(NewStickerSet stickerSet) {
         return telegramApiClient.createNewStickerSet(stickerSet);
     }
 
     @Override
-    public BooleanResponse addStickerToSet(AddingToSetSticker addingToSetSticker) {
+    public AtomicResponse<Boolean> addStickerToSet(AddingToSetSticker addingToSetSticker) {
         return telegramApiClient.addStickerToSet(addingToSetSticker);
     }
 
     @Override
-    public BooleanResponse setStickerPositionInSet(String sticker, Integer position) {
+    public AtomicResponse<Boolean> setStickerPositionInSet(String sticker, Integer position) {
         return telegramApiClient.setStickerPositionInSet(sticker, position);
     }
 
     @Override
-    public BooleanResponse deleteStickerFromSet(String sticker) {
+    public AtomicResponse<Boolean> deleteStickerFromSet(String sticker) {
         return telegramApiClient.deleteStickerFromSet(sticker);
     }
 
     @Override
-    public MessageResponse sendVideo(Video video) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendVideo(Video video) {
         try {
             return telegramApiClient.sendVideo(video);
         } catch (TelegramApiException ex) {
@@ -215,7 +212,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendVoice(Voice voice) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendVoice(Voice voice) {
         try {
             return telegramApiClient.sendVoice(voice);
         } catch (TelegramApiException ex) {
@@ -228,7 +225,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendVideoNote(VideoNote videoNote) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendVideoNote(VideoNote videoNote) {
         try {
             return telegramApiClient.sendVideoNote(videoNote);
         } catch (TelegramApiException ex) {
@@ -241,37 +238,37 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse sendChatAction(ChatAction chatAction, ChatId chatId) {
+    public AtomicResponse<Boolean> sendChatAction(ChatAction chatAction, ChatId chatId) {
         return telegramApiClient.sendChatAction(chatAction, chatId);
     }
 
     @Override
-    public UserProfilePhotosResponse getUserProfilePhotos(UserProfilePhotosRequest userProfilePhotosRequest) {
+    public AtomicResponse<UserProfilePhotos> getUserProfilePhotos(UserProfilePhotosRequest userProfilePhotosRequest) {
         return telegramApiClient.getUserProfilePhotos(userProfilePhotosRequest);
     }
 
     @Override
-    public FileResponse getFile(String fileId) {
+    public AtomicResponse<File> getFile(String fileId) {
         return telegramApiClient.getFile(fileId);
     }
 
     @Override
-    public BooleanResponse kickChatMember(KickedChatMember kickedChatMember) {
+    public AtomicResponse<Boolean> kickChatMember(KickedChatMember kickedChatMember) {
         return telegramApiClient.kickChatMember(kickedChatMember);
     }
 
     @Override
-    public BooleanResponse leaveChat(ChatId chatId) {
+    public AtomicResponse<Boolean> leaveChat(ChatId chatId) {
         return telegramApiClient.leaveChat(chatId);
     }
 
     @Override
-    public BooleanResponse unbanChatMember(ChatId chatId, Long userId) {
+    public AtomicResponse<Boolean> unbanChatMember(ChatId chatId, Long userId) {
         return telegramApiClient.unbanChatMember(chatId, userId);
     }
 
     @Override
-    public BooleanResponse restrictChatMember(RestrictedChatMember restrictedChatMember) {
+    public AtomicResponse<Boolean> restrictChatMember(RestrictedChatMember restrictedChatMember) {
         try {
             return telegramApiClient.restrictChatMember(restrictedChatMember);
         } catch (TelegramApiException ex) {
@@ -284,7 +281,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse promoteChatMember(PromotedChatMember promotedChatMember) {
+    public AtomicResponse<Boolean> promoteChatMember(PromotedChatMember promotedChatMember) {
         try {
             return telegramApiClient.promoteChatMember(promotedChatMember);
         } catch (TelegramApiException ex) {
@@ -297,7 +294,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public StringResponse exportChatInviteLink(ChatId chatId) {
+    public AtomicResponse<String> exportChatInviteLink(ChatId chatId) {
         try {
             return telegramApiClient.exportChatInviteLink(chatId);
         } catch (TelegramApiException ex) {
@@ -310,7 +307,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse setChatPhoto(ChatId chatId, InputFile photo) {
+    public AtomicResponse<Boolean> setChatPhoto(ChatId chatId, InputFile photo) {
         try {
             return telegramApiClient.setChatPhoto(chatId, photo);
         } catch (TelegramApiException ex) {
@@ -323,7 +320,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse deleteChatPhoto(ChatId chatId) {
+    public AtomicResponse<Boolean> deleteChatPhoto(ChatId chatId) {
         try {
             return telegramApiClient.deleteChatPhoto(chatId);
         } catch (TelegramApiException ex) {
@@ -336,7 +333,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse setChatTitle(ChatId chatId, String title) {
+    public AtomicResponse<Boolean> setChatTitle(ChatId chatId, String title) {
         try {
             return telegramApiClient.setChatTitle(chatId, title);
         } catch (TelegramApiException ex) {
@@ -349,7 +346,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse setChatDescription(ChatId chatId, String description) {
+    public AtomicResponse<Boolean> setChatDescription(ChatId chatId, String description) {
         try {
             return telegramApiClient.setChatDescription(chatId, description);
         } catch (TelegramApiException ex) {
@@ -362,7 +359,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse pinChatMessage(PinnedChatMessage pinnedChatMessage) {
+    public AtomicResponse<Boolean> pinChatMessage(PinnedChatMessage pinnedChatMessage) {
         try {
             return telegramApiClient.pinChatMessage(pinnedChatMessage);
         } catch (TelegramApiException ex) {
@@ -375,7 +372,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse unpinChatMessage(ChatId chatId) {
+    public AtomicResponse<Boolean> unpinChatMessage(ChatId chatId) {
         try {
             return telegramApiClient.unpinChatMessage(chatId);
         } catch (TelegramApiException ex) {
@@ -388,27 +385,27 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public ChatResponse getChat(ChatId chatId) {
+    public AtomicResponse<Chat> getChat(ChatId chatId) {
         return telegramApiClient.getChat(chatId);
     }
 
     @Override
-    public ChatMemberCollectionResponse getChatAdministrators(ChatId chatId) {
+    public CollectionResponse<ChatMember> getChatAdministrators(ChatId chatId) {
         return telegramApiClient.getChatAdministrators(chatId);
     }
 
     @Override
-    public IntegerResponse getChatMembersCount(ChatId chatId) {
+    public AtomicResponse<Integer> getChatMembersCount(ChatId chatId) {
         return telegramApiClient.getChatMembersCount(chatId);
     }
 
     @Override
-    public ChatMemberResponse getChatMember(ChatId chatId, Long userId) {
+    public AtomicResponse<ChatMember> getChatMember(ChatId chatId, Long userId) {
         return telegramApiClient.getChatMember(chatId, userId);
     }
 
     @Override
-    public BooleanResponse setChatStickerSet(ChatId chatId, String stickerSetName) {
+    public AtomicResponse<Boolean> setChatStickerSet(ChatId chatId, String stickerSetName) {
         try {
             return telegramApiClient.setChatStickerSet(chatId, stickerSetName);
         } catch (TelegramApiException ex) {
@@ -421,7 +418,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse deleteChatStickerSet(ChatId chatId) {
+    public AtomicResponse<Boolean> deleteChatStickerSet(ChatId chatId) {
         try {
             return telegramApiClient.deleteChatStickerSet(chatId);
         } catch (TelegramApiException ex) {
@@ -434,12 +431,12 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse answerCallbackQuery(AnswerCallbackRequest answerCallbackRequest) {
+    public AtomicResponse<Boolean> answerCallbackQuery(AnswerCallbackRequest answerCallbackRequest) {
         return telegramApiClient.answerCallbackQuery(answerCallbackRequest);
     }
 
     @Override
-    public UpdateCollectionResponse getUpdates(Long offset, Integer limit, Integer timeout, List<UpdateType> allowedUpdates) {
+    public CollectionResponse<Update> getUpdates(Long offset, Integer limit, Integer timeout, List<UpdateType> allowedUpdates) {
         return telegramApiClient.getUpdates(offset, limit, timeout, null);
     }
 
@@ -459,17 +456,17 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse deleteMessage(ChatId chatId, Long messageId) {
+    public AtomicResponse<Boolean> deleteMessage(ChatId chatId, Long messageId) {
         return telegramApiClient.deleteMessage(chatId, messageId);
     }
 
     @Override
-    public BooleanResponse answerInlineQuery(InlineAnswer inlineAnswer) {
+    public AtomicResponse<Boolean> answerInlineQuery(InlineAnswer inlineAnswer) {
         return telegramApiClient.answerInlineQuery(inlineAnswer);
     }
 
     @Override
-    public MessageResponse sendGame(Game game) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendGame(Game game) {
         try {
             return telegramApiClient.sendGame(game);
         } catch (TelegramApiException ex) {
@@ -495,7 +492,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public GameHighScoreCollectionResponse getGameHighScores(GameHighScoreRequest gameHighScoreRequest) {
+    public CollectionResponse<GameHighScore> getGameHighScores(GameHighScoreRequest gameHighScoreRequest) {
         try {
             return telegramApiClient.getGameHighScores(gameHighScoreRequest);
         } catch (TelegramApiException ex) {
@@ -508,7 +505,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendInvoice(Invoice invoice) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendInvoice(Invoice invoice) {
         try {
             return telegramApiClient.sendInvoice(invoice);
         } catch (TelegramApiException ex) {
@@ -521,17 +518,17 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public BooleanResponse answerShippingQuery(ShippingQueryAnswer shippingQueryAnswer) {
+    public AtomicResponse<Boolean> answerShippingQuery(ShippingQueryAnswer shippingQueryAnswer) {
         return telegramApiClient.answerShippingQuery(shippingQueryAnswer);
     }
 
     @Override
-    public BooleanResponse answerPreCheckoutQuery(PreCheckoutQueryAnswer preCheckoutQueryAnswer) {
+    public AtomicResponse<Boolean> answerPreCheckoutQuery(PreCheckoutQueryAnswer preCheckoutQueryAnswer) {
         return telegramApiClient.answerPreCheckoutQuery(preCheckoutQueryAnswer);
     }
 
     @Override
-    public MessageResponse sendLocation(Location location) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendLocation(Location location) {
         try {
             return telegramApiClient.sendLocation(location);
         } catch (TelegramApiException ex) {
@@ -570,7 +567,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendVenue(Venue venue) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendVenue(Venue venue) {
         try {
             return telegramApiClient.sendVenue(venue);
         } catch (TelegramApiException ex) {
@@ -583,7 +580,7 @@ public class TelegramApiClientWrapper implements TelegramApiClient {
     }
 
     @Override
-    public MessageResponse sendContact(Contact contact) {
+    public AtomicResponse<me.nizheg.telegram.bot.api.model.Message> sendContact(Contact contact) {
         try {
             return telegramApiClient.sendContact(contact);
         } catch (TelegramApiException ex) {

@@ -3,6 +3,11 @@ package me.nizheg.telegram.bot.chgk.command;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.exception.IllegalIdException;
@@ -10,12 +15,7 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.model.ReplyMarkup;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.TelegramApiUtil;
-import me.nizheg.telegram.util.TelegramHtmlUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

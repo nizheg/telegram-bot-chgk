@@ -3,6 +3,11 @@ package me.nizheg.telegram.bot.chgk.util;
 import java.util.Arrays;
 import java.util.List;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.NextTaskOperation;
@@ -12,11 +17,6 @@ import me.nizheg.telegram.bot.chgk.dto.composite.StatEntry;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
-import me.nizheg.telegram.model.InlineKeyboardMarkup;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.model.ReplyMarkup;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
 

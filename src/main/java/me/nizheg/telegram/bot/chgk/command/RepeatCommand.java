@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -10,8 +12,6 @@ import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.model.ReplyMarkup;
-import me.nizheg.telegram.service.TelegramApiClient;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
 

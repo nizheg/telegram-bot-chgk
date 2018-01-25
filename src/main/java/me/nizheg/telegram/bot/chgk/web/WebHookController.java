@@ -1,7 +1,7 @@
 package me.nizheg.telegram.bot.chgk.web;
 
+import me.nizheg.telegram.bot.api.model.Update;
 import me.nizheg.telegram.bot.service.UpdateHandler;
-import me.nizheg.telegram.model.Update;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

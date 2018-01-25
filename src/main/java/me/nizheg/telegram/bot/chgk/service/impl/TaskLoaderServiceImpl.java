@@ -5,16 +5,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.Picture;
-import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.AnswerService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
-import me.nizheg.telegram.util.TelegramHtmlUtil;
+import me.nizheg.telegram.bot.chgk.service.TaskService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

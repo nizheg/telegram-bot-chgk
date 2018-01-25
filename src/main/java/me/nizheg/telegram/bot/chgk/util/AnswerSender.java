@@ -2,9 +2,9 @@ package me.nizheg.telegram.bot.chgk.util;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
-import me.nizheg.telegram.model.ReplyMarkup;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -1,23 +1,24 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import java.util.Iterator;
+import java.util.List;
+
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.PhotoSize;
+import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
+import me.nizheg.telegram.bot.api.service.param.InputFile;
+import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.api.service.param.Photo;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.model.PhotoSize;
-import me.nizheg.telegram.model.ReplyMarkup;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.ChatId;
-import me.nizheg.telegram.service.param.InputFile;
-import me.nizheg.telegram.service.param.Message;
-import me.nizheg.telegram.service.param.Photo;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author Nikolay Zhegalin
@@ -85,7 +86,7 @@ public class TaskSender {
             if (!iterator.hasNext()) {
                 sendingPhoto.setReplyMarkup(replyMarkup);
             }
-            me.nizheg.telegram.model.Message sentMessage = telegramApiClient.sendPhoto(sendingPhoto).getResult();
+            me.nizheg.telegram.bot.api.model.Message sentMessage = telegramApiClient.sendPhoto(sendingPhoto).getResult();
 
             if (attachedPicture.getTelegramFileId() == null) {
                 List<PhotoSize> photos = sentMessage.getPhoto();

@@ -6,6 +6,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.nizheg.telegram.bot.api.model.KeyboardButton;
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
+import me.nizheg.telegram.bot.api.model.ReplyKeyboardRemove;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
@@ -16,12 +22,6 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.model.KeyboardButton;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.model.ReplyKeyboardMarkup;
-import me.nizheg.telegram.model.ReplyKeyboardRemove;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.Emoji;
 
 import org.apache.commons.lang3.StringUtils;

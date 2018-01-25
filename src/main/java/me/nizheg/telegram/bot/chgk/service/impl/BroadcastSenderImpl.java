@@ -1,19 +1,20 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import java.util.List;
+
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.TelegramApiException;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.service.BroadcastSender;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.TelegramApiException;
-import me.nizheg.telegram.service.param.Message;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * //todo add comments

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.AnswerLog;
 import me.nizheg.telegram.bot.chgk.dto.Category;
@@ -28,7 +29,6 @@ import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.service.PropertyService;
-import me.nizheg.telegram.model.User;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;

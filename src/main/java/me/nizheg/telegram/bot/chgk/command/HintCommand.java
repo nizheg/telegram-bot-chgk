@@ -1,5 +1,9 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.TelegramApiException;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -9,10 +13,6 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.TelegramApiException;
-import me.nizheg.telegram.service.param.Message;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

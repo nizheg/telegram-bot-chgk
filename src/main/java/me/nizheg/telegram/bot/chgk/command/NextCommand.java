@@ -1,11 +1,11 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.service.TelegramApiClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

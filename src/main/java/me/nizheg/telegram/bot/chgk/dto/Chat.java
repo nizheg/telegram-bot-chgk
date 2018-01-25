@@ -2,7 +2,7 @@ package me.nizheg.telegram.bot.chgk.dto;
 
 import java.io.Serializable;
 
-import me.nizheg.telegram.model.User;
+import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
 /**
@@ -20,7 +20,7 @@ public class Chat implements Serializable {
     private String firstName;
     private String lastName;
 
-    public Chat(me.nizheg.telegram.model.Chat chat) {
+    public Chat(me.nizheg.telegram.bot.api.model.Chat chat) {
         this.id = chat.getId();
         this.isPrivate = TelegramApiUtil.isPrivateChat(chat);
         this.title = chat.getTitle();

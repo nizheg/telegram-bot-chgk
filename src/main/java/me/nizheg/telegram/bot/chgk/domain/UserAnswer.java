@@ -1,6 +1,6 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
-import me.nizheg.telegram.model.User;
+import me.nizheg.telegram.bot.api.model.User;
 
 /**
  * @author Nikolay Zhegalin

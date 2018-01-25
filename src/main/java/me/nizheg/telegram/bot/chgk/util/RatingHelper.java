@@ -3,7 +3,7 @@ package me.nizheg.telegram.bot.chgk.util;
 import java.util.Arrays;
 import java.util.List;
 
-import me.nizheg.telegram.model.InlineKeyboardButton;
+import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.util.Emoji;
 
 import org.springframework.stereotype.Component;

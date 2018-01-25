@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -13,9 +16,6 @@ import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.RatingHelper;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.model.InlineKeyboardButton;
-import me.nizheg.telegram.model.InlineKeyboardMarkup;
-import me.nizheg.telegram.service.TelegramApiClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

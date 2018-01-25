@@ -1,10 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.Message;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

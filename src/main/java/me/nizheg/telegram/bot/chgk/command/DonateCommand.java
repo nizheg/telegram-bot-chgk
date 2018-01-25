@@ -13,14 +13,14 @@ import me.nizheg.payments.yandex.model.YandexMoneyPayForm;
 import me.nizheg.payments.yandex.model.YandexMoneyPaymentType;
 import me.nizheg.payments.yandex.service.YandexMoneyPaymentParameters;
 import me.nizheg.payments.yandex.service.YandexMoneyPaymentProvider;
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.EditedMessage;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.PropertyService;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.EditedMessage;
-import me.nizheg.telegram.service.param.Message;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
 

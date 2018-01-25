@@ -7,6 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.User;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswer;
@@ -25,13 +31,7 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
-import me.nizheg.telegram.model.InlineKeyboardButton;
-import me.nizheg.telegram.model.InlineKeyboardMarkup;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.model.User;
-import me.nizheg.telegram.service.TelegramApiClient;
 import me.nizheg.telegram.util.Emoji;
-import me.nizheg.telegram.util.TelegramHtmlUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,7 +126,7 @@ public class DefaultCommand extends ChatCommand {
             replyMarkup.setInlineKeyboard(buttonGroup);
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
         } else {
-            telegramApiClient.sendMessage(new me.nizheg.telegram.service.param.Message(
+            telegramApiClient.sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(
                     "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.", chatId, ParseMode.HTML));
         }
 

@@ -3,13 +3,13 @@ package me.nizheg.telegram.bot.chgk.command;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.bot.chgk.dto.TaskRating;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.service.TelegramApiClient;
-import me.nizheg.telegram.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.util.Emoji;
 
 import org.apache.commons.lang3.StringUtils;

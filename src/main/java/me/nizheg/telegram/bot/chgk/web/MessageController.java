@@ -2,6 +2,8 @@ package me.nizheg.telegram.bot.chgk.web;
 
 import java.security.Principal;
 
+import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
@@ -11,8 +13,6 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
-import me.nizheg.telegram.model.ParseMode;
-import me.nizheg.telegram.service.TelegramApiClient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class MessageController {
                     Task currentTask = chatService.getGame(new Chat(telegramUser.getId(), true)).setCurrentTask(taskId);
                     taskSender.sendTaskText(currentTask, telegramUser.getId());
                 } else {
-                    telegramApiClient.sendMessage(new me.nizheg.telegram.service.param.Message(message.getText(), telegramUser.getId(), ParseMode.HTML, true));
+                    telegramApiClient.sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(message.getText(), telegramUser.getId(), ParseMode.HTML, true));
                 }
                 return new BroadcastStatus(BroadcastStatus.Status.FINISHED);
             }
