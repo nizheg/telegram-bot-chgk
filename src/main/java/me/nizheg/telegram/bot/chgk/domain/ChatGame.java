@@ -1,5 +1,12 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
+import org.apache.commons.lang3.Validate;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.List;
 
@@ -30,13 +37,6 @@ import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.service.PropertyService;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * @author Nikolay Zhegalin
  */
@@ -47,6 +47,7 @@ public class ChatGame {
     private final static int SECOND = 1000;
     private final static long NULL_TASK_ID = -1;
     protected final Chat chat;
+    private final static LevenshteinDistance LEVENSHTEIN_DISTANCE = LevenshteinDistance.getDefaultInstance();
     private Task currentTask;
     private Category category;
     private Tournament currentTournament;
@@ -375,10 +376,10 @@ public class ChatGame {
         if (expected.length() < 4) {
             return equals(answer, expected);
         }
-        if (expected.length() >= 4 && expected.length() < 6) {
-            return StringUtils.getLevenshteinDistance(answer, expected) <= 1;
+        if (expected.length() < 6) {
+            return LEVENSHTEIN_DISTANCE.apply(answer, expected) <= 1;
         }
-        return StringUtils.getLevenshteinDistance(answer, expected) <= 2;
+        return LEVENSHTEIN_DISTANCE.apply(answer, expected) <= 2;
     }
 
 }
