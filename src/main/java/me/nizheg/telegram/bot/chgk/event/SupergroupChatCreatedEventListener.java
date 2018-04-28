@@ -3,8 +3,8 @@ package me.nizheg.telegram.bot.chgk.event;
 import org.springframework.stereotype.Component;
 
 import me.nizheg.telegram.bot.chgk.service.ChatService;
+import me.nizheg.telegram.bot.event.ChatEvent;
 import me.nizheg.telegram.bot.event.ChatEventListener;
-import me.nizheg.telegram.bot.event.Events;
 import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
 
 /**
@@ -13,7 +13,7 @@ import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
  * @author Nikolay Zhegalin
  */
 @Component
-public class SupergroupChatCreatedEventListener implements ChatEventListener<SupergroupChatCreatedEvent> {
+public class SupergroupChatCreatedEventListener implements ChatEventListener {
 
     private final ChatService chatService;
 
@@ -22,17 +22,17 @@ public class SupergroupChatCreatedEventListener implements ChatEventListener<Sup
     }
 
     @Override
-    public String getListeningEventId() {
-        return Events.SUPER_GROUP_CREATED_ID;
+    public boolean supports(Class<? extends ChatEvent> eventClass) {
+        return SupergroupChatCreatedEvent.class.isAssignableFrom(eventClass);
     }
 
     @Override
-    public Class<SupergroupChatCreatedEvent> getListeningEventClass() {
-        return SupergroupChatCreatedEvent.class;
-    }
-
-    @Override
-    public void handleEvent(SupergroupChatCreatedEvent chatEvent) {
-        chatService.handleGroupToSuperGroupConverting(chatEvent.getGroupId(), chatEvent.getSuperGroupId());
+    public void handleEvent(ChatEvent chatEvent) {
+        if (!supports(chatEvent.getClass())) {
+            return;
+        }
+        SupergroupChatCreatedEvent supergroupChatCreatedEvent = (SupergroupChatCreatedEvent) chatEvent;
+        chatService.handleGroupToSuperGroupConverting(supergroupChatCreatedEvent.getGroupId(),
+                supergroupChatCreatedEvent.getSuperGroupId());
     }
 }
