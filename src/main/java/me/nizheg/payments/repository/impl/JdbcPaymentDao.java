@@ -1,5 +1,10 @@
 package me.nizheg.payments.repository.impl;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,27 +18,24 @@ import me.nizheg.payments.dto.PaymentStatus;
 import me.nizheg.payments.dto.PaymentTransaction;
 import me.nizheg.payments.repository.PaymentDao;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-
 /**
  * @author Nikolay Zhegalin
  */
+@Repository
 public class JdbcPaymentDao implements PaymentDao {
 
-    private JdbcTemplate template;
-    private SimpleJdbcInsert paymentTransactionInsert;
-    private PaymentTransactionMapper paymentTransactionMapper = new PaymentTransactionMapper();
+    private final JdbcTemplate template;
+    private final SimpleJdbcInsert paymentTransactionInsert;
+    private final PaymentTransactionMapper paymentTransactionMapper = new PaymentTransactionMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcPaymentDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         this.paymentTransactionInsert = new SimpleJdbcInsert(dataSource).withTableName("payment").usingGeneratedKeyColumns("id");
     }
 
     @Override
     public long create(PaymentTransaction paymentTransaction) {
-        Map<String, Object> parameters = new HashMap<String, Object>(3);
+        Map<String, Object> parameters = new HashMap<>(3);
         parameters.put("telegram_user_id", paymentTransaction.getTelegramUserId());
         parameters.put("creation_time", paymentTransaction.getCreationTime());
         parameters.put("sum", paymentTransaction.getSum());

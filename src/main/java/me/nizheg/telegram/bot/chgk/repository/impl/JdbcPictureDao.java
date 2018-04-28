@@ -1,27 +1,31 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
-import me.nizheg.telegram.bot.chgk.dto.Picture;
-import me.nizheg.telegram.bot.chgk.repository.PictureDao;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
+import me.nizheg.telegram.bot.chgk.dto.Picture;
+import me.nizheg.telegram.bot.chgk.repository.PictureDao;
+
+@Repository
 public class JdbcPictureDao implements PictureDao {
-    private JdbcTemplate template;
+    private final JdbcTemplate template;
 
-    private PictureMapper pictureMapper = new PictureMapper();
-    private AttachedPictureMapper attachedPictureMapper = new AttachedPictureMapper();
-    private SimpleJdbcInsert pictureInsert;
+    private final PictureMapper pictureMapper = new PictureMapper();
+    private final AttachedPictureMapper attachedPictureMapper = new AttachedPictureMapper();
+    private final SimpleJdbcInsert pictureInsert;
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcPictureDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         this.pictureInsert = new SimpleJdbcInsert(dataSource).withTableName("picture").usingGeneratedKeyColumns("id");
     }
@@ -64,7 +68,7 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public Picture create(Picture picture) {
-        Map<String, Object> parameters = new HashMap<String, Object>(3);
+        Map<String, Object> parameters = new HashMap<>(3);
         parameters.put("telegram_file_id", picture.getTelegramFileId());
         parameters.put("source_url", picture.getSourceUrl());
         parameters.put("caption", picture.getCaption());

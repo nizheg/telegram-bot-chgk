@@ -1,17 +1,19 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.ChatError;
-import me.nizheg.telegram.bot.chgk.repository.ChatErrorDao;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.sql.DataSource;
+
+import me.nizheg.telegram.bot.chgk.dto.ChatError;
+import me.nizheg.telegram.bot.chgk.repository.ChatErrorDao;
 
 /**
  * //todo add comments
@@ -28,12 +30,12 @@ public class JdbcChatErrorDao implements ChatErrorDao {
     private static final String COLUMN_LABEL_TIME = "event_time";
 
     @SuppressWarnings("unused")
-    private JdbcTemplate template;
-    private SimpleJdbcInsert chatErrorInsert;
+    private final JdbcTemplate template;
+    private final SimpleJdbcInsert chatErrorInsert;
     @SuppressWarnings("unused")
-    private ChatErrorMapper chatErrorMapper = new ChatErrorMapper();
+    private final ChatErrorMapper chatErrorMapper = new ChatErrorMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcChatErrorDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         this.chatErrorInsert = new SimpleJdbcInsert(dataSource).withTableName(TABLE_NAME).usingGeneratedKeyColumns("id");
     }

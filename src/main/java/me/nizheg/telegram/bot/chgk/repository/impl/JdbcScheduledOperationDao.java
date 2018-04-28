@@ -1,5 +1,11 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -10,20 +16,16 @@ import me.nizheg.telegram.bot.chgk.dto.ScheduledOperation;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.ScheduledOperationDao;
 
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-
 /**
  * @author Nikolay Zhegalin
  */
+@Repository
 public class JdbcScheduledOperationDao implements ScheduledOperationDao {
-    private JdbcTemplate template;
+    private final JdbcTemplate template;
 
-    private ScheduledOperationMapper mapper = new ScheduledOperationMapper();
+    private final ScheduledOperationMapper mapper = new ScheduledOperationMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcScheduledOperationDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
     }
 

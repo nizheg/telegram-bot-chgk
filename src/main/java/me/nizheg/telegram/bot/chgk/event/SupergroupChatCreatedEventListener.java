@@ -1,12 +1,11 @@
 package me.nizheg.telegram.bot.chgk.event;
 
+import org.springframework.stereotype.Component;
+
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.event.Events;
 import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * //todo add comments
@@ -15,12 +14,21 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SupergroupChatCreatedEventListener implements ChatEventListener<SupergroupChatCreatedEvent> {
-    @Autowired
-    private ChatService chatService;
+
+    private final ChatService chatService;
+
+    public SupergroupChatCreatedEventListener(ChatService chatService) {
+        this.chatService = chatService;
+    }
 
     @Override
     public String getListeningEventId() {
         return Events.SUPER_GROUP_CREATED_ID;
+    }
+
+    @Override
+    public Class<SupergroupChatCreatedEvent> getListeningEventClass() {
+        return SupergroupChatCreatedEvent.class;
     }
 
     @Override

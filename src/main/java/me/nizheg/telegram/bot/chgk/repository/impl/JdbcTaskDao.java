@@ -1,5 +1,21 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,47 +31,27 @@ import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-
 @Repository
 public class JdbcTaskDao implements TaskDao {
-    private Log logger = LogFactory.getLog(getClass());
-    private JdbcTemplate template;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private SimpleJdbcInsert taskInsert;
-    private TaskMapper taskMapper = new TaskMapper();
-    private TransactionTemplate newTransaction;
+    private final Log logger = LogFactory.getLog(getClass());
+    private final JdbcTemplate template;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final SimpleJdbcInsert taskInsert;
+    private final TaskMapper taskMapper = new TaskMapper();
+    private final UsageStatMapper usageStatMapper = new UsageStatMapper();
+    private final TransactionTemplate newTransaction;
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcTaskDao(DataSource dataSource, PlatformTransactionManager txManager) {
         this.template = new JdbcTemplate(dataSource);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         this.taskInsert = new SimpleJdbcInsert(dataSource).withTableName("task").usingGeneratedKeyColumns("id");
-    }
-
-    @Autowired
-    public void setTransactionPlatformManager(PlatformTransactionManager txManager) {
         newTransaction = new TransactionTemplate(txManager);
         newTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
     @Override
     public LightTask create(LightTask task) {
-        Map<String, Object> parameters = new HashMap<String, Object>(6);
+        Map<String, Object> parameters = new HashMap<>(6);
         parameters.put("task_text", task.getText());
         parameters.put("imported_task_text", task.getImportedText());
         parameters.put("comment", task.getComment());
@@ -134,7 +130,7 @@ public class JdbcTaskDao implements TaskDao {
     @Override
     public LightTask getUnusedByChat(Long chatId, Category category) {
         String categoryFilter = "";
-        List<Object> parameters = new ArrayList<Object>();
+        List<Object> parameters = new ArrayList<>();
         if (category != null) {
             categoryFilter = "inner join task_category tc on tc.task_id = task.id and category_id = ? \n";
             parameters.add(category.getId());
@@ -207,15 +203,7 @@ public class JdbcTaskDao implements TaskDao {
         }
         queryBuilder.append("left join used_task_all ut on ut.task_id = task.id\n");
         queryBuilder.append("where task.status = :status");
-        return namedParameterJdbcTemplate.queryForObject(queryBuilder.toString(), parameters, new RowMapper<UsageStat>() {
-            @Override
-            public UsageStat mapRow(ResultSet rs, int rowNum) throws SQLException {
-                UsageStat stat = new UsageStat();
-                stat.setCount(rs.getLong("ct"));
-                stat.setUsedCount(rs.getLong("cu"));
-                return stat;
-            }
-        });
+        return namedParameterJdbcTemplate.queryForObject(queryBuilder.toString(), parameters, usageStatMapper);
     }
 
     @Override
@@ -233,15 +221,7 @@ public class JdbcTaskDao implements TaskDao {
         queryBuilder.append("left join used_task_all ut on ut.task_id = task.id\n");
         queryBuilder.append("where tour_id in (select id from tour where parent_id = :tournamentId)\n");
         queryBuilder.append("and task.status = :status");
-        return namedParameterJdbcTemplate.queryForObject(queryBuilder.toString(), parameters, new RowMapper<UsageStat>() {
-            @Override
-            public UsageStat mapRow(ResultSet rs, int rowNum) throws SQLException {
-                UsageStat stat = new UsageStat();
-                stat.setCount(rs.getLong("ct"));
-                stat.setUsedCount(rs.getLong("cu"));
-                return stat;
-            }
-        });
+        return namedParameterJdbcTemplate.queryForObject(queryBuilder.toString(), parameters, usageStatMapper);
     }
 
     private String getUsedTaskCompositeQuery() {
@@ -295,6 +275,16 @@ public class JdbcTaskDao implements TaskDao {
         parameters.addValue("taskIds", taskIds);
         namedParameterJdbcTemplate.update("update task set status = :toStatus where id in (:taskIds) and status=:fromStatus", parameters);
 
+    }
+
+    private static class UsageStatMapper implements RowMapper<UsageStat> {
+        @Override
+        public UsageStat mapRow(ResultSet rs, int rowNum) throws SQLException {
+            UsageStat stat = new UsageStat();
+            stat.setCount(rs.getLong("ct"));
+            stat.setUsedCount(rs.getLong("cu"));
+            return stat;
+        }
     }
 
     private static class TaskMapper implements RowMapper<LightTask> {

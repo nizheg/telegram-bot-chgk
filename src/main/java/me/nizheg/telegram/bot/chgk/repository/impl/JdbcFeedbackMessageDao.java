@@ -1,27 +1,29 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.FeedbackMessage;
-import me.nizheg.telegram.bot.chgk.repository.FeedbackMessageDao;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
+import me.nizheg.telegram.bot.chgk.dto.FeedbackMessage;
+import me.nizheg.telegram.bot.chgk.repository.FeedbackMessageDao;
+
 @Repository
 public class JdbcFeedbackMessageDao implements FeedbackMessageDao {
 
-    private JdbcTemplate template;
-    private SimpleJdbcInsert feedbackMessageInsert;
-    private FeedbackMessageMapper feedbackMessageMapper = new FeedbackMessageMapper();
+    private final JdbcTemplate template;
+    private final SimpleJdbcInsert feedbackMessageInsert;
+    private final FeedbackMessageMapper feedbackMessageMapper = new FeedbackMessageMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcFeedbackMessageDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         this.feedbackMessageInsert = new SimpleJdbcInsert(dataSource).withTableName("feedback_message").usingGeneratedKeyColumns("id");
     }
@@ -44,7 +46,7 @@ public class JdbcFeedbackMessageDao implements FeedbackMessageDao {
 
     @Override
     public FeedbackMessage create(FeedbackMessage feedbackMessage) {
-        Map<String, Object> parameters = new HashMap<String, Object>(3);
+        Map<String, Object> parameters = new HashMap<>(3);
         parameters.put("message", feedbackMessage.getMessage());
         parameters.put("telegram_user_id", feedbackMessage.getTelegramUserId());
         parameters.put("message_time", feedbackMessage.getTime());

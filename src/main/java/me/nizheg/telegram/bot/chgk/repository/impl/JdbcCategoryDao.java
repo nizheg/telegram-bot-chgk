@@ -1,5 +1,9 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -9,10 +13,6 @@ import javax.sql.DataSource;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
-
 /**
  * //todo add comments
  *
@@ -21,10 +21,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcCategoryDao implements CategoryDao {
 
-    private JdbcTemplate template;
-    private CategoryMapper categoryMapper = new CategoryMapper();
+    private final JdbcTemplate template;
+    private final CategoryMapper categoryMapper = new CategoryMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcCategoryDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
     }
 
@@ -41,7 +41,7 @@ public class JdbcCategoryDao implements CategoryDao {
 
     @Override
     public Category update(Category category) {
-        template.update("update category set category_name = ?, position = ?, where id = ?", category.getName(), category.getPosition(), category.getId());
+        template.update("update category set category_name = ?, position = ? where id = ?", category.getName(), category.getPosition(), category.getId());
         return category;
     }
 

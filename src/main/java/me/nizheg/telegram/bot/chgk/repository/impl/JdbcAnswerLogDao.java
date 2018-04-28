@@ -1,5 +1,14 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
+
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,25 +25,16 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.AnswerLogDao;
 import me.nizheg.telegram.bot.chgk.repository.param.StatSearchParams;
 
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Repository;
-
 @Repository
 public class JdbcAnswerLogDao implements AnswerLogDao {
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private JdbcTemplate template;
-    private SimpleJdbcInsert answerLogInsert;
-    private AnswerLogMapper answerLogMapper = new AnswerLogMapper();
-    private StatEntryMapper statEntryMapper = new StatEntryMapper();
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final JdbcTemplate template;
+    private final SimpleJdbcInsert answerLogInsert;
+    private final AnswerLogMapper answerLogMapper = new AnswerLogMapper();
+    private final StatEntryMapper statEntryMapper = new StatEntryMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcAnswerLogDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         this.answerLogInsert = new SimpleJdbcInsert(dataSource).withTableName("answer_log").usingGeneratedKeyColumns("id");
@@ -42,7 +42,7 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
 
     @Override
     public AnswerLog create(AnswerLog answerLog) {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("telegram_user_id", answerLog.getTelegramUserId());
         parameters.put("chat_id", answerLog.getChatId());
         parameters.put("task_id", answerLog.getTaskId());

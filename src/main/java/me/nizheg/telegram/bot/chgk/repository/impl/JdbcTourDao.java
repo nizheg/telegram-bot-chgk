@@ -1,5 +1,15 @@
 package me.nizheg.telegram.bot.chgk.repository.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
+
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,28 +24,18 @@ import me.nizheg.telegram.bot.chgk.dto.LightTour;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.repository.TourDao;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Repository;
-
 /**
  * @author Nikolay Zhegalin
  */
 @Repository
 public class JdbcTourDao implements TourDao {
-    private Log logger = LogFactory.getLog(getClass());
-    private JdbcTemplate template;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private SimpleJdbcInsert tourInsert;
-    private TourMapper tourMapper = new TourMapper();
+    private final Log logger = LogFactory.getLog(getClass());
+    private final JdbcTemplate template;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final SimpleJdbcInsert tourInsert;
+    private final TourMapper tourMapper = new TourMapper();
 
-    public void setDataSource(DataSource dataSource) {
+    public JdbcTourDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         this.tourInsert = new SimpleJdbcInsert(dataSource).withTableName("tour");
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
@@ -48,7 +48,7 @@ public class JdbcTourDao implements TourDao {
 
     @Override
     public LightTour create(LightTour lightTour) {
-        Map<String, Object> parameters = new HashMap<String, Object>(7);
+        Map<String, Object> parameters = new HashMap<>(7);
         parameters.put("id", lightTour.getId());
         parameters.put("parent_id", lightTour.getParentTourId());
         parameters.put("title", lightTour.getTitle());
@@ -124,15 +124,12 @@ public class JdbcTourDao implements TourDao {
                         + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus\n" //
                         + "group by tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at\n" //
                         + "order by done desc, tournament.played_at desc nulls last limit " + limit + " offset " + limit * offset;
-        return namedParameterJdbcTemplate.query(sql.toString(), parameters, new RowMapper<LightTourWithStat>() {
-            @Override
-            public LightTourWithStat mapRow(ResultSet rs, int rowNum) throws SQLException {
-                LightTour lightTour = tourMapper.mapRow(rs, rowNum);
-                LightTourWithStat lightTourWithStat = new LightTourWithStat(lightTour);
-                lightTourWithStat.setDonePercent(rs.getInt("done"));
-                lightTourWithStat.setTasksCount(rs.getInt("tasks_count"));
-                return lightTourWithStat;
-            }
+        return namedParameterJdbcTemplate.query(sql.toString(), parameters, (rs, rowNum) -> {
+            LightTour lightTour = tourMapper.mapRow(rs, rowNum);
+            LightTourWithStat lightTourWithStat = new LightTourWithStat(lightTour);
+            lightTourWithStat.setDonePercent(rs.getInt("done"));
+            lightTourWithStat.setTasksCount(rs.getInt("tasks_count"));
+            return lightTourWithStat;
         });
     }
 
