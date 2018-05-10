@@ -2,7 +2,14 @@ package me.nizheg.telegram.bot.chgk.config;
 
 import com.vk.VkApi;
 import com.vk.impl.VkApiImpl;
-
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
+import me.nizheg.telegram.bot.chgk.command.*;
+import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
+import me.nizheg.telegram.bot.command.HelpCommand;
+import me.nizheg.telegram.bot.event.ChatEventListener;
+import me.nizheg.telegram.bot.service.*;
+import me.nizheg.telegram.bot.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -12,61 +19,25 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
-import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
-import me.nizheg.telegram.bot.chgk.command.AnswerCommand;
-import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
-import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
-import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
-import me.nizheg.telegram.bot.chgk.command.DonateCommand;
-import me.nizheg.telegram.bot.chgk.command.FeedbackCommand;
-import me.nizheg.telegram.bot.chgk.command.HintCommand;
-import me.nizheg.telegram.bot.chgk.command.NextCommand;
-import me.nizheg.telegram.bot.chgk.command.RatingCommand;
-import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
-import me.nizheg.telegram.bot.chgk.command.StartCommand;
-import me.nizheg.telegram.bot.chgk.command.StatCommand;
-import me.nizheg.telegram.bot.chgk.command.StopCommand;
-import me.nizheg.telegram.bot.chgk.command.TimerCommand;
-import me.nizheg.telegram.bot.chgk.command.TourCommand;
-import me.nizheg.telegram.bot.chgk.command.TournamentCommand;
-import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
-import me.nizheg.telegram.bot.command.HelpCommand;
-import me.nizheg.telegram.bot.event.ChatEventListener;
-import me.nizheg.telegram.bot.service.CallbackQueryParser;
-import me.nizheg.telegram.bot.service.CommandExecutor;
-import me.nizheg.telegram.bot.service.CommandsHolder;
-import me.nizheg.telegram.bot.service.MessageParser;
-import me.nizheg.telegram.bot.service.PropertyService;
-import me.nizheg.telegram.bot.service.UpdateHandler;
-import me.nizheg.telegram.bot.service.impl.CallbackQueryParserImpl;
-import me.nizheg.telegram.bot.service.impl.CommandExecutorImpl;
-import me.nizheg.telegram.bot.service.impl.CommandsHolderImpl;
-import me.nizheg.telegram.bot.service.impl.MessageParserImpl;
-import me.nizheg.telegram.bot.service.impl.MessageReceiver;
-import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 
 /**
  * @author Nikolay Zhegalin
  */
 @Configuration
 @ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
-        "me.nizheg.telegram.bot.chgk.event", "info.chgk", "me.nizheg.payments"})
+        "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "info.chgk", "me.nizheg.payments"})
 @EnableScheduling()
 //@PropertySource()
 public class AppConfig {
 
-    private final PropertyService propertyService;
-
-    public AppConfig(PropertyService propertyService) {this.propertyService = propertyService;}
+    @Autowired
+    private PropertyService propertyService;
 
     @Resource
     @Bean
