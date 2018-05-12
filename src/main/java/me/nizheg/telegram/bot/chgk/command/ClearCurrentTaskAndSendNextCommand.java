@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
-import me.nizheg.telegram.bot.chgk.service.ChatService;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
@@ -16,25 +16,25 @@ import me.nizheg.telegram.bot.command.CommandException;
  */
 public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
 
-    private final ChatService chatService;
+    private final ChatGameService chatGameService;
 
     public ClearCurrentTaskAndSendNextCommand(
             TelegramApiClient telegramApiClient,
-            ChatService chatService) {
+            ChatGameService chatGameService) {
         super(telegramApiClient);
-        this.chatService = chatService;
+        this.chatGameService = chatGameService;
     }
 
     public ClearCurrentTaskAndSendNextCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService) {
+            ChatGameService chatGameService) {
         super(telegramApiClientSupplier);
-        this.chatService = chatService;
+        this.chatGameService = chatGameService;
     }
 
     @Override
     public void execute(CommandContext ctx) throws CommandException {
-        chatService.getGame(new Chat(ctx.getChat())).clearCurrentTask();
+        chatGameService.getGame(new Chat(ctx.getChat())).clearCurrentTask();
         getCommandHolder().getCommandByName("next").execute(ctx);
     }
 

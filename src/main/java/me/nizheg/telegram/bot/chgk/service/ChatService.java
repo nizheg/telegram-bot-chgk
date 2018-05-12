@@ -2,13 +2,10 @@ package me.nizheg.telegram.bot.chgk.service;
 
 import java.util.List;
 
-import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public interface ChatService {
@@ -33,5 +30,5 @@ public interface ChatService {
 
     void handleGroupToSuperGroupConverting(Long groupId, Long superGroupId);
 
-    ChatGame getGame(Chat chatId);
+    List<Chat> getChatsWithScheduledOperation();
 }

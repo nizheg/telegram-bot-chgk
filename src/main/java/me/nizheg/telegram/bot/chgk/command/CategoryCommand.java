@@ -20,6 +20,7 @@ import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
@@ -27,8 +28,6 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.util.Emoji;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class CategoryCommand extends ChatGameCommand {
@@ -40,6 +39,7 @@ public class CategoryCommand extends ChatGameCommand {
 
     private final CategoryService categoryService;
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final TaskService taskService;
     private final TourList tourList;
     private volatile List<Category> categories = new ArrayList<>();
@@ -48,10 +48,13 @@ public class CategoryCommand extends ChatGameCommand {
             TelegramApiClient telegramApiClient,
             CategoryService categoryService,
             ChatService chatService,
-            TaskService taskService, TourList tourList) {
+            ChatGameService chatGameService,
+            TaskService taskService,
+            TourList tourList) {
         super(telegramApiClient);
         this.categoryService = categoryService;
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskService = taskService;
         this.tourList = tourList;
     }
@@ -60,10 +63,13 @@ public class CategoryCommand extends ChatGameCommand {
             Supplier<TelegramApiClient> telegramApiClientSupplier,
             CategoryService categoryService,
             ChatService chatService,
-            TaskService taskService, TourList tourList) {
+            ChatGameService chatGameService,
+            TaskService taskService,
+            TourList tourList) {
         super(telegramApiClientSupplier);
         this.categoryService = categoryService;
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskService = taskService;
         this.tourList = tourList;
     }
@@ -71,6 +77,11 @@ public class CategoryCommand extends ChatGameCommand {
     @Override
     protected ChatService getChatService() {
         return chatService;
+    }
+
+    @Override
+    protected ChatGameService getChatGameService() {
+        return chatGameService;
     }
 
     @Override

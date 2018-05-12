@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
-import me.nizheg.telegram.bot.chgk.service.ChatService;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
@@ -25,18 +25,18 @@ public class TimerCommand extends ChatCommand {
     private static final int DEFAULT_TIMEOUT_MINUTES = 1;
     private static final int MAX_TIMEOUT_MINUTES = 24 * 60;
 
-    private final ChatService chatService;
+    private final ChatGameService chatGameService;
 
-    public TimerCommand(TelegramApiClient telegramApiClient, ChatService chatService) {
+    public TimerCommand(TelegramApiClient telegramApiClient, ChatGameService chatGameService) {
         super(telegramApiClient);
-        this.chatService = chatService;
+        this.chatGameService = chatGameService;
     }
 
     public TimerCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService) {
+            ChatGameService chatGameService) {
         super(telegramApiClientSupplier);
-        this.chatService = chatService;
+        this.chatGameService = chatGameService;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class TimerCommand extends ChatCommand {
                         ctx.getChatId(), ParseMode.HTML));
             }
         }
-        chatService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
+        chatGameService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
         getTelegramApiClient().sendMessage(new Message(
                 Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>",
                 ctx
@@ -73,7 +73,7 @@ public class TimerCommand extends ChatCommand {
     }
 
     private void resetTimer(CommandContext ctx) {
-        chatService.clearTimer(ctx.getChatId());
+        chatGameService.clearTimer(ctx.getChatId());
         getTelegramApiClient().sendMessage(
                 new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>",
                         ctx.getChatId(),

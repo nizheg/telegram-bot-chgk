@@ -12,6 +12,7 @@ import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.RatingHelper;
@@ -19,23 +20,24 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class AnswerCommand extends ChatGameCommand {
 
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final AnswerSender answerSender;
     private final RatingHelper ratingHelper;
 
     public AnswerCommand(
             TelegramApiClient telegramApiClient,
             ChatService chatService,
+            ChatGameService chatGameService,
             AnswerSender answerSender,
             RatingHelper ratingHelper) {
         super(telegramApiClient);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.answerSender = answerSender;
         this.ratingHelper = ratingHelper;
     }
@@ -43,10 +45,12 @@ public class AnswerCommand extends ChatGameCommand {
     public AnswerCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
             ChatService chatService,
+            ChatGameService chatGameService,
             AnswerSender answerSender,
             RatingHelper ratingHelper) {
         super(telegramApiClientSupplier);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.answerSender = answerSender;
         this.ratingHelper = ratingHelper;
     }
@@ -54,6 +58,11 @@ public class AnswerCommand extends ChatGameCommand {
     @Override
     protected ChatService getChatService() {
         return chatService;
+    }
+
+    @Override
+    protected ChatGameService getChatGameService() {
+        return chatGameService;
     }
 
     @Override

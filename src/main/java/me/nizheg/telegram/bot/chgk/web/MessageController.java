@@ -15,8 +15,7 @@ import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.BroadcastSender;
-import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.bot.chgk.service.TaskService;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 
@@ -31,7 +30,7 @@ public class MessageController {
     private static final String RECEIVER_ME = "me";
     private final BroadcastSender broadcastSender;
     private final TelegramUserService telegramUserService;
-    private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final TelegramApiClient telegramApiClient;
     private final TaskSender taskSender;
 
@@ -41,13 +40,12 @@ public class MessageController {
     public MessageController(
             BroadcastSender broadcastSender,
             TelegramUserService telegramUserService,
-            TaskService taskService,
-            ChatService chatService,
+            ChatGameService chatGameService,
             TelegramApiClient telegramApiClient,
             TaskSender taskSender) {
         this.broadcastSender = broadcastSender;
         this.telegramUserService = telegramUserService;
-        this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.telegramApiClient = telegramApiClient;
         this.taskSender = taskSender;
     }
@@ -63,7 +61,7 @@ public class MessageController {
                     }
                     Long taskId = message.getTaskId();
                     if (taskId != null) {
-                        Task currentTask = chatService.getGame(new Chat(telegramUser.getId(), true))
+                        Task currentTask = chatGameService.getGame(new Chat(telegramUser.getId(), true))
                                 .setCurrentTask(taskId);
                         taskSender.sendTaskText(currentTask, telegramUser.getId());
                     } else {

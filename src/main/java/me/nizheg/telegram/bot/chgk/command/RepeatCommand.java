@@ -9,6 +9,7 @@ import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
@@ -23,25 +24,32 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 public class RepeatCommand extends ChatGameCommand {
 
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final TaskSender taskSender;
     private final WarningSender warningSender;
 
     public RepeatCommand(
             TelegramApiClient telegramApiClient,
             ChatService chatService,
+            ChatGameService chatGameService,
             TaskSender taskSender,
             WarningSender warningSender) {
         super(telegramApiClient);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.warningSender = warningSender;
     }
 
     public RepeatCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService, TaskSender taskSender, WarningSender warningSender) {
+            ChatService chatService,
+            ChatGameService chatGameService,
+            TaskSender taskSender,
+            WarningSender warningSender) {
         super(telegramApiClientSupplier);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.warningSender = warningSender;
     }
@@ -49,6 +57,11 @@ public class RepeatCommand extends ChatGameCommand {
     @Override
     protected ChatService getChatService() {
         return chatService;
+    }
+
+    @Override
+    protected ChatGameService getChatGameService() {
+        return chatGameService;
     }
 
     @Override

@@ -200,4 +200,9 @@ public class TaskServiceImpl implements TaskService {
     public UsageStat getUsageStatForChatByTournament(long chatId, Tournament tournament) {
         return taskDao.getUsageStatForChatByTournament(chatId, tournament.getId());
     }
+
+    @Override
+    public LightTask getLastUsedTask(long chatId) {
+        return taskDao.getLastUsedTask(chatId);
+    }
 }

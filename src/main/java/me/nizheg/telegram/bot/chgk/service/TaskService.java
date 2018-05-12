@@ -56,4 +56,6 @@ public interface TaskService {
     UsageStat getUsageStatForChat(long chatId, Category category);
 
     UsageStat getUsageStatForChatByTournament(long chatId, Tournament tournament);
+
+    LightTask getLastUsedTask(long chatId);
 }

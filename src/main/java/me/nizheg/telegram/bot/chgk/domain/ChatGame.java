@@ -2,9 +2,6 @@ package me.nizheg.telegram.bot.chgk.domain;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
@@ -27,7 +24,6 @@ import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.IllegalIdException;
 import me.nizheg.telegram.bot.chgk.exception.TooOftenCallingException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
-import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.Properties;
@@ -40,8 +36,6 @@ import me.nizheg.telegram.bot.service.PropertyService;
 /**
  * @author Nikolay Zhegalin
  */
-@Component("chatGame")
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class ChatGame {
 
     private final static int SECOND = 1000;
@@ -52,39 +46,37 @@ public class ChatGame {
     private Category category;
     private Tournament currentTournament;
     private final PropertyService propertyService;
-    private final TaskDao taskDao;
     private final CategoryService categoryService;
     private final TourService tourService;
     private final TaskService taskService;
     private final AnswerLogService answerLogService;
-    private final BotInfo botInfo;
     private final TelegramUserService telegramUserService;
+    private final BotInfo botInfo;
 
     public ChatGame(
             Chat chat,
             PropertyService propertyService,
-            TaskDao taskDao,
             CategoryService categoryService,
             TourService tourService,
             TaskService taskService,
             AnswerLogService answerLogService,
-            BotInfo botInfo, TelegramUserService telegramUserService) {
+            TelegramUserService telegramUserService,
+            BotInfo botInfo) {
+        Validate.notNull(chat);
         this.propertyService = propertyService;
-        this.taskDao = taskDao;
         this.categoryService = categoryService;
         this.tourService = tourService;
         this.taskService = taskService;
         this.answerLogService = answerLogService;
-        this.botInfo = botInfo;
         this.telegramUserService = telegramUserService;
-        Validate.notNull(chat);
+        this.botInfo = botInfo;
         this.chat = chat;
     }
 
     @PostConstruct
     public synchronized void init() {
         long chatId = getChatId();
-        LightTask lightTask = taskDao.getLastUsedTask(chatId);
+        LightTask lightTask = taskService.getLastUsedTask(chatId);
         if (lightTask == null || NULL_TASK_ID == lightTask.getId()) {
             this.currentTask = null;
         } else {

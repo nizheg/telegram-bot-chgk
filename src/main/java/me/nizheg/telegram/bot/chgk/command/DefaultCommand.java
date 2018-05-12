@@ -24,6 +24,7 @@ import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
@@ -44,6 +45,7 @@ import me.nizheg.telegram.util.Emoji;
 public class DefaultCommand extends ChatCommand {
 
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final TaskSender taskSender;
     private final TelegramUserService telegramUserService;
     private final RatingHelper ratingHelper;
@@ -52,12 +54,14 @@ public class DefaultCommand extends ChatCommand {
     public DefaultCommand(
             TelegramApiClient telegramApiClient,
             ChatService chatService,
+            ChatGameService chatGameService,
             TaskSender taskSender,
             TelegramUserService telegramUserService,
             RatingHelper ratingHelper,
             BotInfo botInfo) {
         super(telegramApiClient);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.telegramUserService = telegramUserService;
         this.ratingHelper = ratingHelper;
@@ -67,12 +71,14 @@ public class DefaultCommand extends ChatCommand {
     public DefaultCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
             ChatService chatService,
+            ChatGameService chatGameService,
             TaskSender taskSender,
             TelegramUserService telegramUserService,
             RatingHelper ratingHelper,
             BotInfo botInfo) {
         super(telegramApiClientSupplier);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.telegramUserService = telegramUserService;
         this.ratingHelper = ratingHelper;
@@ -89,7 +95,7 @@ public class DefaultCommand extends ChatCommand {
         boolean isChatActive = chatService.isChatActive(chatId);
         ChatGame chatGame = null;
         if (isChatActive) {
-            chatGame = chatService.getGame(new Chat(ctx.getChat()));
+            chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
         }
         if (chatGame == null) {
             return;

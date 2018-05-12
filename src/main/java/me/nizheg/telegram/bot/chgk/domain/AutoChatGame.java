@@ -2,10 +2,7 @@ package me.nizheg.telegram.bot.chgk.domain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -19,14 +16,19 @@ import me.nizheg.telegram.bot.chgk.dto.ScheduledOperation;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
+import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
+import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
+import me.nizheg.telegram.bot.chgk.service.TaskService;
+import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
+import me.nizheg.telegram.bot.chgk.service.TourService;
+import me.nizheg.telegram.bot.chgk.util.BotInfo;
+import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.util.Emoji;
 
 /**
  * @author Nikolay Zhegalin
  */
-@Component("autoChatGame")
-@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class AutoChatGame extends ChatGame {
 
     private final static String OPERATION_ID_NEXT_TASK = "NextTask";
@@ -52,12 +54,19 @@ public class AutoChatGame extends ChatGame {
     public AutoChatGame(
             Chat chat,
             int timeout,
+            PropertyService propertyService,
+            CategoryService categoryService,
+            TourService tourService,
+            TaskService taskService,
+            AnswerLogService answerLogService,
+            BotInfo botInfo,
+            TelegramUserService telegramUserService,
             TaskScheduler taskScheduler,
             NextTaskOperation nextTaskOperation,
             WarningOperation warningOperation,
             ScheduledOperationService scheduledOperationService) {
-        super(chat, propertyService, taskDao, categoryService, tourService, taskService, answerLogService, botInfo,
-                telegramUserService);
+        super(chat, propertyService, categoryService, tourService, taskService, answerLogService, telegramUserService,
+                botInfo);
         this.timeout = timeout;
         this.taskScheduler = taskScheduler;
         this.nextTaskOperation = nextTaskOperation;

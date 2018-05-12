@@ -11,6 +11,7 @@ import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.command.CommandContext;
@@ -22,28 +23,39 @@ import me.nizheg.telegram.bot.command.CommandException;
 public class HintCommand extends ChatGameCommand {
 
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final AnswerSender answerSender;
 
     public HintCommand(
             TelegramApiClient telegramApiClient,
             ChatService chatService,
+            ChatGameService chatGameService,
             AnswerSender answerSender) {
         super(telegramApiClient);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.answerSender = answerSender;
     }
 
     public HintCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService, AnswerSender answerSender) {
+            ChatService chatService,
+            ChatGameService chatGameService,
+            AnswerSender answerSender) {
         super(telegramApiClientSupplier);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.answerSender = answerSender;
     }
 
     @Override
     protected ChatService getChatService() {
         return chatService;
+    }
+
+    @Override
+    protected ChatGameService getChatGameService() {
+        return chatGameService;
     }
 
     @Override

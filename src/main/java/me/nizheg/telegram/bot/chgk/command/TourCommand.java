@@ -14,6 +14,7 @@ import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.exception.IllegalIdException;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
@@ -28,28 +29,39 @@ public class TourCommand extends ChatGameCommand {
     private static final String COMMAND_FORMAT = "tour_?([0-9]+)?";
     private static final Pattern COMMAND_PATTERN = Pattern.compile(COMMAND_FORMAT);
     private final ChatService chatService;
+    private final ChatGameService chatGameService;
     private final TourList tourList;
 
     public TourCommand(
             TelegramApiClient telegramApiClient,
             ChatService chatService,
+            ChatGameService chatGameService,
             TourList tourList) {
         super(telegramApiClient);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.tourList = tourList;
     }
 
     public TourCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService, TourList tourList) {
+            ChatService chatService,
+            ChatGameService chatGameService,
+            TourList tourList) {
         super(telegramApiClientSupplier);
         this.chatService = chatService;
+        this.chatGameService = chatGameService;
         this.tourList = tourList;
     }
 
     @Override
     protected ChatService getChatService() {
         return chatService;
+    }
+
+    @Override
+    protected ChatGameService getChatGameService() {
+        return chatGameService;
     }
 
     @Override

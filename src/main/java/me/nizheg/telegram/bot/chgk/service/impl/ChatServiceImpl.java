@@ -1,12 +1,10 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -21,10 +19,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
 
-import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
-import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 import me.nizheg.telegram.bot.chgk.dto.ChatMapping;
@@ -52,20 +47,11 @@ public class ChatServiceImpl implements ChatService {
             maxSize = 500;
         }
         MAX_SIZE = maxSize;
-        int concurrencyLevel;
-        try {
-            concurrencyLevel = Integer.parseInt(System.getProperty("chat.cache.connections.count", "40"));
-        } catch (RuntimeException ex) {
-            concurrencyLevel = 40;
-        }
-        CONCURRENCY_LEVEL = concurrencyLevel;
     }
 
     private final static int MAX_SIZE;
-    private final static int CONCURRENCY_LEVEL;
-    private final ConcurrentMap<Long, ChatGame> chats;
-    private final ConcurrentMap<Long, Long> activeChatsCache;
     private final Log logger = LogFactory.getLog(getClass());
+    private final ConcurrentMap<Long, Long> activeChatsCache;
     private final PropertyService propertyService;
     private final ChatDao chatDao;
     private final ChatErrorDao chatErrorDao;
@@ -73,7 +59,6 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMappingDao chatMappingDao;
     private final TaskDao taskDao;
     private TransactionTemplate newTransaction;
-    private final ApplicationContext applicationContext;
 
     public ChatServiceImpl(
             PropertyService propertyService,
@@ -81,36 +66,16 @@ public class ChatServiceImpl implements ChatService {
             ChatErrorDao chatErrorDao,
             AnswerLogDao answerLogDao,
             ChatMappingDao chatMappingDao,
-            TaskDao taskDao,
-            ApplicationContext applicationContext) {
+            TaskDao taskDao) {
         this.propertyService = propertyService;
         this.chatDao = chatDao;
         this.chatErrorDao = chatErrorDao;
         this.answerLogDao = answerLogDao;
         this.chatMappingDao = chatMappingDao;
         this.taskDao = taskDao;
-        this.applicationContext = applicationContext;
-        EvictionListener<Long, ChatGame> evictionListener = (key, chatGame) -> {
-            if (chatGame instanceof AutoChatGame) {
-                ((AutoChatGame) chatGame).pause();
-            }
-        };
-        chats = new ConcurrentLinkedHashMap.Builder<Long, ChatGame>()//
-                .maximumWeightedCapacity(MAX_SIZE) //
-                .concurrencyLevel(CONCURRENCY_LEVEL) //
-                .listener(evictionListener) //
+        activeChatsCache = new ConcurrentLinkedHashMap.Builder<Long, Long>()
+                .maximumWeightedCapacity(MAX_SIZE)
                 .build();
-        activeChatsCache = new ConcurrentLinkedHashMap.Builder<Long, Long>()//
-                .maximumWeightedCapacity(MAX_SIZE) //
-                .build();
-    }
-
-    @PostConstruct
-    public void init() {
-        List<Chat> scheduledChats = chatDao.getChatsWithScheduledOperation();
-        for (Chat scheduledChat : scheduledChats) {
-            putInCache(scheduledChat);
-        }
     }
 
     @Autowired
@@ -162,28 +127,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void setTimer(long chatId, int timeoutSeconds) {
         propertyService.setValueForChat(Properties.CHAT_TIMER, timeoutSeconds, chatId);
-        removeChatFromCache(chatId);
     }
 
     @Override
     public void clearTimer(long chatId) {
         propertyService.setValueForChat(Properties.CHAT_TIMER, (Integer) null, chatId);
-        removeChatFromCache(chatId);
     }
 
     @Override
     public void deactivateChat(long chatId) {
         propertyService.setValueForChat(Properties.CHAT_ACTIVE_KEY, false, chatId);
-        removeChatFromCache(chatId);
         activeChatsCache.remove(chatId);
-    }
-
-    private ChatGame removeChatFromCache(long chatId) {
-        ChatGame removed = chats.remove(chatId);
-        if (removed instanceof AutoChatGame) {
-            ((AutoChatGame) removed).stop();
-        }
-        return removed;
     }
 
     @Override
@@ -212,48 +166,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    @Transactional
-    public ChatGame getGame(final Chat chat) {
-        long start = System.currentTimeMillis();
-        long chatId = chat.getId();
-        ChatGame chatGame = chats.get(chatId);
-        if (chatGame == null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Put in cache chat " + chatId);
-            }
-            try {
-                newTransaction.execute(new TransactionCallbackWithoutResult() {
-                    @Override
-                    protected void doInTransactionWithoutResult(@Nonnull  TransactionStatus transactionStatus) {
-                        createOrUpdate(chat);
-                    }
-                });
-            } catch (DuplicationException ex) {
-                logger.error("Chat is created yet " + chat.getId(), ex);
-            }
-            chatGame = putInCache(chat);
-        }
-        if (logger.isTraceEnabled()) {
-            logger.trace("Get game is executed in " + (System.currentTimeMillis() - start) + " ms for chat " + chatId);
-        }
-        return chatGame;
-    }
-
-    private ChatGame putInCache(Chat chat) {
-        long chatId = chat.getId();
-        ChatGame chatGame = createChatGame(chat);
-        ChatGame previousValue = chats.putIfAbsent(chatId, chatGame);
-        if (previousValue != null) {
-            chatGame = previousValue;
-        }
-        return chatGame;
-    }
-
-    private ChatGame createChatGame(Chat chat) {
-        Integer timeout = propertyService.getIntegerValueForChat(Properties.CHAT_TIMER, chat.getId());
-        if (timeout != null && timeout > 0) {
-            return (AutoChatGame) applicationContext.getBean("autoChatGame", chat, timeout);
-        }
-        return (ChatGame) applicationContext.getBean("chatGame", chat);
+    public List<Chat> getChatsWithScheduledOperation() {
+        return chatDao.getChatsWithScheduledOperation();
     }
 }
