@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -31,8 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 @Configuration
 @ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
-        "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "info.chgk", "me.nizheg.payments"})
-@EnableScheduling()
+        "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
+        "info.chgk", "me.nizheg.payments"})
 //@PropertySource()
 public class AppConfig {
 
@@ -185,7 +184,9 @@ public class AppConfig {
 
     @Bean
     public HelpCommand helpCommand() {
-        return new HelpCommand(telegramApiClient());
+        HelpCommand helpCommand = new HelpCommand(telegramApiClient());
+        helpCommand.setCommandsHolderSupplier(this::commandsHolder);
+        return helpCommand;
     }
 
     @Bean
