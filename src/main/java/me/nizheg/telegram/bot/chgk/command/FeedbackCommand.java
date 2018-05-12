@@ -1,8 +1,11 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -22,16 +25,18 @@ public class FeedbackCommand extends ChatCommand {
     private final FeedbackService feedbackService;
 
     public FeedbackCommand(
-            TelegramApiClient telegramApiClient,
-            FeedbackService feedbackService) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull FeedbackService feedbackService) {
         super(telegramApiClient);
+        Validate.notNull(feedbackService, "feedbackService should be defined");
         this.feedbackService = feedbackService;
     }
 
     public FeedbackCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            FeedbackService feedbackService) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull FeedbackService feedbackService) {
         super(telegramApiClientSupplier);
+        Validate.notNull(feedbackService, "feedbackService should be defined");
         this.feedbackService = feedbackService;
     }
 

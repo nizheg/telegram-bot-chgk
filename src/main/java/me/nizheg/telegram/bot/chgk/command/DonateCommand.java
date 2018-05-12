@@ -1,9 +1,13 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.math.BigDecimal;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.payments.dto.PaymentStatus;
 import me.nizheg.payments.dto.PaymentTransaction;
@@ -35,18 +39,23 @@ public class DonateCommand extends ChatCommand {
     private final BigDecimal minSum = new BigDecimal(10);
 
     public DonateCommand(
-            TelegramApiClient telegramApiClient,
-            PaymentService paymentService,
-            PropertyService propertyService) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull PaymentService paymentService,
+            @Nonnull PropertyService propertyService) {
         super(telegramApiClient);
+        Validate.notNull(paymentService, "paymentService should be defined");
+        Validate.notNull(propertyService, "propertyService should be defined");
         this.paymentService = paymentService;
         this.propertyService = propertyService;
     }
 
     public DonateCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
-            PaymentService paymentService, PropertyService propertyService) {
+            @Nonnull PaymentService paymentService,
+            @Nonnull PropertyService propertyService) {
         super(telegramApiClientSupplier);
+        Validate.notNull(paymentService, "paymentService should be defined");
+        Validate.notNull(propertyService, "propertyService should be defined");
         this.paymentService = paymentService;
         this.propertyService = propertyService;
     }

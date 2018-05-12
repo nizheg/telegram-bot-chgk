@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -38,8 +41,6 @@ import me.nizheg.telegram.bot.service.CommandsHolder;
 import me.nizheg.telegram.util.Emoji;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class DefaultCommand extends ChatCommand {
@@ -52,14 +53,20 @@ public class DefaultCommand extends ChatCommand {
     private final BotInfo botInfo;
 
     public DefaultCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TaskSender taskSender,
-            TelegramUserService telegramUserService,
-            RatingHelper ratingHelper,
-            BotInfo botInfo) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TaskSender taskSender,
+            @Nonnull TelegramUserService telegramUserService,
+            @Nonnull RatingHelper ratingHelper,
+            @Nonnull BotInfo botInfo) {
         super(telegramApiClient);
+        Validate.notNull(chatGameService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(taskSender, "taskSender should be defined");
+        Validate.notNull(telegramUserService, "telegramUserService should be defined");
+        Validate.notNull(ratingHelper, "ratingHelper should be defined");
+        Validate.notNull(botInfo, "botInfo should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
@@ -69,14 +76,20 @@ public class DefaultCommand extends ChatCommand {
     }
 
     public DefaultCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TaskSender taskSender,
-            TelegramUserService telegramUserService,
-            RatingHelper ratingHelper,
-            BotInfo botInfo) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TaskSender taskSender,
+            @Nonnull TelegramUserService telegramUserService,
+            @Nonnull RatingHelper ratingHelper,
+            @Nonnull BotInfo botInfo) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatGameService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(taskSender, "taskSender should be defined");
+        Validate.notNull(telegramUserService, "telegramUserService should be defined");
+        Validate.notNull(ratingHelper, "ratingHelper should be defined");
+        Validate.notNull(botInfo, "botInfo should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;

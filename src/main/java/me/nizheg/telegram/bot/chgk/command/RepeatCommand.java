@@ -1,6 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -29,12 +33,16 @@ public class RepeatCommand extends ChatGameCommand {
     private final WarningSender warningSender;
 
     public RepeatCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TaskSender taskSender,
-            WarningSender warningSender) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TaskSender taskSender,
+            @Nonnull WarningSender warningSender) {
         super(telegramApiClient);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(taskSender, "taskSender should be defined");
+        Validate.notNull(warningSender, "warningSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
@@ -42,12 +50,16 @@ public class RepeatCommand extends ChatGameCommand {
     }
 
     public RepeatCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TaskSender taskSender,
-            WarningSender warningSender) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TaskSender taskSender,
+            @Nonnull WarningSender warningSender) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(taskSender, "taskSender should be defined");
+        Validate.notNull(warningSender, "warningSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;

@@ -2,6 +2,8 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 
 /**
@@ -9,11 +11,11 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
  */
 public class HelpCommand extends me.nizheg.telegram.bot.command.HelpCommand {
 
-    public HelpCommand(TelegramApiClient telegramApiClient) {
+    public HelpCommand(@Nonnull TelegramApiClient telegramApiClient) {
         super(telegramApiClient);
     }
 
-    public HelpCommand(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+    public HelpCommand(@Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier) {
         super(telegramApiClientSupplier);
     }
 

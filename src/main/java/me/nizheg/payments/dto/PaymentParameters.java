@@ -11,7 +11,7 @@ public class PaymentParameters implements Serializable {
     private BigDecimal sum;
     private String transactionId;
 
-    public PaymentParameters(Long telegramUserId, BigDecimal sum) {
+    public PaymentParameters(long telegramUserId, BigDecimal sum) {
         this.telegramUserId = telegramUserId;
         this.sum = sum;
     }

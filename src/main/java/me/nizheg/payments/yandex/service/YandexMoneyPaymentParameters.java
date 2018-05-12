@@ -1,10 +1,10 @@
 package me.nizheg.payments.yandex.service;
 
+import java.math.BigDecimal;
+
 import me.nizheg.payments.dto.PaymentParameters;
 import me.nizheg.payments.yandex.model.YandexMoneyPayForm;
 import me.nizheg.payments.yandex.model.YandexMoneyPaymentType;
-
-import java.math.BigDecimal;
 
 /**
  * @author Nikolay Zhegalin
@@ -15,7 +15,7 @@ public class YandexMoneyPaymentParameters extends PaymentParameters {
     private String targets;
     private YandexMoneyPaymentType[] paymentTypes;
 
-    public YandexMoneyPaymentParameters(Long telegramUserId, BigDecimal sum) {
+    public YandexMoneyPaymentParameters(long telegramUserId, BigDecimal sum) {
         super(telegramUserId, sum);
     }
 

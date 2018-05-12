@@ -1,9 +1,13 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -30,12 +34,16 @@ public class AnswerCommand extends ChatGameCommand {
     private final RatingHelper ratingHelper;
 
     public AnswerCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            AnswerSender answerSender,
-            RatingHelper ratingHelper) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull AnswerSender answerSender,
+            @Nonnull RatingHelper ratingHelper) {
         super(telegramApiClient);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(answerSender, "answerSender should be defined");
+        Validate.notNull(ratingHelper, "ratingHelper should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;
@@ -43,12 +51,16 @@ public class AnswerCommand extends ChatGameCommand {
     }
 
     public AnswerCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            AnswerSender answerSender,
-            RatingHelper ratingHelper) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull AnswerSender answerSender,
+            @Nonnull RatingHelper ratingHelper) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(answerSender, "answerSender should be defined");
+        Validate.notNull(ratingHelper, "ratingHelper should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;

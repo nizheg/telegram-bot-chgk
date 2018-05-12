@@ -2,6 +2,8 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
@@ -18,11 +20,11 @@ import me.nizheg.telegram.bot.command.CommandException;
  */
 public abstract class ChatGameCommand extends ChatCommand {
 
-    public ChatGameCommand(TelegramApiClient telegramApiClient) {
+    public ChatGameCommand(@Nonnull TelegramApiClient telegramApiClient) {
         super(telegramApiClient);
     }
 
-    public ChatGameCommand(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+    public ChatGameCommand(@Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier) {
         super(telegramApiClientSupplier);
     }
 

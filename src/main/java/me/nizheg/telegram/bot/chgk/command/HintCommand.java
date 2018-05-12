@@ -1,6 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -27,22 +31,28 @@ public class HintCommand extends ChatGameCommand {
     private final AnswerSender answerSender;
 
     public HintCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            AnswerSender answerSender) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull AnswerSender answerSender) {
         super(telegramApiClient);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(answerSender, "answerSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;
     }
 
     public HintCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            AnswerSender answerSender) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull AnswerSender answerSender) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(answerSender, "answerSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;

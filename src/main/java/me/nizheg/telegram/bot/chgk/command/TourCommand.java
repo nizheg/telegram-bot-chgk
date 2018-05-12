@@ -1,9 +1,12 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -33,22 +36,28 @@ public class TourCommand extends ChatGameCommand {
     private final TourList tourList;
 
     public TourCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TourList tourList) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TourList tourList) {
         super(telegramApiClient);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(tourList, "tourList should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.tourList = tourList;
     }
 
     public TourCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService,
-            ChatGameService chatGameService,
-            TourList tourList) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService,
+            @Nonnull ChatGameService chatGameService,
+            @Nonnull TourList tourList) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(chatGameService, "chatGameService should be defined");
+        Validate.notNull(tourList, "tourList should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.tourList = tourList;

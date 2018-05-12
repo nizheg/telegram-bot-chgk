@@ -1,5 +1,6 @@
 package me.nizheg.payments.repository.impl;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.payments.dto.PaymentStatus;
@@ -29,7 +31,8 @@ public class JdbcPaymentDao implements PaymentDao {
     private final SimpleJdbcInsert paymentTransactionInsert;
     private final PaymentTransactionMapper paymentTransactionMapper = new PaymentTransactionMapper();
 
-    public JdbcPaymentDao(DataSource dataSource) {
+    public JdbcPaymentDao(@Nonnull DataSource dataSource) {
+        Validate.notNull(dataSource, "dataSource should be defined");
         this.template = new JdbcTemplate(dataSource);
         this.paymentTransactionInsert = new SimpleJdbcInsert(dataSource).withTableName("payment").usingGeneratedKeyColumns("id");
     }

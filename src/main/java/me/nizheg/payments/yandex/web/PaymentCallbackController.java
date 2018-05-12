@@ -1,6 +1,7 @@
 package me.nizheg.payments.yandex.web;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.math.BigDecimal;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.payments.yandex.model.PaymentCallback;
 import me.nizheg.payments.yandex.service.YandexPaymentCallbackService;
@@ -21,7 +24,8 @@ public class PaymentCallbackController {
 
     private final YandexPaymentCallbackService yandexPaymentCallbackService;
 
-    public PaymentCallbackController(YandexPaymentCallbackService yandexPaymentCallbackService) {
+    public PaymentCallbackController(@Nonnull YandexPaymentCallbackService yandexPaymentCallbackService) {
+        Validate.notNull(yandexPaymentCallbackService, "yandexPaymentCallbackService should be defined");
         this.yandexPaymentCallbackService = yandexPaymentCallbackService;
     }
 

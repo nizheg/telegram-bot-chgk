@@ -1,7 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -19,16 +22,18 @@ public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
     private final ChatGameService chatGameService;
 
     public ClearCurrentTaskAndSendNextCommand(
-            TelegramApiClient telegramApiClient,
-            ChatGameService chatGameService) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatGameService chatGameService) {
         super(telegramApiClient);
+        Validate.notNull(chatGameService, "chatGameService should be defined");
         this.chatGameService = chatGameService;
     }
 
     public ClearCurrentTaskAndSendNextCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatGameService chatGameService) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatGameService chatGameService) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatGameService, "chatGameService should be defined");
         this.chatGameService = chatGameService;
     }
 

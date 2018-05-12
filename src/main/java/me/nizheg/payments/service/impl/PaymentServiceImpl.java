@@ -1,7 +1,10 @@
 package me.nizheg.payments.service.impl;
 
+import org.jsoup.helper.Validate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.payments.dto.PaymentParameters;
 import me.nizheg.payments.dto.PaymentStatus;
@@ -18,7 +21,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentDao paymentDao;
 
-    public PaymentServiceImpl(PaymentDao paymentDao) {this.paymentDao = paymentDao;}
+    public PaymentServiceImpl(@Nonnull PaymentDao paymentDao) {
+        Validate.notNull(paymentDao, "paymentDao should be defined");
+        this.paymentDao = paymentDao;
+    }
 
     @Override
     @Transactional

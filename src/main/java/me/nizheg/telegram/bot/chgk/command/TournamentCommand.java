@@ -1,6 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
@@ -22,17 +26,22 @@ public class TournamentCommand extends ChatCommand {
     private final TourList tourList;
 
     public TournamentCommand(
-            TelegramApiClient telegramApiClient,
-            ChatService chatService, TourList tourList) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService,
+            TourList tourList) {
         super(telegramApiClient);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(tourList, "tourList should be defined");
         this.chatService = chatService;
         this.tourList = tourList;
     }
 
     public TournamentCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            ChatService chatService, TourList tourList) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull ChatService chatService, TourList tourList) {
         super(telegramApiClientSupplier);
+        Validate.notNull(chatService, "chatService should be defined");
+        Validate.notNull(tourList, "tourList should be defined");
         this.chatService = chatService;
         this.tourList = tourList;
     }
@@ -42,10 +51,11 @@ public class TournamentCommand extends ChatCommand {
         if (!chatService.isChatActive(ctx.getChatId())) {
             return;
         }
-        int page = 0;
+        int page;
         try {
             page = Integer.valueOf(ctx.getText());
         } catch (NumberFormatException ex) {
+            page = 0;
         }
         Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), page);
         if (ctx.getReplyToBotMessage() != null) {

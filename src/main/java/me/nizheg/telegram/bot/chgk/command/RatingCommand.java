@@ -1,11 +1,13 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -25,16 +27,18 @@ public class RatingCommand extends ChatCommand {
     private final TaskRatingService taskRatingService;
 
     public RatingCommand(
-            TelegramApiClient telegramApiClient,
-            TaskRatingService taskRatingService) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull TaskRatingService taskRatingService) {
         super(telegramApiClient);
+        Validate.notNull(taskRatingService, "taskRatingService should be defined");
         this.taskRatingService = taskRatingService;
     }
 
     public RatingCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            TaskRatingService taskRatingService) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull TaskRatingService taskRatingService) {
         super(telegramApiClientSupplier);
+        Validate.notNull(taskRatingService, "taskRatingService should be defined");
         this.taskRatingService = taskRatingService;
     }
 

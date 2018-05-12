@@ -1,10 +1,12 @@
 package me.nizheg.payments.yandex.service;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 
 import me.nizheg.payments.dto.PaymentStatus;
@@ -24,8 +26,10 @@ public class YandexPaymentCallbackService {
     private final Log logger = LogFactory.getLog(getClass());
 
     public YandexPaymentCallbackService(
-            PropertyService propertyService,
-            PaymentService paymentService) {
+            @Nonnull PropertyService propertyService,
+            @Nonnull PaymentService paymentService) {
+        Validate.notNull(propertyService, "propertyService should be defined");
+        Validate.notNull(paymentService, "paymentService should be defined");
         this.propertyService = propertyService;
         this.paymentService = paymentService;
     }

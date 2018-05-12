@@ -1,10 +1,13 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -33,17 +36,23 @@ public class StatCommand extends ChatCommand {
     private final BotInfo botInfo;
 
     public StatCommand(
-            TelegramApiClient telegramApiClient,
-            AnswerLogService answerLogService, BotInfo botInfo) {
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull AnswerLogService answerLogService,
+            @Nonnull BotInfo botInfo) {
         super(telegramApiClient);
+        Validate.notNull(answerLogService, "answerLogService should be defined");
+        Validate.notNull(botInfo, "botInfo should be defined");
         this.answerLogService = answerLogService;
         this.botInfo = botInfo;
     }
 
     public StatCommand(
-            Supplier<TelegramApiClient> telegramApiClientSupplier,
-            AnswerLogService answerLogService, BotInfo botInfo) {
+            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Nonnull AnswerLogService answerLogService,
+            @Nonnull BotInfo botInfo) {
         super(telegramApiClientSupplier);
+        Validate.notNull(answerLogService, "answerLogService should be defined");
+        Validate.notNull(botInfo, "botInfo should be defined");
         this.answerLogService = answerLogService;
         this.botInfo = botInfo;
     }
