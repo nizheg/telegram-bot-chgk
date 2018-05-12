@@ -1,24 +1,23 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
-import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
-import me.nizheg.telegram.bot.chgk.repository.TelegramUserDao;
-import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
+import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
+import me.nizheg.telegram.bot.chgk.repository.TelegramUserDao;
+import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
+
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class TelegramUserServiceImpl implements TelegramUserService {
-    private Log logger = LogFactory.getLog(getClass());
+
+    private final Log logger = LogFactory.getLog(getClass());
     @Autowired
     private TelegramUserDao telegramUserDao;
 

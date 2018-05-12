@@ -1,7 +1,7 @@
 package me.nizheg.telegram.bot.chgk.dto;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -13,7 +13,7 @@ public class BroadcastStatus {
     private volatile int totalCount;
     private volatile int finished;
 
-    public static enum Status {
+    public enum Status {
         NOT_STARTED, REJECTED, IN_PROCESS, FINISHED, CANCELLED
     }
 

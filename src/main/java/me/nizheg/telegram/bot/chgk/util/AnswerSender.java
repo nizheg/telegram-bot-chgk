@@ -1,13 +1,13 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Nikolay Zhegalin
@@ -25,7 +25,7 @@ public class AnswerSender {
         List<Answer> answers = task.getAnswers();
         if (!answers.isEmpty()) {
             for (Answer answer : answers) {
-                resultBuilder.append(answer.getText() + "/");
+                resultBuilder.append(answer.getText()).append("/");
             }
         }
         if (resultBuilder.length() > 0) {

@@ -43,8 +43,7 @@ public class JdbcPaymentDao implements PaymentDao {
             parameters.put("status", paymentTransaction.getStatus().name());
         }
         parameters.put("result", paymentTransaction.getResult());
-        long id = paymentTransactionInsert.executeAndReturnKey(parameters).longValue();
-        return id;
+        return paymentTransactionInsert.executeAndReturnKey(parameters).longValue();
     }
 
     @Override

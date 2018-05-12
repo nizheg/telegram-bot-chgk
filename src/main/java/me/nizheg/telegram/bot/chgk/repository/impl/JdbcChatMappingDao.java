@@ -14,7 +14,7 @@ import me.nizheg.telegram.bot.chgk.dto.ChatMapping;
 import me.nizheg.telegram.bot.chgk.repository.ChatMappingDao;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

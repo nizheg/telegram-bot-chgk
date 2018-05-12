@@ -1,7 +1,6 @@
 package me.nizheg.payments.yandex.model;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * @author Nikolay Zhegalin

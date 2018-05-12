@@ -11,7 +11,7 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

@@ -6,7 +6,7 @@ import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

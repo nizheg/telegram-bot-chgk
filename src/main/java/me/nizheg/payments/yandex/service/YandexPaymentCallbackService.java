@@ -1,17 +1,17 @@
 package me.nizheg.payments.yandex.service;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import javax.annotation.PostConstruct;
 
 import me.nizheg.payments.dto.PaymentStatus;
 import me.nizheg.payments.service.PaymentService;
 import me.nizheg.payments.yandex.model.PaymentCallback;
 import me.nizheg.telegram.bot.service.PropertyService;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Nikolay Zhegalin
@@ -23,7 +23,7 @@ public class YandexPaymentCallbackService {
     @Autowired
     private PaymentService paymentService;
     private String secret;
-    private Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     @PostConstruct
     public void init() {

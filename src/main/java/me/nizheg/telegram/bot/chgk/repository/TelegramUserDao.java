@@ -4,7 +4,7 @@ import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

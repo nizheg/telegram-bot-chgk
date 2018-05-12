@@ -1,15 +1,16 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.Answer;
-import me.nizheg.telegram.bot.chgk.repository.AnswerDao;
-import me.nizheg.telegram.bot.chgk.service.AnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.dto.Answer;
+import me.nizheg.telegram.bot.chgk.repository.AnswerDao;
+import me.nizheg.telegram.bot.chgk.service.AnswerService;
+
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

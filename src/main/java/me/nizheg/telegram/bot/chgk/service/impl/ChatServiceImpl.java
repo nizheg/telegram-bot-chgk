@@ -1,9 +1,26 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EvictionListener;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
@@ -21,24 +38,8 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.service.PropertyService;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.EvictionListener;
-
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -83,12 +84,9 @@ public class ChatServiceImpl implements ChatService {
     private ApplicationContext applicationContext;
 
     public ChatServiceImpl() {
-        EvictionListener<Long, ChatGame> evictionListener = new EvictionListener<Long, ChatGame>() {
-            @Override
-            public void onEviction(Long key, ChatGame chatGame) {
-                if (chatGame instanceof AutoChatGame) {
-                    ((AutoChatGame) chatGame).pause();
-                }
+        EvictionListener<Long, ChatGame> evictionListener = (key, chatGame) -> {
+            if (chatGame instanceof AutoChatGame) {
+                ((AutoChatGame) chatGame).pause();
             }
         };
         chats = new ConcurrentLinkedHashMap.Builder<Long, ChatGame>()//
@@ -142,7 +140,7 @@ public class ChatServiceImpl implements ChatService {
             return true;
         }
         Boolean value = propertyService.getBooleanValueForChat(Properties.CHAT_ACTIVE_KEY, chatId);
-        isActive = value == null ? false : value.booleanValue();
+        isActive = value != null && value;
         if (isActive) {
             activeChatsCache.put(chatId, chatId);
         }
@@ -195,7 +193,7 @@ public class ChatServiceImpl implements ChatService {
     public void handleGroupToSuperGroupConverting(final Long groupId, final Long superGroupId) {
         newTransaction.execute(new TransactionCallbackWithoutResult() {
             @Override
-            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+            protected void doInTransactionWithoutResult(@Nonnull TransactionStatus transactionStatus) {
                 ChatMapping chatMapping = new ChatMapping();
                 chatMapping.setGroupId(groupId);
                 chatMapping.setSuperGroupId(superGroupId);
@@ -247,9 +245,8 @@ public class ChatServiceImpl implements ChatService {
 
     private ChatGame createChatGame(Chat chat) {
         Integer timeout = propertyService.getIntegerValueForChat(Properties.CHAT_TIMER, chat.getId());
-        if (timeout != null && timeout.intValue() > 0) {
-            AutoChatGame autoChatGame = (AutoChatGame) applicationContext.getBean("autoChatGame", chat, timeout);
-            return autoChatGame;
+        if (timeout != null && timeout > 0) {
+            return (AutoChatGame) applicationContext.getBean("autoChatGame", chat, timeout);
         }
         return (ChatGame) applicationContext.getBean("chatGame", chat);
     }

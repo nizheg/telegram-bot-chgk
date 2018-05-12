@@ -8,7 +8,7 @@ import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

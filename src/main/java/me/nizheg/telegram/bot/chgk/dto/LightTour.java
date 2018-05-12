@@ -25,6 +25,8 @@ public class LightTour implements Serializable {
         setId(lightTour.getId());
         setParentTourId(lightTour.getParentTourId());
         setTitle(lightTour.getTitle());
+        setNumber(lightTour.getNumber());
+        setPlayedAt(lightTour.getPlayedAt());
         setStatus(lightTour.getStatus());
         setType(lightTour.getType());
     }
@@ -85,11 +87,11 @@ public class LightTour implements Serializable {
         this.type = type;
     }
 
-    public static enum Status {
+    public enum Status {
         NEW, PUBLISHED, DELETED
     }
 
-    public static enum Type {
+    public enum Type {
         TOUR, TOURNAMENT, TOURNAMENT_GROUP
     }
 }

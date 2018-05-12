@@ -9,5 +9,5 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 public interface NextTaskOperation {
     void sendNextTask(ChatGame chatGame);
 
-    public void sendAnswerOfPreviousTask(Chat chat, Task task);
+    void sendAnswerOfPreviousTask(Chat chat, Task task);
 }

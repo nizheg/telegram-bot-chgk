@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.web;
 
-import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
@@ -13,8 +12,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.sql.SQLException;
 
+import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
+
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -23,7 +24,7 @@ import java.sql.SQLException;
 @ResponseBody
 public class ExceptionHandlerController {
 
-    private Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     @ResponseStatus(value = HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicationException.class)

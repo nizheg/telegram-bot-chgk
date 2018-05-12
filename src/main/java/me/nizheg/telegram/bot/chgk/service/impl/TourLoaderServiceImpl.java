@@ -1,5 +1,9 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -7,21 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import me.nizheg.telegram.bot.chgk.dto.LightTask;
-import me.nizheg.telegram.bot.chgk.dto.LightTour;
-import me.nizheg.telegram.bot.chgk.service.TourLoaderService;
-import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
-import me.nizheg.telegram.bot.chgk.service.TourService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import info.chgk.db.service.TasksImporter;
 import info.chgk.db.xml.Question;
 import info.chgk.db.xml.Tournament;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import me.nizheg.telegram.bot.chgk.dto.LightTask;
+import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
+import me.nizheg.telegram.bot.chgk.service.TourLoaderService;
+import me.nizheg.telegram.bot.chgk.service.TourService;
 
 /**
  * @author Nikolay Zhegalin
@@ -35,7 +34,7 @@ public class TourLoaderServiceImpl implements TourLoaderService {
     @Autowired
     private TaskLoaderService taskLoaderService;
 
-    private Map<String, LightTour.Type> typesMapping = new HashMap<String, LightTour.Type>();
+    private final Map<String, LightTour.Type> typesMapping = new HashMap<>();
 
     {
         typesMapping.put("Ч", LightTour.Type.TOURNAMENT);
@@ -48,7 +47,7 @@ public class TourLoaderServiceImpl implements TourLoaderService {
     public List<LightTask> loadQuestionsOfTour(String id) {
         Tournament tournament = tasksImporter.importTour(id);
         createTourWithParents(tournament);
-        List<LightTask> loadedTasks = new LinkedList<LightTask>();
+        List<LightTask> loadedTasks = new LinkedList<>();
         if (!tournament.getQuestion().isEmpty()) {
             loadedTasks.addAll(taskLoaderService.loadTour(id));
         } else {
@@ -91,7 +90,7 @@ public class TourLoaderServiceImpl implements TourLoaderService {
             lightTour.setType(type);
             tourService.create(lightTour);
             if (type != null && type == LightTour.Type.TOURNAMENT && !tournament.getQuestion().isEmpty()) {
-                Set<Long> childTourIds = new HashSet<Long>();
+                Set<Long> childTourIds = new HashSet<>();
                 for (Question question : tournament.getQuestion()) {
                     childTourIds.add(question.getParentId());
                 }

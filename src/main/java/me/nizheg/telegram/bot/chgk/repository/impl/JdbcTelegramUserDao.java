@@ -19,7 +19,7 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.TelegramUserDao;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -67,7 +67,7 @@ public class JdbcTelegramUserDao implements TelegramUserDao {
 
     @Override
     public TelegramUser create(TelegramUser telegramUser) throws DuplicationException {
-        Map<String, Object> parameters = new HashMap<String, Object>(4);
+        Map<String, Object> parameters = new HashMap<>(4);
         parameters.put("username", telegramUser.getUsername());
         parameters.put("firstname", telegramUser.getFirstname());
         parameters.put("lastname", telegramUser.getLastname());

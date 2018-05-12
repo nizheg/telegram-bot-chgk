@@ -1,5 +1,14 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import com.vk.VkApi;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -12,18 +21,7 @@ import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.service.PropertyService;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.vk.VkApi;
-
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 @Service
@@ -31,7 +29,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private static final int MAX_LENGTH = 2000;
     private static final int MAX_NUMBER_OF_MESSAGES_PER_DAY = 100;
-    private Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
     @Autowired
     private TelegramUserService telegramUserService;
     @Autowired
@@ -46,7 +44,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     public FeedbackResult registerFeedback(TelegramUser telegramUser, String text) {
         telegramUser = telegramUserService.createOrUpdate(telegramUser);
         FeedbackResult feedbackResult = new FeedbackResult();
-        if (feedbackMessageDao.countForUserFromDate(telegramUser.getId(), getStartOfDay()) > MAX_NUMBER_OF_MESSAGES_PER_DAY) {
+        if (feedbackMessageDao.countForUserFromDate(telegramUser.getId(), getStartOfDay())
+                > MAX_NUMBER_OF_MESSAGES_PER_DAY) {
             feedbackResult.setErrorDescription("Слишком много сообщений за день. Попробуйте позднее.");
             return feedbackResult;
         }
@@ -66,7 +65,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         Long vkTopicId = propertyService.getLongValue(Properties.VK_TOPIC_ID);
         if (vkGroupId != null & vkTopicId != null) {
             String link =
-                    vkApi.createCommentOnBoard(vkGroupId, vkTopicId, "Сообщение от " + telegramUser.getFirstname() + ":\n" + feedbackMessage.getMessage(), true);
+                    vkApi.createCommentOnBoard(vkGroupId, vkTopicId,
+                            "Сообщение от " + telegramUser.getFirstname() + ":\n" + feedbackMessage.getMessage(), true);
             feedbackResult.setLink(link);
         }
 

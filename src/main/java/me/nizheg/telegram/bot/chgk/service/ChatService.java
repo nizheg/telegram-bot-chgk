@@ -7,7 +7,7 @@ import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

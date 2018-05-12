@@ -1,5 +1,12 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -9,15 +16,8 @@ import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.service.BroadcastSender;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -29,7 +29,7 @@ public class BroadcastSenderImpl implements BroadcastSender {
     @Autowired
     private ChatService chatService;
 
-    private Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     @Override
     public BroadcastStatus sendMessage(String message) {
@@ -43,59 +43,56 @@ public class BroadcastSenderImpl implements BroadcastSender {
         broadcastStatus.setTotalCount(activeChats.size());
         broadcastStatus.setSendingMessage(sendingMessage);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int tryingCount = 0;
-                for (int i = 0; i < activeChats.size();) {
-                    if (BroadcastStatus.Status.CANCELLED.equals(broadcastStatus.getStatus())) {
-                        logger.info("<<<Broadcast is cancelled. Sent " + i + " of " + broadcastStatus.getTotalCount());
+        new Thread(() -> {
+            int tryingCount = 0;
+            for (int i = 0; i < activeChats.size();) {
+                if (BroadcastStatus.Status.CANCELLED.equals(broadcastStatus.getStatus())) {
+                    logger.info("<<<Broadcast is cancelled. Sent " + i + " of " + broadcastStatus.getTotalCount());
+                    return;
+                }
+                Long chatId = activeChats.get(i);
+                i++;
+                try {
+                    telegramApiClient.sendMessage(new Message(sendingMessage, chatId, null, true));
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        logger.error("interrupted", e);
+                        Thread.interrupted();
                         return;
                     }
-                    Long chatId = activeChats.get(i);
-                    i++;
-                    try {
-                        telegramApiClient.sendMessage(new Message(sendingMessage, chatId, null, true));
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            logger.error("interrupted", e);
-                            Thread.interrupted();
-                            return;
-                        }
-                        tryingCount = 0;
-                    } catch (TelegramApiException ex) {
-                        if (ex.getHttpStatus() != null && ex.getHttpStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
-                            if (tryingCount > 3) {
-                                logger.error("Chat is skipped " + chatId, ex);
-                            } else {
-                                tryingCount++;
-                                i--;
-                                try {
-                                    Thread.sleep(3000);
-                                } catch (InterruptedException e) {
-                                    logger.error("interrupted", e);
-                                    Thread.interrupted();
-                                    return;
-                                }
-                            }
-                        } else if (ex.getHttpStatus() != null
-                                && (ex.getHttpStatus().equals(HttpStatus.FORBIDDEN) || ex.getHttpStatus().equals(HttpStatus.BAD_REQUEST))) {
-                            chatService.deactivateChat(chatId);
+                    tryingCount = 0;
+                } catch (TelegramApiException ex) {
+                    if (ex.getHttpStatus() != null && ex.getHttpStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
+                        if (tryingCount > 3) {
+                            logger.error("Chat is skipped " + chatId, ex);
                         } else {
-                            logger.error("Api exception. Skip chat " + chatId, ex);
+                            tryingCount++;
+                            i--;
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e) {
+                                logger.error("interrupted", e);
+                                Thread.interrupted();
+                                return;
+                            }
                         }
-                    } catch (RuntimeException ex) {
-                        logger.error("Unexpected exception. Skip chat " + chatId, ex);
+                    } else if (ex.getHttpStatus() != null
+                            && (ex.getHttpStatus().equals(HttpStatus.FORBIDDEN) || ex.getHttpStatus().equals(HttpStatus.BAD_REQUEST))) {
+                        chatService.deactivateChat(chatId);
+                    } else {
+                        logger.error("Api exception. Skip chat " + chatId, ex);
                     }
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Broadcast sending is processed for chat " + chatId);
-                    }
-                    broadcastStatus.setFinished(i);
+                } catch (RuntimeException ex) {
+                    logger.error("Unexpected exception. Skip chat " + chatId, ex);
                 }
-                broadcastStatus.setStatus(BroadcastStatus.Status.FINISHED);
-                logger.info("<<<Broadcast is finished");
+                if (logger.isInfoEnabled()) {
+                    logger.info("Broadcast sending is processed for chat " + chatId);
+                }
+                broadcastStatus.setFinished(i);
             }
+            broadcastStatus.setStatus(BroadcastStatus.Status.FINISHED);
+            logger.info("<<<Broadcast is finished");
         }).start();
         return broadcastStatus;
     }

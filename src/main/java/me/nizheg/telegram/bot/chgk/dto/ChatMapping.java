@@ -3,7 +3,7 @@ package me.nizheg.telegram.bot.chgk.dto;
 import java.io.Serializable;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

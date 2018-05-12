@@ -1,6 +1,9 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
 import java.util.List;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -19,9 +22,6 @@ import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Nikolay Zhegalin
@@ -94,7 +94,7 @@ public class NextTaskSender implements NextTaskOperation {
     public void sendAnswerOfPreviousTask(Chat chat, Task task) {
         if (task != null) {
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-            replyMarkup.setInlineKeyboard(Arrays.asList(ratingHelper.createRatingButtons(task.getId())));
+            replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
             answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task, chat.getId(), replyMarkup);
         }
     }

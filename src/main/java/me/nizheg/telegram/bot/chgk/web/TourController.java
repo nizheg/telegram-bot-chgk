@@ -1,10 +1,5 @@
 package me.nizheg.telegram.bot.chgk.web;
 
-import java.util.List;
-
-import me.nizheg.telegram.bot.chgk.dto.LightTour;
-import me.nizheg.telegram.bot.chgk.service.TourService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.service.TourService;
 
 /**
  * @author Nikolay Zhegalin
@@ -29,8 +29,7 @@ public class TourController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public LightTour read(@PathVariable Long id) {
         logger.debug("get tour " + id);
-        LightTour compositeTour = tourService.createCompositeTour(id);
-        return compositeTour;
+        return tourService.createCompositeTour(id);
     }
 
     @RequestMapping(method = RequestMethod.GET)

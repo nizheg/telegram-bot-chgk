@@ -1,11 +1,11 @@
 package me.nizheg.telegram.bot.chgk.repository;
 
-import me.nizheg.telegram.bot.chgk.dto.Property;
-
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.dto.Property;
+
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

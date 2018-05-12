@@ -1,7 +1,7 @@
 package com.vk;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

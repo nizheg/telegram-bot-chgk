@@ -1,7 +1,5 @@
 package me.nizheg.telegram.bot.chgk.web;
 
-import me.nizheg.telegram.bot.chgk.dto.Answer;
-import me.nizheg.telegram.bot.chgk.service.AnswerService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.dto.Answer;
+import me.nizheg.telegram.bot.chgk.service.AnswerService;
+
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

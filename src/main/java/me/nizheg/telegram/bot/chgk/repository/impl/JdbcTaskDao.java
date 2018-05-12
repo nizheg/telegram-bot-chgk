@@ -177,8 +177,7 @@ public class JdbcTaskDao implements TaskDao {
 
     @Override
     public List<LightTask> getByStatus(LightTask.Status status) {
-        List<LightTask> tasks = template.query("select * from task where status = ? order by id", taskMapper, status.name());
-        return tasks;
+        return template.query("select * from task where status = ? order by id", taskMapper, status.name());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.vk.impl;
 
-import java.util.Map;
-import java.util.TreeMap;
+import com.vk.VkApi;
+import com.vk.model.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -9,18 +9,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.client.RestTemplate;
 
-import com.vk.VkApi;
-import com.vk.model.Response;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
 public class VkApiImpl implements VkApi {
 
-    private Log logger = LogFactory.getLog(getClass());
-    private String accessToken;
+    private final Log logger = LogFactory.getLog(getClass());
+    private final String accessToken;
     private static final String API_URL = "https://api.vk.com/method/";
 
     public VkApiImpl(String accessToken) {
@@ -30,7 +30,7 @@ public class VkApiImpl implements VkApi {
 
     @Override
     public String createCommentOnBoard(long groupId, long topicId, String message, boolean isFromGroup) {
-        Map<String, Object> parameters = new TreeMap<String, Object>();
+        Map<String, Object> parameters = new TreeMap<>();
         parameters.put("access_token", accessToken);
         parameters.put("group_id", groupId);
         parameters.put("topic_id", topicId);

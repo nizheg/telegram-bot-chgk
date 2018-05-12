@@ -32,7 +32,7 @@ public class DonateCommand extends ChatCommand {
 
     private final PaymentService paymentService;
     private final PropertyService propertyService;
-    private BigDecimal minSum = new BigDecimal(10);
+    private final BigDecimal minSum = new BigDecimal(10);
 
     public DonateCommand(
             TelegramApiClient telegramApiClient,

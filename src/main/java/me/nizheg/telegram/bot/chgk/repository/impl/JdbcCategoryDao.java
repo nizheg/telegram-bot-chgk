@@ -14,7 +14,7 @@ import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

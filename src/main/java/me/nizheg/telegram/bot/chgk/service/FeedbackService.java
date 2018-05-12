@@ -4,7 +4,7 @@ import me.nizheg.telegram.bot.chgk.dto.FeedbackResult;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

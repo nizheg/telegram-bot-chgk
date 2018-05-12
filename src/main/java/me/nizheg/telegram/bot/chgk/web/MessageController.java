@@ -1,5 +1,12 @@
 package me.nizheg.telegram.bot.chgk.web;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.security.Principal;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -14,21 +21,13 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 @RestController
 @RequestMapping("api/message")
 public class MessageController {
+
     public static final String RECEIVER_ALL = "all";
     private static final String RECEIVER_ME = "me";
     @Autowired
@@ -44,38 +43,43 @@ public class MessageController {
     @Autowired
     private TaskSender taskSender;
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
     private BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.NOT_STARTED);
 
     @RequestMapping(method = RequestMethod.POST)
     public BroadcastStatus send(@RequestBody Message message, Principal principal) {
-        if (message.getReceiver().equals(RECEIVER_ME)) {
-            if (principal != null && StringUtils.isNotBlank(principal.getName())) {
-                TelegramUser telegramUser = telegramUserService.getByUsername(principal.getName());
-                if (telegramUser == null) {
-                    throw new IllegalStateException("Unable to calculate current user chat");
+        switch (message.getReceiver()) {
+            case RECEIVER_ME:
+                if (principal != null && StringUtils.isNotBlank(principal.getName())) {
+                    TelegramUser telegramUser = telegramUserService.getByUsername(principal.getName());
+                    if (telegramUser == null) {
+                        throw new IllegalStateException("Unable to calculate current user chat");
+                    }
+                    Long taskId = message.getTaskId();
+                    if (taskId != null) {
+                        Task currentTask = chatService.getGame(new Chat(telegramUser.getId(), true))
+                                .setCurrentTask(taskId);
+                        taskSender.sendTaskText(currentTask, telegramUser.getId());
+                    } else {
+                        telegramApiClient.sendMessage(
+                                new me.nizheg.telegram.bot.api.service.param.Message(message.getText(),
+                                        telegramUser.getId(), ParseMode.HTML, true));
+                    }
+                    return new BroadcastStatus(BroadcastStatus.Status.FINISHED);
                 }
-                Long taskId = message.getTaskId();
-                if (taskId != null) {
-                    Task currentTask = chatService.getGame(new Chat(telegramUser.getId(), true)).setCurrentTask(taskId);
-                    taskSender.sendTaskText(currentTask, telegramUser.getId());
-                } else {
-                    telegramApiClient.sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(message.getText(), telegramUser.getId(), ParseMode.HTML, true));
+                return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пользователь не определен");
+            case RECEIVER_ALL:
+                synchronized (lock) {
+                    if (BroadcastStatus.Status.IN_PROCESS.equals(broadcastStatus.getStatus())) {
+                        return new BroadcastStatus(BroadcastStatus.Status.REJECTED,
+                                "Предыдущая задача отправки ещё не завершена.");
+                    } else {
+                        broadcastStatus = broadcastSender.sendMessage(message.getText());
+                        return broadcastStatus;
+                    }
                 }
-                return new BroadcastStatus(BroadcastStatus.Status.FINISHED);
-            }
-            return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пользователь не определен");
-        } else if (message.getReceiver().equals(RECEIVER_ALL)) {
-            synchronized (lock) {
-                if (BroadcastStatus.Status.IN_PROCESS.equals(broadcastStatus.getStatus())) {
-                    return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Предыдущая задача отправки ещё не завершена.");
-                } else {
-                    broadcastStatus = broadcastSender.sendMessage(message.getText());
-                    return broadcastStatus;
-                }
-            }
-        } else {
-            throw new UnsupportedOperationException("Not supported now");
+            default:
+                throw new UnsupportedOperationException("Not supported now");
         }
     }
 
@@ -97,6 +101,7 @@ public class MessageController {
     }
 
     public static class Message {
+
         private String receiver;
         private String text;
         private Long taskId;

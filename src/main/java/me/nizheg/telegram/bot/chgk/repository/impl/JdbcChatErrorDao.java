@@ -10,13 +10,14 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 import me.nizheg.telegram.bot.chgk.repository.ChatErrorDao;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -43,7 +44,7 @@ public class JdbcChatErrorDao implements ChatErrorDao {
     private static class ChatErrorMapper implements RowMapper<ChatError> {
 
         @Override
-        public ChatError mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public ChatError mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             ChatError chatError = new ChatError();
             chatError.setChatId(rs.getLong(COLUMN_LABEL_CHAT_ID));
             chatError.setCode(rs.getString(COLUMN_LABEL_CODE));
@@ -55,7 +56,7 @@ public class JdbcChatErrorDao implements ChatErrorDao {
 
     @Override
     public ChatError create(ChatError chatError) {
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put(COLUMN_LABEL_CHAT_ID, chatError.getChatId());
         parameters.put(COLUMN_LABEL_CODE, chatError.getCode());
         parameters.put(COLUMN_LABEL_DESCRIPTION, chatError.getDescription());

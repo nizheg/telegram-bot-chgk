@@ -1,10 +1,19 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import info.chgk.db.service.TasksImporter;
+import info.chgk.db.xml.Question;
+import info.chgk.db.xml.Search;
+import info.chgk.db.xml.Tournament;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
@@ -16,18 +25,8 @@ import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import info.chgk.db.service.TasksImporter;
-import info.chgk.db.xml.Question;
-import info.chgk.db.xml.Search;
-import info.chgk.db.xml.Tournament;
-
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -43,14 +42,13 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
     private AnswerService answerService;
     @Autowired
     private PictureService pictureService;
-    private Pattern pattern = Pattern.compile("(.*)\\[(.*)\\](.*)");
+    private final Pattern pattern = Pattern.compile("(.*)\\[(.*)\\](.*)");
 
     @Override
     @Transactional
     public List<LightTask> loadTasks(int complexity) {
         Search search = tasksImporter.importTasks(complexity);
-        List<LightTask> tasks = loadQuestions(search.getQuestion());
-        return tasks;
+        return loadQuestions(search.getQuestion());
     }
 
     @Override
@@ -58,12 +56,11 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
     public List<LightTask> loadTour(String id) {
         Tournament tournament = tasksImporter.importTour(id);
         List<Question> questions = tournament.getQuestion();
-        List<LightTask> tasks = loadQuestions(questions);
-        return tasks;
+        return loadQuestions(questions);
     }
 
     private List<LightTask> loadQuestions(List<Question> questions) {
-        List<LightTask> tasks = new ArrayList<LightTask>();
+        List<LightTask> tasks = new ArrayList<>();
         for (Question question : questions) {
             if (taskService.isExist(question.getQuestion())) {
                 List<LightTask> foundTasks = taskService.getByText(question.getQuestion());
@@ -148,7 +145,7 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
 
     private void upgradeTaskText(LightTask task) {
         String taskText = task.getText();
-        List<AttachedPicture> attachedPictures = new ArrayList<AttachedPicture>();
+        List<AttachedPicture> attachedPictures = new ArrayList<>();
         taskText = removeRedundantNewlines(taskText);
         taskText = resolveTags(taskText);
         taskText = parseImagesToList(taskText, attachedPictures);
@@ -163,7 +160,7 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
 
     private void upgradeTaskComment(LightTask task) {
         String taskComment = task.getComment();
-        List<AttachedPicture> attachedPictures = new ArrayList<AttachedPicture>();
+        List<AttachedPicture> attachedPictures = new ArrayList<>();
         taskComment = removeRedundantNewlines(taskComment);
         taskComment = resolveTags(taskComment);
         taskComment = parseImagesToList(taskComment, attachedPictures);

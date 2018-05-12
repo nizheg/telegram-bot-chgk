@@ -8,7 +8,7 @@ import info.chgk.db.xml.Search;
 import info.chgk.db.xml.Tournament;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

@@ -1,7 +1,6 @@
 package me.nizheg.payments.service;
 
 import me.nizheg.payments.dto.PaymentParameters;
-import me.nizheg.payments.dto.PaymentTransaction;
 
 /**
  * @author Nikolay Zhegalin

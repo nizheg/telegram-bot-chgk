@@ -3,7 +3,7 @@ package com.vk.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

@@ -1,11 +1,11 @@
 package me.nizheg.telegram.bot.chgk.repository;
 
-import me.nizheg.telegram.bot.chgk.dto.FeedbackMessage;
-
 import java.util.Date;
 
+import me.nizheg.telegram.bot.chgk.dto.FeedbackMessage;
+
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

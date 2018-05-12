@@ -123,7 +123,7 @@ public class CategoryCommand extends ChatGameCommand {
         replyKeyboardMarkup.setOneTimeKeyboard(true);
         replyKeyboardMarkup.setSelective(false);
         replyKeyboardMarkup.setResizeKeyboard(true);
-        List<List<KeyboardButton>> keyboard = new ArrayList<List<KeyboardButton>>();
+        List<List<KeyboardButton>> keyboard = new ArrayList<>();
         for (Category category : categories) {
             keyboard.add(Collections.singletonList(new KeyboardButton(SHORT_COMMAND_NAME + " " + category.getName())));
         }

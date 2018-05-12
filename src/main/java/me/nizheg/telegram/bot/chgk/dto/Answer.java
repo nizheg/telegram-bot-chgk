@@ -43,7 +43,7 @@ public class Answer implements Serializable {
         this.type = type;
     }
 
-    public static enum Type {
+    public enum Type {
         EXACT, APPROXIMATE, CONTAINS, EXACT_WITH_PUNCTUATION
     }
 

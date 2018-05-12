@@ -17,7 +17,7 @@ public class NextTaskResult {
     private Task nextTask;
     private boolean isTournament;
     private Tournament tournament;
-    private List<StatEntry> tournamentStat = new ArrayList<StatEntry>();
+    private List<StatEntry> tournamentStat = new ArrayList<>();
 
     public Task getUnansweredTask() {
         return unansweredTask;

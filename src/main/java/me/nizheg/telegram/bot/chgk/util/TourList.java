@@ -1,5 +1,8 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,9 +18,6 @@ import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.util.Emoji;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Nikolay Zhegalin
@@ -56,7 +56,7 @@ public class TourList {
                 nextPage = 0;
             }
             inlineKeyboardMarkup = new InlineKeyboardMarkup();
-            List<InlineKeyboardButton> keyboard = new ArrayList<InlineKeyboardButton>();
+            List<InlineKeyboardButton> keyboard = new ArrayList<>();
             inlineKeyboardMarkup.setInlineKeyboard(Collections.singletonList(keyboard));
             InlineKeyboardButton previous = new InlineKeyboardButton();
             previous.setText(Emoji.LEFTWARDS_BLACK_ARROW);

@@ -156,7 +156,7 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     }
 
     private static class StatEntryMapper implements RowMapper<StatEntry> {
-        JdbcTelegramUserDao.TelegramUserMapper telegramUserMapper = new JdbcTelegramUserDao.TelegramUserMapper();
+        final JdbcTelegramUserDao.TelegramUserMapper telegramUserMapper = new JdbcTelegramUserDao.TelegramUserMapper();
 
         @Override
         public StatEntry mapRow(ResultSet rs, int rowNum) throws SQLException {

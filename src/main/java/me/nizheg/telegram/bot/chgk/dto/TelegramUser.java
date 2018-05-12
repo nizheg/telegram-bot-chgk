@@ -5,7 +5,7 @@ import java.io.Serializable;
 import me.nizheg.telegram.bot.api.model.User;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

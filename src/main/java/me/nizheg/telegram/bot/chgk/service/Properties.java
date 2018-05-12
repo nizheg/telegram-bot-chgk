@@ -1,7 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

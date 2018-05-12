@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */

@@ -65,7 +65,7 @@ public class AnswerCommand extends ChatGameCommand {
             InlineKeyboardMarkup replyMarkup = null;
             if (hintForTask.isTaskCurrent()) {
                 replyMarkup = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<List<InlineKeyboardButton>>();
+                List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
                 buttonGroup.add(ratingHelper.createRatingButtons(hintForTask.getTask().getId()));
                 InlineKeyboardButton nextButton = new InlineKeyboardButton();
                 nextButton.setText("Дальше");

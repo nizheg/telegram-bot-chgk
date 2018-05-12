@@ -1,5 +1,13 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Component;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,14 +22,6 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.util.Emoji;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.stereotype.Component;
 
 /**
  * @author Nikolay Zhegalin
@@ -38,7 +38,7 @@ public class AutoChatGame extends ChatGame {
     private final static int STATE_PAUSED = 1;
     private final static int STATE_STOPPED = 2;
     private final static int SECOND = 1000;
-    private final Map<String, Runner> operationRunners = new HashMap<String, Runner>();
+    private final Map<String, Runner> operationRunners = new HashMap<>();
     private final int timeout;
     @Autowired
     private TaskScheduler taskScheduler;
@@ -242,7 +242,7 @@ public class AutoChatGame extends ChatGame {
     }
 
     private abstract class Runner implements Runnable {
-        private Log logger = LogFactory.getLog(getClass());
+        private final Log logger = LogFactory.getLog(getClass());
 
         @Override
         public final void run() {

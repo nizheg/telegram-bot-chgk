@@ -20,7 +20,7 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.ChatDao;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -38,7 +38,7 @@ public class JdbcChatDao implements ChatDao {
 
     @Override
     public Chat create(Chat chat) throws DuplicationException {
-        Map<String, Object> parameters = new HashMap<String, Object>(6);
+        Map<String, Object> parameters = new HashMap<>(6);
         parameters.put("id", chat.getId());
         parameters.put("private", chat.isPrivate());
         parameters.put("title", chat.getTitle());

@@ -69,7 +69,7 @@ public class LightTask implements Serializable {
         this.numberInTour = numberInTour;
     }
 
-    public static enum Status {
+    public enum Status {
         NEW, PUBLISH_READY, PUBLISHED, DELETED
     }
 }

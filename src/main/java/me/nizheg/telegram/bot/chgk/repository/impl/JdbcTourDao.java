@@ -124,7 +124,7 @@ public class JdbcTourDao implements TourDao {
                         + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus\n" //
                         + "group by tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at\n" //
                         + "order by done desc, tournament.played_at desc nulls last limit " + limit + " offset " + limit * offset;
-        return namedParameterJdbcTemplate.query(sql.toString(), parameters, (rs, rowNum) -> {
+        return namedParameterJdbcTemplate.query(sql, parameters, (rs, rowNum) -> {
             LightTour lightTour = tourMapper.mapRow(rs, rowNum);
             LightTourWithStat lightTourWithStat = new LightTourWithStat(lightTour);
             lightTourWithStat.setDonePercent(rs.getInt("done"));

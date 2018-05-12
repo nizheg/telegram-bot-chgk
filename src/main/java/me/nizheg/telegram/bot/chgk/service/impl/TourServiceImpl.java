@@ -1,9 +1,12 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.LinkedList;
 import java.util.List;
 
-import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
 import me.nizheg.telegram.bot.chgk.dto.LightTour.Status;
@@ -11,13 +14,10 @@ import me.nizheg.telegram.bot.chgk.dto.LightTour.Type;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tour;
 import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
+import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.repository.TourDao;
 import me.nizheg.telegram.bot.chgk.service.TourService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Nikolay Zhegalin
@@ -127,7 +127,7 @@ public class TourServiceImpl implements TourService {
     private void prePublish(LightTour lightTour) {
         LightTour compositeTour = createCompositeTour(lightTour);
         if (compositeTour instanceof Tournament) {
-            List<Long> taskIds = new LinkedList<Long>();
+            List<Long> taskIds = new LinkedList<>();
             for (LightTour childTour : ((Tournament) compositeTour).getChildTours()) {
                 if (LightTour.Status.NEW.equals(childTour.getStatus())) {
                     throw new IllegalStateException("Tour " + childTour.getId() + " is not published yet");
