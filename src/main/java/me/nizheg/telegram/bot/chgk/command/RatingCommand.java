@@ -1,8 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.bot.chgk.dto.TaskRating;
@@ -11,9 +8,11 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RatingCommand extends ChatCommand {
 
@@ -65,7 +64,7 @@ public class RatingCommand extends ChatCommand {
             String currentRating = Emoji.THUMBS_UP_SIGN + " " + taskRating.getLikesCount() + " " + Emoji.THUMBS_DOWN_SIGN + " " + taskRating.getDislikesCount();
             answerCallbackRequest.setText("Рейтинг вопроса: " + currentRating);
         }
-        telegramApiClient.answerCallbackQuery(answerCallbackRequest);
+        getTelegramApiClient().answerCallbackQuery(answerCallbackRequest);
     }
 
     @Override

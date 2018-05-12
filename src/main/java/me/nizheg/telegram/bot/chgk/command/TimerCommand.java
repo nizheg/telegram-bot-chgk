@@ -9,7 +9,6 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,13 +54,13 @@ public class TimerCommand extends ChatCommand {
             }
         }
         chatService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
-        telegramApiClient.sendMessage(new Message(Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>", ctx
+        getTelegramApiClient().sendMessage(new Message(Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>", ctx
                 .getChatId(), ParseMode.HTML, true, null, TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next", "Повторить вопрос", "repeat")));
     }
 
     private void resetTimer(CommandContext ctx) {
         chatService.clearTimer(ctx.getChatId());
-        telegramApiClient.sendMessage(new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>", ctx.getChatId(),
+        getTelegramApiClient().sendMessage(new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>", ctx.getChatId(),
                 ParseMode.HTML, false));
     }
 

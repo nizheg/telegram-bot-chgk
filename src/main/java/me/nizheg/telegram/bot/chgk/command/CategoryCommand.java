@@ -1,11 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import me.nizheg.telegram.bot.api.model.KeyboardButton;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
@@ -23,9 +17,14 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * //todo add comments
@@ -101,7 +100,7 @@ public class CategoryCommand extends ChatGameCommand {
 
     private void sendTournamentsList(Long chatId) {
         Message tournamentsList = tourList.getTournamentsListOfChat(chatId, 0);
-        telegramApiClient.sendMessage(tournamentsList);
+        getTelegramApiClient().sendMessage(tournamentsList);
     }
 
     private void sendCategories(Long chatId, List<Category> categories) {
@@ -114,7 +113,7 @@ public class CategoryCommand extends ChatGameCommand {
             keyboard.add(Collections.singletonList(new KeyboardButton(SHORT_COMMAND_NAME + " " + category.getName())));
         }
         replyKeyboardMarkup.setKeyboard(keyboard);
-        telegramApiClient.sendMessage(new Message("<i>Выберите категорию вопросов</i>", chatId, ParseMode.HTML, false, null, replyKeyboardMarkup));
+        getTelegramApiClient().sendMessage(new Message("<i>Выберите категорию вопросов</i>", chatId, ParseMode.HTML, false, null, replyKeyboardMarkup));
     }
 
     private void sendCurrentCategory(ChatGame chatGame, Category currentCategory) {
@@ -141,7 +140,7 @@ public class CategoryCommand extends ChatGameCommand {
         if (stat != null) {
             messageBuilder.append("\n<i>Использовано вопросов:</i> <b>").append(stat.getUsedCount()).append(" из ").append(stat.getCount()).append("</b>");
         }
-        telegramApiClient.sendMessage(new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove));
+        getTelegramApiClient().sendMessage(new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove));
     }
 
     private boolean isTourCategory(Category currentCategory) {
@@ -152,7 +151,7 @@ public class CategoryCommand extends ChatGameCommand {
         ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
         replyKeyboardRemove.setSelective(false);
         replyKeyboardRemove.setRemoveKeyboard(true);
-        telegramApiClient.sendMessage(new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", chatId, ParseMode.HTML, null, null,
+        getTelegramApiClient().sendMessage(new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", chatId, ParseMode.HTML, null, null,
                 replyKeyboardRemove));
     }
 

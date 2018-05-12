@@ -1,12 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -32,9 +25,11 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
 import me.nizheg.telegram.util.Emoji;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * //todo add comments
@@ -126,7 +121,7 @@ public class DefaultCommand extends ChatCommand {
             replyMarkup.setInlineKeyboard(buttonGroup);
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
         } else {
-            telegramApiClient.sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(
+            getTelegramApiClient().sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(
                     "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.", chatId, ParseMode.HTML));
         }
 

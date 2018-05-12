@@ -9,7 +9,6 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,12 +42,12 @@ public class TournamentCommand extends ChatCommand {
         Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), page);
         if (ctx.getReplyToBotMessage() != null) {
             try {
-                telegramApiClient.editMessageText(new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
+                getTelegramApiClient().editMessageText(new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
             } catch (TelegramApiException ex) {
                 logger.warn("Unable to edit message of tournaments", ex);
             }
         } else {
-            telegramApiClient.sendMessage(tournamentsList);
+            getTelegramApiClient().sendMessage(tournamentsList);
         }
     }
 

@@ -1,9 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.math.BigDecimal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import me.nizheg.payments.dto.PaymentStatus;
 import me.nizheg.payments.dto.PaymentTransaction;
 import me.nizheg.payments.service.PaymentException;
@@ -23,8 +19,11 @@ import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Nikolay Zhegalin
@@ -44,7 +43,7 @@ public class DonateCommand extends ChatCommand {
     @Override
     public void execute(CommandContext ctx) throws CommandException {
         if (!ctx.isPrivateChat()) {
-            telegramApiClient.sendMessage(new Message("Воспользуйтесь, пожалуйста, данной командой в личке с ботом", ctx.getChatId()));
+            getTelegramApiClient().sendMessage(new Message("Воспользуйтесь, пожалуйста, данной командой в личке с ботом", ctx.getChatId()));
             return;
         }
         String regexp = "\\s*([0-9]+(?:\\.[0-9]+)?)(?: (AC|PC|MC))?\\s*";
@@ -60,12 +59,12 @@ public class DonateCommand extends ChatCommand {
                 new Message("Укажите сумму в рублях не менее 10. Например, <code>/donate 100.00</code> или <code>/donate 100</code>", ctx.getChatId(),
                         ParseMode.HTML);
         if (sumParam == null) {
-            telegramApiClient.sendMessage(incorrectSumMessage);
+            getTelegramApiClient().sendMessage(incorrectSumMessage);
             return;
         }
         BigDecimal sum = new BigDecimal(sumParam);
         if (sum.compareTo(minSum) < 0) {
-            telegramApiClient.sendMessage(incorrectSumMessage);
+            getTelegramApiClient().sendMessage(incorrectSumMessage);
             return;
         }
 
@@ -74,7 +73,7 @@ public class DonateCommand extends ChatCommand {
             message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup(Emoji.PURSE + " Я.Деньги",
                     "donate " + sum + " " + YandexMoneyPaymentType.PC.name(), Emoji.CREDIT_CARD + " Карточка", "donate " + sum + " "
                             + YandexMoneyPaymentType.AC.name()));
-            telegramApiClient.sendMessage(message);
+            getTelegramApiClient().sendMessage(message);
             return;
         }
 
@@ -104,9 +103,9 @@ public class DonateCommand extends ChatCommand {
             message.setReplyMarkup(TelegramApiUtil.createInlineUrlMarkup("Перевести", paymentUrl));
             Long messageId = ctx.getReplyToBotMessage().getMessageId();
             if (messageId != null) {
-                telegramApiClient.editMessageText(new EditedMessage(message, messageId));
+                getTelegramApiClient().editMessageText(new EditedMessage(message, messageId));
             } else {
-                telegramApiClient.sendMessage(message);
+                getTelegramApiClient().sendMessage(message);
             }
         } catch (PaymentException e) {
             paymentService.updateStatus(paymentTransaction.getId(), PaymentStatus.FAILED, "Не удалось инициализировать оплату: " + e.getMessage());

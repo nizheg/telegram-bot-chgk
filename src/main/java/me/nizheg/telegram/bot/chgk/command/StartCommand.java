@@ -7,8 +7,9 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.function.Supplier;
 
 /**
  * //todo add comments
@@ -24,15 +25,19 @@ public class StartCommand extends ChatCommand {
         super(telegramApiClient);
     }
 
+    public StartCommand(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+        super(telegramApiClientSupplier);
+    }
+
     @Override
     public void execute(CommandContext ctx) throws CommandException {
         Long chatId = ctx.getChatId();
         if (!chatService.isChatActive(chatId)) {
             chatService.activateChat(chatId);
-            telegramApiClient.sendMessage(new Message("Привет. Узнать, что я умею, можно с помощью команды /help.\nЧтобы получить вопрос, нажмите /next",
+            getTelegramApiClient().sendMessage(new Message("Привет. Узнать, что я умею, можно с помощью команды /help.\nЧтобы получить вопрос, нажмите /next",
                     chatId));
         } else {
-            telegramApiClient.sendMessage(new Message("Чтобы повторить вопрос, воспользуйтесь /repeat. Чтобы получить следующее - /next.", chatId));
+            getTelegramApiClient().sendMessage(new Message("Чтобы повторить вопрос, воспользуйтесь /repeat. Чтобы получить следующее - /next.", chatId));
         }
     }
 

@@ -5,7 +5,6 @@ import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -24,7 +23,7 @@ public class StopCommand extends ChatCommand {
     @Override
     public void execute(CommandContext ctx) {
         chatService.deactivateChat(ctx.getChatId());
-        telegramApiClient.sendMessage(new Message("До новых встреч!", ctx.getChatId()));
+        getTelegramApiClient().sendMessage(new Message("До новых встреч!", ctx.getChatId()));
     }
 
     @Override

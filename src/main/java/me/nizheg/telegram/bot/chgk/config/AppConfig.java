@@ -4,6 +4,7 @@ import com.vk.VkApi;
 import com.vk.impl.VkApiImpl;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
 import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
 import me.nizheg.telegram.bot.chgk.command.*;
 import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
@@ -12,10 +13,13 @@ import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.service.*;
 import me.nizheg.telegram.bot.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -35,8 +39,14 @@ import java.util.List;
 //@PropertySource()
 public class AppConfig {
 
+    public static final String SCOPE_THREAD = "thread";
     @Autowired
     private PropertyService propertyService;
+
+    @Bean
+    public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
+        return beanFactory -> beanFactory.registerScope(SCOPE_THREAD, new SimpleThreadScope());
+    }
 
     @Resource
     @Bean
@@ -57,6 +67,13 @@ public class AppConfig {
         String apiToken = propertyService.getValue("api.token");
         TelegramApiClientImpl telegramApiClient = new TelegramApiClientImpl(apiToken);
         return new TelegramApiClientWrapper(telegramApiClient);
+    }
+
+    @Bean
+    @Scope(SCOPE_THREAD)
+    @Autowired
+    public NonBlockingTelegramApiClientImpl asyncTelegramApiClient(TelegramApiClient telegramApiClient) {
+        return new NonBlockingTelegramApiClientImpl(telegramApiClient);
     }
 
     @Bean
@@ -119,7 +136,7 @@ public class AppConfig {
 
     @Bean
     public StartCommand startCommand() {
-        return new StartCommand(telegramApiClient());
+        return new StartCommand(() -> asyncTelegramApiClient(telegramApiClient()));
     }
 
     @Bean

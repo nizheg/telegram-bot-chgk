@@ -1,8 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -16,8 +13,10 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.TelegramApiUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Nikolay Zhegalin
@@ -57,7 +56,7 @@ public class TourCommand extends ChatGameCommand {
 
         String toursOfTourGroup = tourList.getToursListOfTourGroup(tourId);
         if (toursOfTourGroup != null) {
-            telegramApiClient.sendMessage(new Message(toursOfTourGroup, chatId));
+            getTelegramApiClient().sendMessage(new Message(toursOfTourGroup, chatId));
             return;
         }
 
@@ -70,7 +69,7 @@ public class TourCommand extends ChatGameCommand {
             } else {
                 buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next");
             }
-            telegramApiClient.sendMessage(new Message("Выбран турнир <b>" + TelegramHtmlUtil.escape(tournament.getTitle()) + "</b>", chatId, ParseMode.HTML,
+            getTelegramApiClient().sendMessage(new Message("Выбран турнир <b>" + TelegramHtmlUtil.escape(tournament.getTitle()) + "</b>", chatId, ParseMode.HTML,
                     true, null, buttonMarkup));
         } catch (IllegalIdException e) {
             logger.error("Illegal id of tournament for chat " + chatId, e);

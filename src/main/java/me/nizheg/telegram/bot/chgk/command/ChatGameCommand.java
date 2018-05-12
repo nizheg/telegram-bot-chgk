@@ -10,6 +10,8 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 
+import java.util.function.Supplier;
+
 /**
  * @author Nikolay Zhegalin
  */
@@ -17,6 +19,10 @@ public abstract class ChatGameCommand extends ChatCommand {
 
     public ChatGameCommand(TelegramApiClient telegramApiClient) {
         super(telegramApiClient);
+    }
+
+    public ChatGameCommand(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+        super(telegramApiClientSupplier);
     }
 
     protected abstract ChatService getChatService();

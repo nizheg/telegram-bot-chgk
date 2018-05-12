@@ -9,7 +9,6 @@ import me.nizheg.telegram.bot.chgk.service.FeedbackService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,12 +36,12 @@ public class FeedbackCommand extends ChatCommand {
         }
         FeedbackResult feedbackResult = feedbackService.registerFeedback(new TelegramUser(ctx.getMessage().getFrom()), feedbackText);
         if (feedbackResult.getErrorDescription() != null) {
-            telegramApiClient.sendMessage(new Message(feedbackResult.getErrorDescription(), ctx.getChatId()));
+            getTelegramApiClient().sendMessage(new Message(feedbackResult.getErrorDescription(), ctx.getChatId()));
         } else if (feedbackResult.getLink() != null) {
-            telegramApiClient.sendMessage(new Message("<i>Спасибо. Ваш отзыв получен и размещён в обсуждении</i> " + feedbackResult.getLink(), ctx.getChatId(),
+            getTelegramApiClient().sendMessage(new Message("<i>Спасибо. Ваш отзыв получен и размещён в обсуждении</i> " + feedbackResult.getLink(), ctx.getChatId(),
                     ParseMode.HTML));
         } else {
-            telegramApiClient.sendMessage(new Message("<i>Спасибо за отзыв.</i>", ctx.getChatId(), ParseMode.HTML));
+            getTelegramApiClient().sendMessage(new Message("<i>Спасибо за отзыв.</i>", ctx.getChatId(), ParseMode.HTML));
         }
     }
 

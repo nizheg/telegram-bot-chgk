@@ -1,8 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.Collections;
-import java.util.List;
-
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -21,9 +18,11 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * //todo add comments
@@ -67,7 +66,7 @@ public class StatCommand extends ChatCommand {
         params.setLimit(10);
         List<StatEntry> statForChat = answerLogService.getStatForChat(ctx.getChatId(), params);
         if (statForChat.isEmpty()) {
-            telegramApiClient.sendMessage(new Message("<i>В этом чате ещё никто ничего не отгадал.</i>", ctx.getChatId(), ParseMode.HTML));
+            getTelegramApiClient().sendMessage(new Message("<i>В этом чате ещё никто ничего не отгадал.</i>", ctx.getChatId(), ParseMode.HTML));
         } else {
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
             InlineKeyboardButton scoreButton = new InlineKeyboardButton();
@@ -83,7 +82,7 @@ public class StatCommand extends ChatCommand {
                 editedMessage.setParseMode(ParseMode.HTML);
                 editedMessage.setReplyMarkup(markup);
                 try {
-                    telegramApiClient.editMessageText(editedMessage);
+                    getTelegramApiClient().editMessageText(editedMessage);
                 } catch (TelegramApiException ex) {
                     logger.error("Unable to handle callback " + ctx.getCallbackQueryId(), ex);
                 }
@@ -91,7 +90,7 @@ public class StatCommand extends ChatCommand {
                 Message message = new Message(createTop10Message(statForChat), ctx.getChatId(), ParseMode.HTML, true);
                 message.setDisableNotification(true);
                 message.setReplyMarkup(markup);
-                telegramApiClient.sendMessage(message);
+                getTelegramApiClient().sendMessage(message);
             }
         }
 
@@ -124,7 +123,7 @@ public class StatCommand extends ChatCommand {
             editedMessage.setParseMode(ParseMode.HTML);
             editedMessage.setReplyMarkup(markup);
             try {
-                telegramApiClient.editMessageText(editedMessage);
+                getTelegramApiClient().editMessageText(editedMessage);
             } catch (TelegramApiException ex) {
                 logger.error("Unable to handle callback " + ctx.getCallbackQueryId(), ex);
             }
@@ -132,7 +131,7 @@ public class StatCommand extends ChatCommand {
             Message message = new Message(createScoreMessage(statForChat), ctx.getChatId(), ParseMode.HTML, true);
             message.setDisableNotification(true);
             message.setReplyMarkup(markup);
-            telegramApiClient.sendMessage(message);
+            getTelegramApiClient().sendMessage(message);
         }
 
     }

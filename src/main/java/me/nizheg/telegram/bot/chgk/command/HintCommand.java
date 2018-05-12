@@ -13,7 +13,6 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,7 +53,7 @@ public class HintCommand extends ChatGameCommand {
             StringBuilder messageBuilder = new StringBuilder("<b>Ответ:</b>\n");
             answerSender.sendAnswerOfTask(messageBuilder, currentTask, ctx.getFrom().getId(), null);
         } catch (TelegramApiException ex) {
-            telegramApiClient
+            getTelegramApiClient()
                     .sendMessage(new Message(
                             "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас (необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
                             ctx.getChatId(), ParseMode.HTML));
