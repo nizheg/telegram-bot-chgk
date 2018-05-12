@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.config;
 
 import com.vk.VkApi;
 import com.vk.impl.VkApiImpl;
+import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
 import me.nizheg.telegram.bot.chgk.command.*;
@@ -89,8 +90,8 @@ public class AppConfig {
 
     @Bean
     public MessageParser messageParser() {
-        String botName = propertyService.getValue("bot.name");
-        return new MessageParserImpl(botName, commandsHolder());
+        User botUser = telegramApiClient().getMe().getResult();
+        return new MessageParserImpl(botUser.getUsername(), commandsHolder());
     }
 
     @Bean
