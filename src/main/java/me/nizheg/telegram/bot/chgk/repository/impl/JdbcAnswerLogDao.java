@@ -112,7 +112,6 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("chatId", chatId);
         parameters.addValue("userId", userId);
-        parameters.addValue("othersUsername", othersUsername);
         StringBuilder sqlBuilder = new StringBuilder();
         if (tournamentId != null) {
             sqlBuilder.append(
@@ -128,6 +127,7 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
         }
         sqlBuilder.append("group by tu.id, tu.username, tu.firstname, tu.lastname\n");
         if (othersUsername != null) {
+            parameters.addValue("othersUsername", othersUsername);
             sqlBuilder.append("union\n");
             sqlBuilder.append("select -1, :othersUsername, '', '', count(task_id)\n");
             sqlBuilder.append("from answer_log\n");

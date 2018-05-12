@@ -138,11 +138,13 @@ public class TourServiceImpl implements TourService {
                     throw new IllegalStateException("Tour " + childTour.getId() + " is not published yet");
                 }
                 Tour tour = (Tour) createCompositeTour(childTour);
-                for (LightTask lightTask : tour.getTasks()) {
-                    if (LightTask.Status.NEW.equals(lightTask.getStatus())) {
-                        throw new IllegalStateException("Task " + lightTask.getId() + " is not published yet");
+                if (tour != null) {
+                    for (LightTask lightTask : tour.getTasks()) {
+                        if (LightTask.Status.NEW.equals(lightTask.getStatus())) {
+                            throw new IllegalStateException("Task " + lightTask.getId() + " is not published yet");
+                        }
+                        taskIds.add(lightTask.getId());
                     }
-                    taskIds.add(lightTask.getId());
                 }
                 if (!taskIds.isEmpty()) {
                     taskDao.updateStatus(taskIds, LightTask.Status.PUBLISH_READY, LightTask.Status.PUBLISHED);
