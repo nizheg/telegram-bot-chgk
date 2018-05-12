@@ -1,15 +1,20 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 public class HelpCommand extends me.nizheg.telegram.bot.command.HelpCommand {
+
     public HelpCommand(TelegramApiClient telegramApiClient) {
         super(telegramApiClient);
+    }
+
+    public HelpCommand(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+        super(telegramApiClientSupplier);
     }
 
     @Override

@@ -1,28 +1,36 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
 import me.nizheg.telegram.bot.command.CommandContext;
-import me.nizheg.telegram.bot.command.CommandException;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 public class NextCommand extends ChatGameCommand {
 
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private NextTaskSender nextTaskSender;
+    private final ChatService chatService;
+    private final NextTaskSender nextTaskSender;
 
-    public NextCommand(TelegramApiClient telegramApiClient) {
+    public NextCommand(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService,
+            NextTaskSender nextTaskSender) {
         super(telegramApiClient);
+        this.chatService = chatService;
+        this.nextTaskSender = nextTaskSender;
+    }
+
+    public NextCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService, NextTaskSender nextTaskSender) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
+        this.nextTaskSender = nextTaskSender;
     }
 
     @Override
@@ -31,7 +39,7 @@ public class NextCommand extends ChatGameCommand {
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) {
         nextTaskSender.sendNextTask(chatGame);
     }
 

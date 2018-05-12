@@ -1,18 +1,20 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.bot.chgk.dto.TaskRating;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
-import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RatingCommand extends ChatCommand {
 
@@ -20,15 +22,24 @@ public class RatingCommand extends ChatCommand {
     private static final Pattern PARAMS_PATTERN = Pattern.compile(PARAMS_FORMAT);
     private static final String ATTRIBUTE_TASK_ID = "RATING_TASK_ID";
 
-    @Autowired
-    private TaskRatingService taskRatingService;
+    private final TaskRatingService taskRatingService;
 
-    public RatingCommand(TelegramApiClient telegramApiClient) {
+    public RatingCommand(
+            TelegramApiClient telegramApiClient,
+            TaskRatingService taskRatingService) {
         super(telegramApiClient);
+        this.taskRatingService = taskRatingService;
+    }
+
+    public RatingCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            TaskRatingService taskRatingService) {
+        super(telegramApiClientSupplier);
+        this.taskRatingService = taskRatingService;
     }
 
     @Override
-    public void execute(CommandContext ctx) throws CommandException {
+    public void execute(CommandContext ctx) {
         String params = StringUtils.defaultString(ctx.getText());
         Matcher commandMatcher = PARAMS_PATTERN.matcher(params);
         int newRatingValue = 0;
@@ -61,7 +72,9 @@ public class RatingCommand extends ChatCommand {
         Long taskId = (Long) ctx.getAttribute(ATTRIBUTE_TASK_ID);
         if (taskId != null) {
             TaskRating taskRating = taskRatingService.getTaskRatingByTaskId(taskId);
-            String currentRating = Emoji.THUMBS_UP_SIGN + " " + taskRating.getLikesCount() + " " + Emoji.THUMBS_DOWN_SIGN + " " + taskRating.getDislikesCount();
+            String currentRating =
+                    Emoji.THUMBS_UP_SIGN + " " + taskRating.getLikesCount() + " " + Emoji.THUMBS_DOWN_SIGN + " "
+                            + taskRating.getDislikesCount();
             answerCallbackRequest.setText("Рейтинг вопроса: " + currentRating);
         }
         getTelegramApiClient().answerCallbackQuery(answerCallbackRequest);
@@ -73,6 +86,7 @@ public class RatingCommand extends ChatCommand {
     }
 
     @Override
+    @Nullable
     public String getDescription() {
         return null;
     }

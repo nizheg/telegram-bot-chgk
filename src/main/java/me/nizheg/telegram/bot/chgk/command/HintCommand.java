@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
@@ -13,22 +15,30 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 public class HintCommand extends ChatGameCommand {
 
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private AnswerSender answerSender;
+    private final ChatService chatService;
+    private final AnswerSender answerSender;
 
-    public HintCommand(TelegramApiClient telegramApiClient) {
+    public HintCommand(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService,
+            AnswerSender answerSender) {
         super(telegramApiClient);
+        this.chatService = chatService;
+        this.answerSender = answerSender;
+    }
+
+    public HintCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService, AnswerSender answerSender) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
+        this.answerSender = answerSender;
     }
 
     @Override

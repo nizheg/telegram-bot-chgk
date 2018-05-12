@@ -1,5 +1,9 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
@@ -9,8 +13,6 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Nikolay Zhegalin
@@ -22,11 +24,19 @@ public class TimerCommand extends ChatCommand {
     private static final int MINUTE = 60;
     private static final int DEFAULT_TIMEOUT_MINUTES = 1;
     private static final int MAX_TIMEOUT_MINUTES = 24 * 60;
-    @Autowired
-    private ChatService chatService;
 
-    public TimerCommand(TelegramApiClient telegramApiClient) {
+    private final ChatService chatService;
+
+    public TimerCommand(TelegramApiClient telegramApiClient, ChatService chatService) {
         super(telegramApiClient);
+        this.chatService = chatService;
+    }
+
+    public TimerCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
     }
 
     @Override
@@ -49,19 +59,25 @@ public class TimerCommand extends ChatCommand {
                 isValueCorrect = false;
             }
             if (!isValueCorrect || timeoutMinutes < 0 || timeoutMinutes > MAX_TIMEOUT_MINUTES) {
-                throw new CommandException(new Message("<i>Введите в качестве значения целое число не больше " + MAX_TIMEOUT_MINUTES + " </i>",
+                throw new CommandException(new Message(
+                        "<i>Введите в качестве значения целое число не больше " + MAX_TIMEOUT_MINUTES + " </i>",
                         ctx.getChatId(), ParseMode.HTML));
             }
         }
         chatService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
-        getTelegramApiClient().sendMessage(new Message(Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>", ctx
-                .getChatId(), ParseMode.HTML, true, null, TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next", "Повторить вопрос", "repeat")));
+        getTelegramApiClient().sendMessage(new Message(
+                Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>",
+                ctx
+                        .getChatId(), ParseMode.HTML, true, null,
+                TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next", "Повторить вопрос", "repeat")));
     }
 
     private void resetTimer(CommandContext ctx) {
         chatService.clearTimer(ctx.getChatId());
-        getTelegramApiClient().sendMessage(new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>", ctx.getChatId(),
-                ParseMode.HTML, false));
+        getTelegramApiClient().sendMessage(
+                new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>",
+                        ctx.getChatId(),
+                        ParseMode.HTML, false));
     }
 
     @Override
@@ -71,7 +87,8 @@ public class TimerCommand extends ChatCommand {
 
     @Override
     public String getDescription() {
-        return "/" + COMMAND_NAME_TIMER_SET + " <количество минут> - запустить таймер (по умолчанию количество минут = 1)\n" //
+        return "/" + COMMAND_NAME_TIMER_SET
+                + " <количество минут> - запустить таймер (по умолчанию количество минут = 1)\n" //
                 + "/" + COMMAND_NAME_TIMER_RESET + " - выключить автоматическую выдачу вопросов";
     }
 }

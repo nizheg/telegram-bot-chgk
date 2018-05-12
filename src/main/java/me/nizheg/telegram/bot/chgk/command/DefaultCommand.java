@@ -1,5 +1,15 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -25,32 +35,48 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
 import me.nizheg.telegram.util.Emoji;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
 public class DefaultCommand extends ChatCommand {
 
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private TaskSender taskSender;
-    @Autowired
-    private TelegramUserService telegramUserService;
-    @Autowired
-    private RatingHelper ratingHelper;
-    @Autowired
-    private BotInfo botInfo;
+    private final ChatService chatService;
+    private final TaskSender taskSender;
+    private final TelegramUserService telegramUserService;
+    private final RatingHelper ratingHelper;
+    private final BotInfo botInfo;
 
-    public DefaultCommand(TelegramApiClient telegramApiClient) {
+    public DefaultCommand(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService,
+            TaskSender taskSender,
+            TelegramUserService telegramUserService,
+            RatingHelper ratingHelper,
+            BotInfo botInfo) {
         super(telegramApiClient);
+        this.chatService = chatService;
+        this.taskSender = taskSender;
+        this.telegramUserService = telegramUserService;
+        this.ratingHelper = ratingHelper;
+        this.botInfo = botInfo;
+    }
+
+    public DefaultCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService,
+            TaskSender taskSender,
+            TelegramUserService telegramUserService,
+            RatingHelper ratingHelper,
+            BotInfo botInfo) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
+        this.taskSender = taskSender;
+        this.telegramUserService = telegramUserService;
+        this.ratingHelper = ratingHelper;
+        this.botInfo = botInfo;
     }
 
     @Override
@@ -83,34 +109,43 @@ public class DefaultCommand extends ChatCommand {
             if (firstAnsweredUserId == user.getId()) {
                 resultBuilder.append(createCompliment(user));
                 if (exactAnswer != null) {
-                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text) + "</i>\" не совсем точный ответ, но я его засчитываю.\nПравильный ответ: <b>"
+                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text)
+                            + "</i>\" не совсем точный ответ, но я его засчитываю.\nПравильный ответ: <b>"
                             + exactAnswer + "</b>");
                 } else {
-                    resultBuilder.append("\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ.");
+                    resultBuilder.append(
+                            "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ.");
                 }
             } else if (firstAnsweredUserId == botInfo.getBotUser().getId()) {
                 if (exactAnswer != null) {
-                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text) + "</i>\" не совсем точный ответ, и я уже сообщал правильный: <b>"
+                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text)
+                            + "</i>\" не совсем точный ответ, и я уже сообщал правильный: <b>"
                             + exactAnswer + "</b>");
                 } else {
-                    resultBuilder.append("\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ, но я уже сообщал вам его.");
+                    resultBuilder.append("\"<b>" + TelegramHtmlUtil.escape(text)
+                            + "</b>\" - это абсолютно верный ответ, но я уже сообщал вам его.");
                 }
             } else {
                 TelegramUser firstAnsweredUser = telegramUserService.getTelegramUser(firstAnsweredUserId);
                 if (exactAnswer != null) {
-                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text) + "</i>\" не совсем точный ответ, и <b>"
-                            + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname()) + "</b> уже ответил(а) на этот вопрос ранее.\nПравильный ответ: <b>"
-                            + exactAnswer + "</b>");
+                    resultBuilder.append(
+                            "\"<i>" + TelegramHtmlUtil.escape(text) + "</i>\" не совсем точный ответ, и <b>"
+                                    + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname())
+                                    + "</b> уже ответил(а) на этот вопрос ранее.\nПравильный ответ: <b>"
+                                    + exactAnswer + "</b>");
                 } else {
-                    resultBuilder.append("\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ, но <b>"
-                            + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname()) + "</b> был(а) быстрее.");
+                    resultBuilder.append(
+                            "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ, но <b>"
+                                    + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname())
+                                    + "</b> был(а) быстрее.");
                 }
             }
 
             Date usageTime = userAnswerResult.getUsageTime();
-            resultBuilder.append("\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: " + printDiffTillNow(usageTime));
+            resultBuilder.append(
+                    "\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: " + printDiffTillNow(usageTime));
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<List<InlineKeyboardButton>>();
+            List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
             buttonGroup.add(ratingHelper.createRatingButtons(currentTask.getId()));
             if (!(chatGame instanceof AutoChatGame)) {
                 InlineKeyboardButton nextButton = new InlineKeyboardButton();
@@ -130,7 +165,8 @@ public class DefaultCommand extends ChatCommand {
     private String createCompliment(User user) {
         String compliment = "";
         if (user != null && StringUtils.isNotBlank(user.getFirstName())) {
-            compliment = Emoji.GLOWING_STAR + " Молодец, <b>" + TelegramHtmlUtil.escape(user.getFirstName()) + "</b>!\n";
+            compliment =
+                    Emoji.GLOWING_STAR + " Молодец, <b>" + TelegramHtmlUtil.escape(user.getFirstName()) + "</b>!\n";
         }
         return compliment;
     }

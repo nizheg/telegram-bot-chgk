@@ -1,5 +1,14 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import me.nizheg.telegram.bot.api.model.KeyboardButton;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
@@ -15,19 +24,10 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
-import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
@@ -38,18 +38,34 @@ public class CategoryCommand extends ChatGameCommand {
     private static final String OPTION_FORMAT = "\\s*([a-zA-z0-9_]+)\\s*";
     private static final Pattern OPTION_PATTERN = Pattern.compile(OPTION_FORMAT);
 
-    @Autowired
-    private CategoryService categoryService;
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private TourList tourList;
-    private volatile List<Category> categories = new ArrayList<Category>();
+    private final CategoryService categoryService;
+    private final ChatService chatService;
+    private final TaskService taskService;
+    private final TourList tourList;
+    private volatile List<Category> categories = new ArrayList<>();
 
-    public CategoryCommand(TelegramApiClient telegramApiClient) {
+    public CategoryCommand(
+            TelegramApiClient telegramApiClient,
+            CategoryService categoryService,
+            ChatService chatService,
+            TaskService taskService, TourList tourList) {
         super(telegramApiClient);
+        this.categoryService = categoryService;
+        this.chatService = chatService;
+        this.taskService = taskService;
+        this.tourList = tourList;
+    }
+
+    public CategoryCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            CategoryService categoryService,
+            ChatService chatService,
+            TaskService taskService, TourList tourList) {
+        super(telegramApiClientSupplier);
+        this.categoryService = categoryService;
+        this.chatService = chatService;
+        this.taskService = taskService;
+        this.tourList = tourList;
     }
 
     @Override
@@ -58,7 +74,7 @@ public class CategoryCommand extends ChatGameCommand {
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) {
         Long chatId = ctx.getChatId();
         String options = StringUtils.defaultString(ctx.getText());
         Matcher matcher = OPTION_PATTERN.matcher(options);
@@ -80,8 +96,7 @@ public class CategoryCommand extends ChatGameCommand {
                 }
             }
         } else {
-            List<Category> categories = categoryService.getCollection();
-            this.categories = categories;
+            this.categories = categoryService.getCollection();
             sendCategories(chatId, this.categories);
         }
     }
@@ -113,7 +128,9 @@ public class CategoryCommand extends ChatGameCommand {
             keyboard.add(Collections.singletonList(new KeyboardButton(SHORT_COMMAND_NAME + " " + category.getName())));
         }
         replyKeyboardMarkup.setKeyboard(keyboard);
-        getTelegramApiClient().sendMessage(new Message("<i>Выберите категорию вопросов</i>", chatId, ParseMode.HTML, false, null, replyKeyboardMarkup));
+        getTelegramApiClient().sendMessage(
+                new Message("<i>Выберите категорию вопросов</i>", chatId, ParseMode.HTML, false, null,
+                        replyKeyboardMarkup));
     }
 
     private void sendCurrentCategory(ChatGame chatGame, Category currentCategory) {
@@ -136,11 +153,18 @@ public class CategoryCommand extends ChatGameCommand {
         ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
         replyKeyboardRemove.setSelective(false);
         replyKeyboardRemove.setRemoveKeyboard(true);
-        StringBuilder messageBuilder = new StringBuilder().append("<i>Ваша текущая категория:</i> <b>").append(categoryName).append("</b>");
+        StringBuilder messageBuilder = new StringBuilder().append("<i>Ваша текущая категория:</i> <b>")
+                .append(categoryName)
+                .append("</b>");
         if (stat != null) {
-            messageBuilder.append("\n<i>Использовано вопросов:</i> <b>").append(stat.getUsedCount()).append(" из ").append(stat.getCount()).append("</b>");
+            messageBuilder.append("\n<i>Использовано вопросов:</i> <b>")
+                    .append(stat.getUsedCount())
+                    .append(" из ")
+                    .append(stat.getCount())
+                    .append("</b>");
         }
-        getTelegramApiClient().sendMessage(new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove));
+        getTelegramApiClient().sendMessage(
+                new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove));
     }
 
     private boolean isTourCategory(Category currentCategory) {
@@ -151,8 +175,10 @@ public class CategoryCommand extends ChatGameCommand {
         ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
         replyKeyboardRemove.setSelective(false);
         replyKeyboardRemove.setRemoveKeyboard(true);
-        getTelegramApiClient().sendMessage(new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", chatId, ParseMode.HTML, null, null,
-                replyKeyboardRemove));
+        getTelegramApiClient().sendMessage(
+                new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", chatId, ParseMode.HTML,
+                        null, null,
+                        replyKeyboardRemove));
     }
 
     @Override

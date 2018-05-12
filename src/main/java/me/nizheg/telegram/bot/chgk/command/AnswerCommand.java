@@ -3,6 +3,7 @@ package me.nizheg.telegram.bot.chgk.command;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -17,24 +18,37 @@ import me.nizheg.telegram.bot.chgk.util.RatingHelper;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
- * //todo add comments
+
  *
  * @author Nikolay Zhegalin
  */
 public class AnswerCommand extends ChatGameCommand {
 
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private AnswerSender answerSender;
-    @Autowired
-    private RatingHelper ratingHelper;
+    private final ChatService chatService;
+    private final AnswerSender answerSender;
+    private final RatingHelper ratingHelper;
 
-    public AnswerCommand(TelegramApiClient telegramApiClient) {
+    public AnswerCommand(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService,
+            AnswerSender answerSender,
+            RatingHelper ratingHelper) {
         super(telegramApiClient);
+        this.chatService = chatService;
+        this.answerSender = answerSender;
+        this.ratingHelper = ratingHelper;
+    }
+
+    public AnswerCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService,
+            AnswerSender answerSender,
+            RatingHelper ratingHelper) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
+        this.answerSender = answerSender;
+        this.ratingHelper = ratingHelper;
     }
 
     @Override

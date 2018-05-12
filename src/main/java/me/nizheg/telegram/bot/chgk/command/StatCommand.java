@@ -1,5 +1,11 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
+
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -16,32 +22,34 @@ import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
-import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 public class StatCommand extends ChatCommand {
 
-    @Autowired
-    private AnswerLogService answerLogService;
-    @Autowired
-    private BotInfo botInfo;
+    private final AnswerLogService answerLogService;
+    private final BotInfo botInfo;
 
-    public StatCommand(TelegramApiClient telegramApiClient) {
+    public StatCommand(
+            TelegramApiClient telegramApiClient,
+            AnswerLogService answerLogService, BotInfo botInfo) {
         super(telegramApiClient);
+        this.answerLogService = answerLogService;
+        this.botInfo = botInfo;
+    }
+
+    public StatCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            AnswerLogService answerLogService, BotInfo botInfo) {
+        super(telegramApiClientSupplier);
+        this.answerLogService = answerLogService;
+        this.botInfo = botInfo;
     }
 
     @Override
-    public void execute(CommandContext ctx) throws CommandException {
+    public void execute(CommandContext ctx) {
         Mode mode;
         try {
             mode = Mode.valueOf(ctx.getText());
@@ -66,7 +74,8 @@ public class StatCommand extends ChatCommand {
         params.setLimit(10);
         List<StatEntry> statForChat = answerLogService.getStatForChat(ctx.getChatId(), params);
         if (statForChat.isEmpty()) {
-            getTelegramApiClient().sendMessage(new Message("<i>В этом чате ещё никто ничего не отгадал.</i>", ctx.getChatId(), ParseMode.HTML));
+            getTelegramApiClient().sendMessage(
+                    new Message("<i>В этом чате ещё никто ничего не отгадал.</i>", ctx.getChatId(), ParseMode.HTML));
         } else {
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
             InlineKeyboardButton scoreButton = new InlineKeyboardButton();
@@ -100,7 +109,12 @@ public class StatCommand extends ChatCommand {
         StringBuilder resultBuilder = new StringBuilder(Emoji.GLOWING_STAR + " <b>Топ-10 знатоков чата</b>");
         int i = 1;
         for (StatEntry statEntry : statForChat) {
-            resultBuilder.append("\n").append(i).append(". ").append(createUserName(statEntry.getTelegramUser())).append("\t").append(statEntry.getCount());
+            resultBuilder.append("\n")
+                    .append(i)
+                    .append(". ")
+                    .append(createUserName(statEntry.getTelegramUser()))
+                    .append("\t")
+                    .append(statEntry.getCount());
             i++;
         }
         resultBuilder.append("\n");
@@ -108,7 +122,8 @@ public class StatCommand extends ChatCommand {
     }
 
     private void createScoreMessage(CommandContext ctx) {
-        List<StatEntry> statForChat = answerLogService.getStatForChatUser(ctx.getChatId(), botInfo.getBotUser().getId(), "users");
+        List<StatEntry> statForChat = answerLogService.getStatForChatUser(ctx.getChatId(), botInfo.getBotUser().getId(),
+                "users");
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         InlineKeyboardButton testButton = new InlineKeyboardButton();
         testButton.setCallbackData("stat " + Mode.TOP10.name());
@@ -153,8 +168,10 @@ public class StatCommand extends ChatCommand {
 
     private String createUserName(TelegramUser telegramUser) {
         return "<b>" + TelegramHtmlUtil.escape(telegramUser.getFirstname())
-                + (StringUtils.isBlank(telegramUser.getLastname()) ? "" : " " + TelegramHtmlUtil.escape(telegramUser.getLastname()))
-                + (StringUtils.isBlank(telegramUser.getUsername()) ? "</b>" : "</b> @" + TelegramHtmlUtil.escape(telegramUser.getUsername()));
+                + (StringUtils.isBlank(telegramUser.getLastname()) ? "" :
+                " " + TelegramHtmlUtil.escape(telegramUser.getLastname()))
+                + (StringUtils.isBlank(telegramUser.getUsername()) ? "</b>" :
+                "</b> @" + TelegramHtmlUtil.escape(telegramUser.getUsername()));
     }
 
     @Override
@@ -167,7 +184,7 @@ public class StatCommand extends ChatCommand {
         return "/stat - статистика чата";
     }
 
-    private static enum Mode {
+    private enum Mode {
         TOP10, SCORE
     }
 }

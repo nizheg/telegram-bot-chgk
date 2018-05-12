@@ -1,5 +1,11 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -13,10 +19,6 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.TelegramApiUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Nikolay Zhegalin
@@ -25,13 +27,24 @@ public class TourCommand extends ChatGameCommand {
 
     private static final String COMMAND_FORMAT = "tour_?([0-9]+)?";
     private static final Pattern COMMAND_PATTERN = Pattern.compile(COMMAND_FORMAT);
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private TourList tourList;
+    private final ChatService chatService;
+    private final TourList tourList;
 
-    public TourCommand(TelegramApiClient telegramApiClient) {
+    public TourCommand(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService,
+            TourList tourList) {
         super(telegramApiClient);
+        this.chatService = chatService;
+        this.tourList = tourList;
+    }
+
+    public TourCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            ChatService chatService, TourList tourList) {
+        super(telegramApiClientSupplier);
+        this.chatService = chatService;
+        this.tourList = tourList;
     }
 
     @Override
@@ -65,12 +78,15 @@ public class TourCommand extends ChatGameCommand {
             boolean isCurrentTaskFromTournament = chatGame.isCurrentTaskFromTournament();
             ReplyMarkup buttonMarkup;
             if (isCurrentTaskFromTournament) {
-                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать заново", "clear_and_next", "Продолжить", "next");
+                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать заново", "clear_and_next", "Продолжить",
+                        "next");
             } else {
                 buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next");
             }
-            getTelegramApiClient().sendMessage(new Message("Выбран турнир <b>" + TelegramHtmlUtil.escape(tournament.getTitle()) + "</b>", chatId, ParseMode.HTML,
-                    true, null, buttonMarkup));
+            getTelegramApiClient().sendMessage(
+                    new Message("Выбран турнир <b>" + TelegramHtmlUtil.escape(tournament.getTitle()) + "</b>", chatId,
+                            ParseMode.HTML,
+                            true, null, buttonMarkup));
         } catch (IllegalIdException e) {
             logger.error("Illegal id of tournament for chat " + chatId, e);
             throw new CommandException(new Message("<i>Неверный идентификатор турнира</i>", chatId, ParseMode.HTML));
@@ -83,6 +99,7 @@ public class TourCommand extends ChatGameCommand {
     }
 
     @Override
+    @Nullable
     public String getDescription() {
         return null;
     }

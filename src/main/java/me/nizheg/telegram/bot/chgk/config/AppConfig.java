@@ -2,16 +2,7 @@ package me.nizheg.telegram.bot.chgk.config;
 
 import com.vk.VkApi;
 import com.vk.impl.VkApiImpl;
-import me.nizheg.telegram.bot.api.model.User;
-import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
-import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
-import me.nizheg.telegram.bot.chgk.command.*;
-import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
-import me.nizheg.telegram.bot.command.HelpCommand;
-import me.nizheg.telegram.bot.event.ChatEventListener;
-import me.nizheg.telegram.bot.service.*;
-import me.nizheg.telegram.bot.service.impl.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -24,10 +15,62 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import javax.annotation.Resource;
-import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+
+import me.nizheg.payments.service.PaymentService;
+import me.nizheg.telegram.bot.api.model.User;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
+import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
+import me.nizheg.telegram.bot.chgk.command.AnswerCommand;
+import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
+import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
+import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
+import me.nizheg.telegram.bot.chgk.command.DonateCommand;
+import me.nizheg.telegram.bot.chgk.command.FeedbackCommand;
+import me.nizheg.telegram.bot.chgk.command.HintCommand;
+import me.nizheg.telegram.bot.chgk.command.NextCommand;
+import me.nizheg.telegram.bot.chgk.command.RatingCommand;
+import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
+import me.nizheg.telegram.bot.chgk.command.StartCommand;
+import me.nizheg.telegram.bot.chgk.command.StatCommand;
+import me.nizheg.telegram.bot.chgk.command.StopCommand;
+import me.nizheg.telegram.bot.chgk.command.TimerCommand;
+import me.nizheg.telegram.bot.chgk.command.TourCommand;
+import me.nizheg.telegram.bot.chgk.command.TournamentCommand;
+import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
+import me.nizheg.telegram.bot.chgk.service.CategoryService;
+import me.nizheg.telegram.bot.chgk.service.ChatService;
+import me.nizheg.telegram.bot.chgk.service.FeedbackService;
+import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
+import me.nizheg.telegram.bot.chgk.service.TaskService;
+import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
+import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
+import me.nizheg.telegram.bot.chgk.util.AnswerSender;
+import me.nizheg.telegram.bot.chgk.util.BotInfo;
+import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
+import me.nizheg.telegram.bot.chgk.util.RatingHelper;
+import me.nizheg.telegram.bot.chgk.util.TaskSender;
+import me.nizheg.telegram.bot.chgk.util.TourList;
+import me.nizheg.telegram.bot.chgk.util.WarningSender;
+import me.nizheg.telegram.bot.command.HelpCommand;
+import me.nizheg.telegram.bot.event.ChatEventListener;
+import me.nizheg.telegram.bot.service.CallbackQueryParser;
+import me.nizheg.telegram.bot.service.CommandExecutor;
+import me.nizheg.telegram.bot.service.CommandsHolder;
+import me.nizheg.telegram.bot.service.MessageParser;
+import me.nizheg.telegram.bot.service.PropertyService;
+import me.nizheg.telegram.bot.service.UpdateHandler;
+import me.nizheg.telegram.bot.service.impl.CallbackQueryParserImpl;
+import me.nizheg.telegram.bot.service.impl.CommandExecutorImpl;
+import me.nizheg.telegram.bot.service.impl.CommandsHolderImpl;
+import me.nizheg.telegram.bot.service.impl.MessageParserImpl;
+import me.nizheg.telegram.bot.service.impl.MessageReceiver;
+import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 
 /**
  * @author Nikolay Zhegalin
@@ -42,6 +85,36 @@ public class AppConfig {
     public static final String SCOPE_THREAD = "thread";
     @Autowired
     private PropertyService propertyService;
+    @Autowired
+    private ChatService chatService;
+    @Autowired
+    private AnswerSender answerSender;
+    @Autowired
+    private RatingHelper ratingHelper;
+    @Autowired
+    private CategoryService categoryService;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private TourList tourList;
+    @Autowired
+    private TaskSender taskSender;
+    @Autowired
+    private TelegramUserService telegramUserService;
+    @Autowired
+    private BotInfo botInfo;
+    @Autowired
+    private PaymentService paymentService;
+    @Autowired
+    private FeedbackService feedbackService;
+    @Autowired
+    private NextTaskSender nextTaskSender;
+    @Autowired
+    private WarningSender warningSender;
+    @Autowired
+    private AnswerLogService answerLogService;
+    @Autowired
+    private TaskRatingService taskRatingService;
 
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
@@ -136,91 +209,94 @@ public class AppConfig {
 
     @Bean
     public StartCommand startCommand() {
-        return new StartCommand(() -> asyncTelegramApiClient(telegramApiClient()));
+        return new StartCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService);
     }
 
     @Bean
     public CategoryCommand categoryCommand() {
-        return new CategoryCommand(telegramApiClient());
+        return new CategoryCommand(() -> asyncTelegramApiClient(telegramApiClient()), categoryService, chatService,
+                taskService, tourList);
     }
 
     @Bean
     public RepeatCommand repeatCommand() {
-        return new RepeatCommand(telegramApiClient());
+        return new RepeatCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, taskSender,
+                warningSender);
     }
 
     @Bean
     public AnswerCommand answerCommand() {
-        return new AnswerCommand(telegramApiClient());
+        return new AnswerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, answerSender,
+                ratingHelper);
     }
 
     @Bean
     public HintCommand hintCommand() {
-        return new HintCommand(telegramApiClient());
+        return new HintCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, answerSender);
     }
 
     @Bean
     public NextCommand nextCommand() {
-        return new NextCommand(telegramApiClient());
+        return new NextCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, nextTaskSender);
     }
 
     @Bean
     public StopCommand stopCommand() {
-        return new StopCommand(telegramApiClient());
+        return new StopCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService);
     }
 
     @Bean
     public FeedbackCommand feedbackCommand() {
-        return new FeedbackCommand(telegramApiClient());
+        return new FeedbackCommand(() -> asyncTelegramApiClient(telegramApiClient()), feedbackService);
     }
 
     @Bean
     public StatCommand statCommand() {
-        return new StatCommand(telegramApiClient());
+        return new StatCommand(() -> asyncTelegramApiClient(telegramApiClient()), answerLogService, botInfo);
     }
 
     @Bean
     public TourCommand tourCommand() {
-        return new TourCommand(telegramApiClient());
+        return new TourCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, tourList);
     }
 
     @Bean
     public TournamentCommand tournamentCommand() {
-        return new TournamentCommand(telegramApiClient());
+        return new TournamentCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, tourList);
     }
 
     @Bean
     public TimerCommand timerCommand() {
-        return new TimerCommand(telegramApiClient());
+        return new TimerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService);
     }
 
     @Bean
     public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand() {
-        return new ClearCurrentTaskAndSendNextCommand(telegramApiClient());
+        return new ClearCurrentTaskAndSendNextCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService);
     }
 
-    @Bean
+    @Bean(initMethod = "init")
     public HelpCommand helpCommand() {
-        HelpCommand helpCommand = new HelpCommand(telegramApiClient());
+        HelpCommand helpCommand = new HelpCommand(() -> asyncTelegramApiClient(telegramApiClient()));
         helpCommand.setCommandsHolderSupplier(this::commandsHolder);
         return helpCommand;
     }
 
     @Bean
     public DefaultCommand defaultCommand() {
-        return new DefaultCommand(telegramApiClient());
+        return new DefaultCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, taskSender,
+                telegramUserService, ratingHelper, botInfo);
     }
 
     @Bean
     public RatingCommand ratingCommand() {
-        return new RatingCommand(telegramApiClient());
+        return new RatingCommand(() -> asyncTelegramApiClient(telegramApiClient()), taskRatingService);
     }
 
     @Bean
     public DonateCommand donateCommand() {
-        return new DonateCommand(telegramApiClient());
+        return new DonateCommand(() -> asyncTelegramApiClient(telegramApiClient()), paymentService, propertyService);
     }
-
 
     @Bean
     public ResourceBundleMessageSource messageSource() {

@@ -1,5 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import java.math.BigDecimal;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import me.nizheg.payments.dto.PaymentStatus;
 import me.nizheg.payments.dto.PaymentTransaction;
 import me.nizheg.payments.service.PaymentException;
@@ -19,31 +24,38 @@ import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.util.Emoji;
 import me.nizheg.telegram.util.TelegramApiUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Nikolay Zhegalin
  */
 public class DonateCommand extends ChatCommand {
 
-    @Autowired
-    private PaymentService paymentService;
-    @Autowired
-    private PropertyService propertyService;
+    private final PaymentService paymentService;
+    private final PropertyService propertyService;
     private BigDecimal minSum = new BigDecimal(10);
 
-    public DonateCommand(TelegramApiClient telegramApiClient) {
+    public DonateCommand(
+            TelegramApiClient telegramApiClient,
+            PaymentService paymentService,
+            PropertyService propertyService) {
         super(telegramApiClient);
+        this.paymentService = paymentService;
+        this.propertyService = propertyService;
+    }
+
+    public DonateCommand(
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
+            PaymentService paymentService, PropertyService propertyService) {
+        super(telegramApiClientSupplier);
+        this.paymentService = paymentService;
+        this.propertyService = propertyService;
     }
 
     @Override
     public void execute(CommandContext ctx) throws CommandException {
         if (!ctx.isPrivateChat()) {
-            getTelegramApiClient().sendMessage(new Message("Воспользуйтесь, пожалуйста, данной командой в личке с ботом", ctx.getChatId()));
+            getTelegramApiClient().sendMessage(
+                    new Message("Воспользуйтесь, пожалуйста, данной командой в личке с ботом", ctx.getChatId()));
             return;
         }
         String regexp = "\\s*([0-9]+(?:\\.[0-9]+)?)(?: (AC|PC|MC))?\\s*";
@@ -56,7 +68,9 @@ public class DonateCommand extends ChatCommand {
             paymentTypeParam = matcher.group(2);
         }
         Message incorrectSumMessage =
-                new Message("Укажите сумму в рублях не менее 10. Например, <code>/donate 100.00</code> или <code>/donate 100</code>", ctx.getChatId(),
+                new Message(
+                        "Укажите сумму в рублях не менее 10. Например, <code>/donate 100.00</code> или <code>/donate 100</code>",
+                        ctx.getChatId(),
                         ParseMode.HTML);
         if (sumParam == null) {
             getTelegramApiClient().sendMessage(incorrectSumMessage);
@@ -71,7 +85,8 @@ public class DonateCommand extends ChatCommand {
         if (paymentTypeParam == null) {
             Message message = new Message("<b>Сумма</b>: " + sum + " руб.", ctx.getChatId(), ParseMode.HTML);
             message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup(Emoji.PURSE + " Я.Деньги",
-                    "donate " + sum + " " + YandexMoneyPaymentType.PC.name(), Emoji.CREDIT_CARD + " Карточка", "donate " + sum + " "
+                    "donate " + sum + " " + YandexMoneyPaymentType.PC.name(), Emoji.CREDIT_CARD + " Карточка",
+                    "donate " + sum + " "
                             + YandexMoneyPaymentType.AC.name()));
             getTelegramApiClient().sendMessage(message);
             return;
@@ -84,7 +99,7 @@ public class DonateCommand extends ChatCommand {
         parameters.setReceiver(receiver);
         String target = propertyService.getValue(YandexPaymentProperties.TARGET);
         parameters.setTargets(target);
-        parameters.setPaymentTypes(new YandexMoneyPaymentType[] { yandexMoneyPaymentType });
+        parameters.setPaymentTypes(new YandexMoneyPaymentType[] {yandexMoneyPaymentType});
         parameters.setPayForm(YandexMoneyPayForm.DONATE);
         paymentProvider.setPaymentParameters(parameters);
         PaymentTransaction paymentTransaction = paymentService.initPayment(paymentProvider);
@@ -99,7 +114,8 @@ public class DonateCommand extends ChatCommand {
         }
         try {
             String paymentUrl = paymentProvider.getPaymentUrl();
-            Message message = new Message("<b>Сумма:</b> " + sum + " руб.\n<b>Способ:</b> " + paymentDescription, ctx.getChatId(), ParseMode.HTML);
+            Message message = new Message("<b>Сумма:</b> " + sum + " руб.\n<b>Способ:</b> " + paymentDescription,
+                    ctx.getChatId(), ParseMode.HTML);
             message.setReplyMarkup(TelegramApiUtil.createInlineUrlMarkup("Перевести", paymentUrl));
             Long messageId = ctx.getReplyToBotMessage().getMessageId();
             if (messageId != null) {
@@ -107,12 +123,12 @@ public class DonateCommand extends ChatCommand {
             } else {
                 getTelegramApiClient().sendMessage(message);
             }
-        } catch (PaymentException e) {
-            paymentService.updateStatus(paymentTransaction.getId(), PaymentStatus.FAILED, "Не удалось инициализировать оплату: " + e.getMessage());
-            throw new CommandException("Не удалось инициализировать оплату. Попробуйте позднее или воспользуйтесь ссылкой " + getPaymentDirectLink(), e);
-        } catch (RuntimeException e) {
-            paymentService.updateStatus(paymentTransaction.getId(), PaymentStatus.FAILED, "Не удалось инициализировать оплату: " + e.getMessage());
-            throw new CommandException("Не удалось инициализировать оплату. Попробуйте позднее или воспользуйтесь ссылкой " + getPaymentDirectLink(), e);
+        } catch (PaymentException | RuntimeException e) {
+            paymentService.updateStatus(paymentTransaction.getId(), PaymentStatus.FAILED,
+                    "Не удалось инициализировать оплату: " + e.getMessage());
+            throw new CommandException(
+                    "Не удалось инициализировать оплату. Попробуйте позднее или воспользуйтесь ссылкой "
+                            + getPaymentDirectLink(), e);
         }
 
     }
@@ -124,7 +140,8 @@ public class DonateCommand extends ChatCommand {
 
     @Override
     public String getDescription() {
-        return "/donate <sum> - внести пожертвование на оплату сервера (<sum> рублей)\nТакже можно воспользоваться ссылкой: " + getPaymentDirectLink();
+        return "/donate <sum> - внести пожертвование на оплату сервера (<sum> рублей)\nТакже можно воспользоваться ссылкой: "
+                + getPaymentDirectLink();
     }
 
     private String getPaymentDirectLink() {
