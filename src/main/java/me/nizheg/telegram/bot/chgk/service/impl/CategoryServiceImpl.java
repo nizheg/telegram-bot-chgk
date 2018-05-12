@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,15 +9,16 @@ import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private CategoryDao categoryDao;
+    private final CategoryDao categoryDao;
+
+    public CategoryServiceImpl(CategoryDao categoryDao) {
+        this.categoryDao = categoryDao;
+    }
 
     @Override
     public Category create(Category category) {

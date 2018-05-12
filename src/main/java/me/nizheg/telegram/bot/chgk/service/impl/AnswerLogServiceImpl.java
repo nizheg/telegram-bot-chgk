@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.springframework.stereotype.Service;
+
 import java.util.Date;
 import java.util.List;
 
@@ -9,17 +11,17 @@ import me.nizheg.telegram.bot.chgk.repository.AnswerLogDao;
 import me.nizheg.telegram.bot.chgk.repository.param.StatSearchParams;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 /**
  * @author Nikolay Zhegalin
  */
 @Service
 public class AnswerLogServiceImpl implements AnswerLogService {
 
-    @Autowired
-    private AnswerLogDao answerLogDao;
+    private final AnswerLogDao answerLogDao;
+
+    public AnswerLogServiceImpl(AnswerLogDao answerLogDao) {
+        this.answerLogDao = answerLogDao;
+    }
 
     @Override
     public AnswerLog create(AnswerLog answerLog) {
@@ -53,7 +55,11 @@ public class AnswerLogServiceImpl implements AnswerLogService {
     }
 
     @Override
-    public List<StatEntry> getStatForChatUserForTournament(Long chatId, Long userId, String othersUsername, Long tournamentId) {
+    public List<StatEntry> getStatForChatUserForTournament(
+            Long chatId,
+            Long userId,
+            String othersUsername,
+            Long tournamentId) {
         return answerLogDao.getStatForChatUserForTournament(chatId, userId, othersUsername, tournamentId);
     }
 }

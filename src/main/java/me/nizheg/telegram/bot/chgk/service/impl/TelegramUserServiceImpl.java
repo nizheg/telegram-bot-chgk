@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +17,9 @@ import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 public class TelegramUserServiceImpl implements TelegramUserService {
 
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private TelegramUserDao telegramUserDao;
+    private final TelegramUserDao telegramUserDao;
+
+    public TelegramUserServiceImpl(TelegramUserDao telegramUserDao) {this.telegramUserDao = telegramUserDao;}
 
     @Override
     public boolean isExist(Long id) {

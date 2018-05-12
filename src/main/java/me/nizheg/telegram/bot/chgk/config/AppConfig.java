@@ -139,7 +139,7 @@ public class AppConfig {
     public TelegramApiClient telegramApiClient() {
         String apiToken = propertyService.getValue("api.token");
         TelegramApiClientImpl telegramApiClient = new TelegramApiClientImpl(apiToken);
-        return new TelegramApiClientWrapper(telegramApiClient);
+        return new TelegramApiClientWrapper(telegramApiClient, chatService);
     }
 
     @Bean

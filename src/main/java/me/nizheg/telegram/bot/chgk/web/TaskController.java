@@ -1,14 +1,7 @@
 package me.nizheg.telegram.bot.chgk.web;
 
-import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
-import me.nizheg.telegram.bot.chgk.dto.Category;
-import me.nizheg.telegram.bot.chgk.dto.LightTask;
-import me.nizheg.telegram.bot.chgk.service.CategoryService;
-import me.nizheg.telegram.bot.chgk.service.PictureService;
-import me.nizheg.telegram.bot.chgk.service.TaskService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,17 +11,30 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
+import me.nizheg.telegram.bot.chgk.dto.Category;
+import me.nizheg.telegram.bot.chgk.dto.LightTask;
+import me.nizheg.telegram.bot.chgk.service.CategoryService;
+import me.nizheg.telegram.bot.chgk.service.PictureService;
+import me.nizheg.telegram.bot.chgk.service.TaskService;
+
 @RestController
 @RequestMapping("api/task")
 public class TaskController {
 
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private CategoryService categoryService;
-    @Autowired
-    private PictureService pictureService;
+    private final TaskService taskService;
+    private final CategoryService categoryService;
+    private final PictureService pictureService;
+
+    public TaskController(
+            TaskService taskService,
+            CategoryService categoryService,
+            PictureService pictureService) {
+        this.taskService = taskService;
+        this.categoryService = categoryService;
+        this.pictureService = pictureService;
+    }
 
     @RequestMapping(method = RequestMethod.POST)
     public LightTask create(@RequestBody LightTask task) {

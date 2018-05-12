@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.domain;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.TaskScheduler;
@@ -40,23 +39,30 @@ public class AutoChatGame extends ChatGame {
     private final static int SECOND = 1000;
     private final Map<String, Runner> operationRunners = new HashMap<>();
     private final int timeout;
-    @Autowired
-    private TaskScheduler taskScheduler;
-    @Autowired
-    private NextTaskOperation nextTaskOperation;
-    @Autowired
-    private WarningOperation warningOperation;
-    @Autowired
-    private ScheduledOperationService scheduledOperationService;
+    private final TaskScheduler taskScheduler;
+    private final NextTaskOperation nextTaskOperation;
+    private final WarningOperation warningOperation;
+    private final ScheduledOperationService scheduledOperationService;
 
     private ScheduledFuture<?> scheduledOperation;
     private ScheduledOperation scheduledOperationLog;
     private long lastAccessedTimeMillis;
     private volatile int state;
 
-    public AutoChatGame(Chat chat, int timeout) {
-        super(chat);
+    public AutoChatGame(
+            Chat chat,
+            int timeout,
+            TaskScheduler taskScheduler,
+            NextTaskOperation nextTaskOperation,
+            WarningOperation warningOperation,
+            ScheduledOperationService scheduledOperationService) {
+        super(chat, propertyService, taskDao, categoryService, tourService, taskService, answerLogService, botInfo,
+                telegramUserService);
         this.timeout = timeout;
+        this.taskScheduler = taskScheduler;
+        this.nextTaskOperation = nextTaskOperation;
+        this.warningOperation = warningOperation;
+        this.scheduledOperationService = scheduledOperationService;
         operationRunners.put(OPERATION_ID_NEXT_TASK, new NextTaskRunner());
         operationRunners.put(OPERATION_ID_WARNING, new WarningRunner());
     }
@@ -221,6 +227,7 @@ public class AutoChatGame extends ChatGame {
     }
 
     private class NextTaskRunner extends Runner {
+
         @Override
         public void doOperation() {
             Task unansweredTask = throwUnansweredTask();
@@ -234,6 +241,7 @@ public class AutoChatGame extends ChatGame {
     }
 
     private class WarningRunner extends Runner {
+
         @Override
         public void doOperation() {
             warningOperation.sendTimeWarning(chat, TIME_WARNING_BEFORE_NEXT_TASK);
@@ -242,6 +250,7 @@ public class AutoChatGame extends ChatGame {
     }
 
     private abstract class Runner implements Runnable {
+
         private final Log logger = LogFactory.getLog(getClass());
 
         @Override

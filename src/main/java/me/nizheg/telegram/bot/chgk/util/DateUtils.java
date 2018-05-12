@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class DateUtils {

@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -29,18 +28,27 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 @Component
 public class NextTaskSender implements NextTaskOperation {
 
-    @Autowired
-    private TelegramApiClient telegramApiClient;
-    @Autowired
-    private TaskSender taskSender;
-    @Autowired
-    private AnswerSender answerSender;
-    @Autowired
-    private RatingHelper ratingHelper;
-    @Autowired
-    private TourList tourList;
-    @Autowired
-    private BotInfo botInfo;
+    private final TelegramApiClient telegramApiClient;
+    private final TaskSender taskSender;
+    private final AnswerSender answerSender;
+    private final RatingHelper ratingHelper;
+    private final TourList tourList;
+    private final BotInfo botInfo;
+
+    public NextTaskSender(
+            TelegramApiClient telegramApiClient,
+            TaskSender taskSender,
+            AnswerSender answerSender,
+            RatingHelper ratingHelper,
+            TourList tourList,
+            BotInfo botInfo) {
+        this.telegramApiClient = telegramApiClient;
+        this.taskSender = taskSender;
+        this.answerSender = answerSender;
+        this.ratingHelper = ratingHelper;
+        this.tourList = tourList;
+        this.botInfo = botInfo;
+    }
 
     @Override
     public void sendNextTask(ChatGame chatGame) {
@@ -55,7 +63,8 @@ public class NextTaskSender implements NextTaskOperation {
                     StringBuilder messageBuilder = new StringBuilder(Emoji.GLOWING_STAR + " <b>Турнир пройден.</b>");
                     List<StatEntry> tournamentStat = nextTaskResult.getTournamentStat();
                     if (tournamentStat != null && !tournamentStat.isEmpty()) {
-                        messageBuilder.append("\n<i>Cчёт Знатоки против Бота: </i>" + createScoreMessage(tournamentStat));
+                        messageBuilder.append(
+                                "\n<i>Cчёт Знатоки против Бота: </i>" + createScoreMessage(tournamentStat));
                     }
                     messageText = messageBuilder.toString();
                 } else {
@@ -68,15 +77,19 @@ public class NextTaskSender implements NextTaskOperation {
                 ReplyMarkup replyMarkup = null;
                 if (!(chatGame instanceof AutoChatGame)) {
                     if (chatGame.getChat().isPrivate()) {
-                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + nextTask.getId(), "Дальше", "next");
+                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + nextTask.getId(),
+                                "Дальше", "next");
                     } else {
-                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + nextTask.getId(), "Дальше", "next");
+                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + nextTask.getId(),
+                                "Дальше", "next");
                     }
                 }
                 StringBuilder messageBuilder = new StringBuilder();
                 messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Внимание, вопрос!</b>  ");
                 if (chatGame instanceof AutoChatGame) {
-                    messageBuilder.append(Emoji.HOURGLASS_WITH_FLOWING_SAND + "<b>" + ((AutoChatGame) chatGame).getTimeout() / 60 + "</b>");
+                    messageBuilder.append(
+                            Emoji.HOURGLASS_WITH_FLOWING_SAND + "<b>" + ((AutoChatGame) chatGame).getTimeout() / 60
+                                    + "</b>");
                 }
                 messageBuilder.append("\n");
                 taskSender.sendTaskText(messageBuilder, nextTask, chatId, replyMarkup);
@@ -95,7 +108,8 @@ public class NextTaskSender implements NextTaskOperation {
         if (task != null) {
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
             replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
-            answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task, chat.getId(), replyMarkup);
+            answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task,
+                    chat.getId(), replyMarkup);
         }
     }
 

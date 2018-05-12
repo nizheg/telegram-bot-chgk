@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.domain;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import me.nizheg.telegram.bot.api.model.User;
@@ -51,24 +51,32 @@ public class ChatGame {
     private Task currentTask;
     private Category category;
     private Tournament currentTournament;
-    @Autowired
-    private PropertyService propertyService;
-    @Autowired
-    private TaskDao taskDao;
-    @Autowired
-    private CategoryService categoryService;
-    @Autowired
-    private TourService tourService;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private AnswerLogService answerLogService;
-    @Autowired
-    private BotInfo botInfo;
-    @Autowired
-    private TelegramUserService telegramUserService;
+    private final PropertyService propertyService;
+    private final TaskDao taskDao;
+    private final CategoryService categoryService;
+    private final TourService tourService;
+    private final TaskService taskService;
+    private final AnswerLogService answerLogService;
+    private final BotInfo botInfo;
+    private final TelegramUserService telegramUserService;
 
-    public ChatGame(Chat chat) {
+    public ChatGame(
+            Chat chat,
+            PropertyService propertyService,
+            TaskDao taskDao,
+            CategoryService categoryService,
+            TourService tourService,
+            TaskService taskService,
+            AnswerLogService answerLogService,
+            BotInfo botInfo, TelegramUserService telegramUserService) {
+        this.propertyService = propertyService;
+        this.taskDao = taskDao;
+        this.categoryService = categoryService;
+        this.tourService = tourService;
+        this.taskService = taskService;
+        this.answerLogService = answerLogService;
+        this.botInfo = botInfo;
+        this.telegramUserService = telegramUserService;
         Validate.notNull(chat);
         this.chat = chat;
     }
@@ -216,8 +224,9 @@ public class ChatGame {
                 result.setTournament(currentTournament);
                 nextTask = taskService.getNextTaskInTournament(currentTournament, currentTask);
                 if (nextTask == null) {
-                    result.setTournamentStat(answerLogService.getStatForChatUserForTournament(getChatId(), botInfo.getBotUser().getId(),
-                            NextTaskResult.STAT_USERS, currentTournament.getId()));
+                    result.setTournamentStat(
+                            answerLogService.getStatForChatUserForTournament(getChatId(), botInfo.getBotUser().getId(),
+                                    NextTaskResult.STAT_USERS, currentTournament.getId()));
                 }
             }
         } else {
@@ -230,6 +239,7 @@ public class ChatGame {
         return result;
     }
 
+    @Nullable
     protected Task throwUnansweredTask() {
         Task currentTask = getCurrentTask();
         if (currentTask != null && isTaskUnanswered()) {
@@ -244,6 +254,7 @@ public class ChatGame {
         return currentTask != null && !answerLogService.isExistByTaskAndChat(currentTask.getId(), getChatId());
     }
 
+    @Nullable
     protected Date getUsageTime() {
         Task currentTask = getCurrentTask();
         if (currentTask == null) {
@@ -279,7 +290,8 @@ public class ChatGame {
                     exactAnswer = null;
                     isCorrect = true;
                     break;
-                } else if (Answer.Type.APPROXIMATE.equals(answer.getType()) && isApproximatelyCorrect(normalizedText, normalizedAnswer)) {
+                } else if (Answer.Type.APPROXIMATE.equals(answer.getType()) && isApproximatelyCorrect(normalizedText,
+                        normalizedAnswer)) {
                     exactAnswer = answer.getText();
                     isCorrect = true;
                 } else if (Answer.Type.CONTAINS.equals(answer.getType()) && normalizedText.contains(normalizedAnswer)) {

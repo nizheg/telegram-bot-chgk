@@ -5,7 +5,6 @@ import com.vk.VkApi;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,14 +29,21 @@ public class FeedbackServiceImpl implements FeedbackService {
     private static final int MAX_LENGTH = 2000;
     private static final int MAX_NUMBER_OF_MESSAGES_PER_DAY = 100;
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private TelegramUserService telegramUserService;
-    @Autowired
-    private FeedbackMessageDao feedbackMessageDao;
-    @Autowired
-    private PropertyService propertyService;
-    @Autowired
-    private VkApi vkApi;
+    private final TelegramUserService telegramUserService;
+    private final FeedbackMessageDao feedbackMessageDao;
+    private final PropertyService propertyService;
+    private final VkApi vkApi;
+
+    public FeedbackServiceImpl(
+            TelegramUserService telegramUserService,
+            FeedbackMessageDao feedbackMessageDao,
+            PropertyService propertyService,
+            VkApi vkApi) {
+        this.telegramUserService = telegramUserService;
+        this.feedbackMessageDao = feedbackMessageDao;
+        this.propertyService = propertyService;
+        this.vkApi = vkApi;
+    }
 
     @Transactional
     @Override

@@ -1,5 +1,8 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,20 +19,21 @@ import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 /**
  * @author Nikolay Zhegalin
  */
 @Component
 public class TaskSender {
 
-    @Autowired
-    private TelegramApiClient telegramApiClient;
-    @Autowired
-    private PictureService pictureService;
+    private final TelegramApiClient telegramApiClient;
+    private final PictureService pictureService;
+
+    public TaskSender(
+            TelegramApiClient telegramApiClient,
+            PictureService pictureService) {
+        this.telegramApiClient = telegramApiClient;
+        this.pictureService = pictureService;
+    }
 
     public void sendTaskText(StringBuilder textBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
         if (task == null) {

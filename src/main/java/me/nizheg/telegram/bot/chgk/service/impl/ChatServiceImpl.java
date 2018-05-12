@@ -39,12 +39,11 @@ import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.service.PropertyService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class ChatServiceImpl implements ChatService {
+
     static {
         int maxSize;
         try {
@@ -67,23 +66,30 @@ public class ChatServiceImpl implements ChatService {
     private final ConcurrentMap<Long, ChatGame> chats;
     private final ConcurrentMap<Long, Long> activeChatsCache;
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private PropertyService propertyService;
-    @Autowired
-    private ChatDao chatDao;
-    @Autowired
-    private ChatErrorDao chatErrorDao;
-    @Autowired
-    private AnswerLogDao answerLogDao;
-    @Autowired
-    private ChatMappingDao chatMappingDao;
-    @Autowired
-    private TaskDao taskDao;
+    private final PropertyService propertyService;
+    private final ChatDao chatDao;
+    private final ChatErrorDao chatErrorDao;
+    private final AnswerLogDao answerLogDao;
+    private final ChatMappingDao chatMappingDao;
+    private final TaskDao taskDao;
     private TransactionTemplate newTransaction;
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    public ChatServiceImpl() {
+    public ChatServiceImpl(
+            PropertyService propertyService,
+            ChatDao chatDao,
+            ChatErrorDao chatErrorDao,
+            AnswerLogDao answerLogDao,
+            ChatMappingDao chatMappingDao,
+            TaskDao taskDao,
+            ApplicationContext applicationContext) {
+        this.propertyService = propertyService;
+        this.chatDao = chatDao;
+        this.chatErrorDao = chatErrorDao;
+        this.answerLogDao = answerLogDao;
+        this.chatMappingDao = chatMappingDao;
+        this.taskDao = taskDao;
+        this.applicationContext = applicationContext;
         EvictionListener<Long, ChatGame> evictionListener = (key, chatGame) -> {
             if (chatGame instanceof AutoChatGame) {
                 ((AutoChatGame) chatGame).pause();
@@ -218,7 +224,7 @@ public class ChatServiceImpl implements ChatService {
             try {
                 newTransaction.execute(new TransactionCallbackWithoutResult() {
                     @Override
-                    protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    protected void doInTransactionWithoutResult(@Nonnull  TransactionStatus transactionStatus) {
                         createOrUpdate(chat);
                     }
                 });

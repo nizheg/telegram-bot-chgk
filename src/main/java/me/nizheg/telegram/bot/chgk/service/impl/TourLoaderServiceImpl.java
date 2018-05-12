@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +26,10 @@ import me.nizheg.telegram.bot.chgk.service.TourService;
  */
 @Service
 public class TourLoaderServiceImpl implements TourLoaderService {
-    @Autowired
-    private TasksImporter tasksImporter;
-    @Autowired
-    private TourService tourService;
-    @Autowired
-    private TaskLoaderService taskLoaderService;
+
+    private final TasksImporter tasksImporter;
+    private final TourService tourService;
+    private final TaskLoaderService taskLoaderService;
 
     private final Map<String, LightTour.Type> typesMapping = new HashMap<>();
 
@@ -40,6 +37,14 @@ public class TourLoaderServiceImpl implements TourLoaderService {
         typesMapping.put("Ч", LightTour.Type.TOURNAMENT);
         typesMapping.put("Г", LightTour.Type.TOURNAMENT_GROUP);
         typesMapping.put("Т", LightTour.Type.TOUR);
+    }
+
+    public TourLoaderServiceImpl(
+            TasksImporter tasksImporter,
+            TourService tourService, TaskLoaderService taskLoaderService) {
+        this.tasksImporter = tasksImporter;
+        this.tourService = tourService;
+        this.taskLoaderService = taskLoaderService;
     }
 
     @Override

@@ -1,11 +1,12 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
@@ -25,10 +26,13 @@ import me.nizheg.telegram.bot.chgk.service.TourService;
 @Service
 public class TourServiceImpl implements TourService {
 
-    @Autowired
-    private TourDao tourDao;
-    @Autowired
-    private TaskDao taskDao;
+    private final TourDao tourDao;
+    private final TaskDao taskDao;
+
+    public TourServiceImpl(TourDao tourDao, TaskDao taskDao) {
+        this.tourDao = tourDao;
+        this.taskDao = taskDao;
+    }
 
     @Override
     public boolean isTourExists(long tourId) {
@@ -75,6 +79,7 @@ public class TourServiceImpl implements TourService {
 
     @Transactional
     @Override
+    @Nullable
     public LightTour createCompositeTour(LightTour lightTour) {
         if (lightTour == null) {
             return null;

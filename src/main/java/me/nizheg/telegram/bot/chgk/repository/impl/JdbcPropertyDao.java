@@ -12,14 +12,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.Property;
 import me.nizheg.telegram.bot.chgk.repository.PropertyDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -112,7 +111,7 @@ public class JdbcPropertyDao implements PropertyDao {
     private static class PropertyMapper implements RowMapper<Property> {
 
         @Override
-        public Property mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Property mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             String key = rs.getString("key");
             String value = rs.getString("value");
             Property property = new Property();

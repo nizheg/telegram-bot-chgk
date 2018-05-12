@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
@@ -19,8 +21,6 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.TelegramUserDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -36,8 +36,9 @@ public class JdbcTelegramUserDao implements TelegramUserDao {
     }
 
     static class TelegramUserMapper implements RowMapper<TelegramUser> {
+
         @Override
-        public TelegramUser mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public TelegramUser mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             Long id = rs.getLong("id");
             String username = rs.getString("username");
             String firstname = rs.getString("firstname");
@@ -52,6 +53,7 @@ public class JdbcTelegramUserDao implements TelegramUserDao {
     }
 
     @Override
+    @CheckForNull
     public TelegramUser read(Long id) {
         try {
             return template.queryForObject("select * from telegram_user where id = ?", telegramUserMapper, id);
@@ -82,15 +84,18 @@ public class JdbcTelegramUserDao implements TelegramUserDao {
 
     @Override
     public TelegramUser update(TelegramUser telegramUser) {
-        template.update("update telegram_user set username=?, firstname=?, lastname=? where id=?", telegramUser.getUsername(), telegramUser.getFirstname(),
+        template.update("update telegram_user set username=?, firstname=?, lastname=? where id=?",
+                telegramUser.getUsername(), telegramUser.getFirstname(),
                 telegramUser.getLastname(), telegramUser.getId());
         return telegramUser;
     }
 
     @Override
+    @CheckForNull
     public TelegramUser getByUsername(String username) {
         try {
-            return template.queryForObject("select * from telegram_user where username=?", telegramUserMapper, username);
+            return template.queryForObject("select * from telegram_user where username=?", telegramUserMapper,
+                    username);
         } catch (IncorrectResultSizeDataAccessException ex) {
             return null;
         }

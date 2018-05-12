@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
@@ -77,6 +79,7 @@ public class JdbcTourDao implements TourDao {
     }
 
     @Override
+    @CheckForNull
     public LightTour getById(long id) {
         try {
             return template.queryForObject("select * from tour where id = ?", tourMapper, id);
@@ -148,7 +151,7 @@ public class JdbcTourDao implements TourDao {
 
     private static class TourMapper implements RowMapper<LightTour> {
         @Override
-        public LightTour mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public LightTour mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long id = rs.getLong("id");
             Long parentId = (Long) rs.getObject("parent_id");
             String title = rs.getString("title");

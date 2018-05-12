@@ -1,7 +1,6 @@
 package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,21 +29,28 @@ public class MessageController {
 
     public static final String RECEIVER_ALL = "all";
     private static final String RECEIVER_ME = "me";
-    @Autowired
-    private BroadcastSender broadcastSender;
-    @Autowired
-    private TelegramUserService telegramUserService;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private TelegramApiClient telegramApiClient;
-    @Autowired
-    private TaskSender taskSender;
+    private final BroadcastSender broadcastSender;
+    private final TelegramUserService telegramUserService;
+    private final ChatService chatService;
+    private final TelegramApiClient telegramApiClient;
+    private final TaskSender taskSender;
 
     private final Object lock = new Object();
     private BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.NOT_STARTED);
+
+    public MessageController(
+            BroadcastSender broadcastSender,
+            TelegramUserService telegramUserService,
+            TaskService taskService,
+            ChatService chatService,
+            TelegramApiClient telegramApiClient,
+            TaskSender taskSender) {
+        this.broadcastSender = broadcastSender;
+        this.telegramUserService = telegramUserService;
+        this.chatService = chatService;
+        this.telegramApiClient = telegramApiClient;
+        this.taskSender = taskSender;
+    }
 
     @RequestMapping(method = RequestMethod.POST)
     public BroadcastStatus send(@RequestBody Message message, Principal principal) {

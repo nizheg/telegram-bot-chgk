@@ -8,14 +8,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.ChatMapping;
 import me.nizheg.telegram.bot.chgk.repository.ChatMappingDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -29,8 +28,9 @@ public class JdbcChatMappingDao implements ChatMappingDao {
     }
 
     private static class ChatMappingMapper implements RowMapper<ChatMapping> {
+
         @Override
-        public ChatMapping mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public ChatMapping mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             Long groupId = rs.getLong("group_id");
             Long superGroupId = rs.getLong("supergroup_id");
             ChatMapping chatMapping = new ChatMapping();
@@ -42,7 +42,8 @@ public class JdbcChatMappingDao implements ChatMappingDao {
 
     @Override
     public ChatMapping create(ChatMapping chatMapping) {
-        template.update("insert into chat_mapping(group_id, supergroup_id) values (?, ?)", chatMapping.getGroupId(), chatMapping.getSuperGroupId());
+        template.update("insert into chat_mapping(group_id, supergroup_id) values (?, ?)", chatMapping.getGroupId(),
+                chatMapping.getSuperGroupId());
         return chatMapping;
     }
 
@@ -58,11 +59,13 @@ public class JdbcChatMappingDao implements ChatMappingDao {
 
     @Override
     public boolean isExistsForGroup(String groupId) {
-        return 0 < template.queryForObject("select count(group_id) from chat_mapping where group_id = ?", Long.class, groupId);
+        return 0 < template.queryForObject("select count(group_id) from chat_mapping where group_id = ?", Long.class,
+                groupId);
     }
 
     @Override
     public boolean isExistsForSuperGroup(String superGroupId) {
-        return 0 < template.queryForObject("select count(supergroup_id) from chat_mapping where supergroup_id = ?", Long.class, superGroupId);
+        return 0 < template.queryForObject("select count(supergroup_id) from chat_mapping where supergroup_id = ?",
+                Long.class, superGroupId);
     }
 }

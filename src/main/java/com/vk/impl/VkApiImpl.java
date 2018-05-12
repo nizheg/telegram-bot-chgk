@@ -12,6 +12,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.annotation.Nullable;
+
 /**
 
  *
@@ -29,6 +31,7 @@ public class VkApiImpl implements VkApi {
     }
 
     @Override
+    @Nullable
     public String createCommentOnBoard(long groupId, long topicId, String message, boolean isFromGroup) {
         Map<String, Object> parameters = new TreeMap<>();
         parameters.put("access_token", accessToken);
@@ -48,10 +51,10 @@ public class VkApiImpl implements VkApi {
             logger.error(ex.getMessage(), ex);
             return null;
         }
-        if (response.getError() != null) {
+        if (response != null && response.getError() != null) {
             logger.error(response.getError().getErrorCode() + " " + response.getError().getErrorMessage());
         }
-        if (response.getResponse() != null) {
+        if (response != null && response.getResponse() != null) {
             return "https://vk.com/topic-" + groupId + "_" + topicId + "?post=" + response.getResponse();
         } else {
             return null;

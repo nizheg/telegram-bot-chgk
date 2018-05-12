@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,16 +12,15 @@ import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @RestController
 @RequestMapping("api/category")
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {this.categoryService = categoryService;}
 
     @RequestMapping(method = RequestMethod.POST)
     public Category create(@RequestBody Category category) {

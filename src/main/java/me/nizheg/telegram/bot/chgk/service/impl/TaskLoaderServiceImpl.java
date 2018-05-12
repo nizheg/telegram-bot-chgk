@@ -1,7 +1,6 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,23 +25,28 @@ import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class TaskLoaderServiceImpl implements TaskLoaderService {
 
     private static final String CATEGORY_PREFIX = "db";
-    @Autowired
-    private TasksImporter tasksImporter;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private AnswerService answerService;
-    @Autowired
-    private PictureService pictureService;
+    private final TasksImporter tasksImporter;
+    private final TaskService taskService;
+    private final AnswerService answerService;
+    private final PictureService pictureService;
     private final Pattern pattern = Pattern.compile("(.*)\\[(.*)\\](.*)");
+
+    public TaskLoaderServiceImpl(
+            TasksImporter tasksImporter,
+            TaskService taskService,
+            AnswerService answerService,
+            PictureService pictureService) {
+        this.tasksImporter = tasksImporter;
+        this.taskService = taskService;
+        this.answerService = answerService;
+        this.pictureService = pictureService;
+    }
 
     @Override
     @Transactional
@@ -100,9 +104,10 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
                 String first = matcher.group(1).trim();
                 String second = matcher.group(2).trim();
                 String third = matcher.group(3).trim();
-                answerCollection = new String[] { (first + " " + third).trim(), (first + " " + second + " " + third).trim() };
+                answerCollection = new String[] {(first + " " + third).trim(),
+                        (first + " " + second + " " + third).trim()};
             } else {
-                answerCollection = new String[] { answerText };
+                answerCollection = new String[] {answerText};
             }
 
             for (String answerPart : answerCollection) {
@@ -122,13 +127,13 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
                     String first = matcher.group(1).trim();
                     String second = matcher.group(2).trim();
                     String third = matcher.group(3).trim();
-                    additionalAnswers = new String[] { first + third, first + second + third };
+                    additionalAnswers = new String[] {first + third, first + second + third};
                 } else if (passCriteria.contains(",") && !answerText.contains(",")) {
                     additionalAnswers = passCriteria.split("\\s*,\\s*");
                 } else if (passCriteria.contains(";") && !answerText.contains(";")) {
                     additionalAnswers = passCriteria.split("\\s*;\\s*");
                 } else {
-                    additionalAnswers = new String[] { passCriteria };
+                    additionalAnswers = new String[] {passCriteria};
                 }
                 for (String additionalAnswer : additionalAnswers) {
                     additionalAnswer = StringUtils.removeEnd(additionalAnswer, ".");
@@ -154,7 +159,8 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
         task.setText(taskText);
         for (AttachedPicture attachedPicture : attachedPictures) {
             Picture savedPicture = pictureService.create(attachedPicture);
-            pictureService.savePictureToTaskTextAtPosition(savedPicture.getId(), task.getId(), attachedPicture.getPosition());
+            pictureService.savePictureToTaskTextAtPosition(savedPicture.getId(), task.getId(),
+                    attachedPicture.getPosition());
         }
     }
 
@@ -167,7 +173,8 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
         task.setComment(taskComment);
         for (AttachedPicture attachedPicture : attachedPictures) {
             Picture savedPicture = pictureService.create(attachedPicture);
-            pictureService.savePictureToTaskCommentAtPosition(savedPicture.getId(), task.getId(), attachedPicture.getPosition());
+            pictureService.savePictureToTaskCommentAtPosition(savedPicture.getId(), task.getId(),
+                    attachedPicture.getPosition());
         }
     }
 
@@ -193,11 +200,14 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
     private String removeRedundantNewlines(String text) {
         final String newlineReplacement = "==newline==";
         final String newLineReplaceTarget = "\n   ";
-        return text.replace(newLineReplaceTarget, newlineReplacement).replace("\n", " ").replace(newlineReplacement, newLineReplaceTarget);
+        return text.replace(newLineReplaceTarget, newlineReplacement)
+                .replace("\n", " ")
+                .replace(newlineReplacement, newLineReplaceTarget);
     }
 
     private String resolveTags(String text) {
-        return TelegramHtmlUtil.escape(text).replace(TelegramHtmlUtil.escape("   <раздатка>"), "Раздаточный материал<i>")
+        return TelegramHtmlUtil.escape(text)
+                .replace(TelegramHtmlUtil.escape("   <раздатка>"), "Раздаточный материал<i>")
                 .replace(TelegramHtmlUtil.escape("</раздатка>"), "</i>");
     }
 

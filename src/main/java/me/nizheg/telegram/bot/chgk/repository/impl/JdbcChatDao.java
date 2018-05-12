@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -20,8 +22,6 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.repository.ChatDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -54,6 +54,7 @@ public class JdbcChatDao implements ChatDao {
     }
 
     @Override
+    @CheckForNull
     public Chat read(long id) {
         try {
             return template.queryForObject("select * from chat where id = ?", chatMapper, id);
@@ -64,7 +65,8 @@ public class JdbcChatDao implements ChatDao {
 
     @Override
     public Chat update(Chat chat) {
-        template.update("update chat set private=?, title=?, username=?, firstname=?, lastname=?  where id=?", chat.isPrivate(), chat.getTitle(),
+        template.update("update chat set private=?, title=?, username=?, firstname=?, lastname=?  where id=?",
+                chat.isPrivate(), chat.getTitle(),
                 chat.getUserName(), chat.getFirstName(), chat.getLastName(), chat.getId());
         return chat;
     }
@@ -81,12 +83,15 @@ public class JdbcChatDao implements ChatDao {
 
     @Override
     public List<Chat> getChatsWithScheduledOperation() {
-        return template.query("select distinct chat.* from scheduled_operation so inner join chat on chat.id = so.chat_id", chatMapper);
+        return template.query(
+                "select distinct chat.* from scheduled_operation so inner join chat on chat.id = so.chat_id",
+                chatMapper);
     }
 
     private static class ChatMapper implements RowMapper<Chat> {
+
         @Override
-        public Chat mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Chat mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             Long id = rs.getLong("id");
             String username = rs.getString("username");
             boolean isPrivate = rs.getBoolean("private");

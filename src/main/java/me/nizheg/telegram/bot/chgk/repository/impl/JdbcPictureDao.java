@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
@@ -19,6 +20,7 @@ import me.nizheg.telegram.bot.chgk.repository.PictureDao;
 
 @Repository
 public class JdbcPictureDao implements PictureDao {
+
     private final JdbcTemplate template;
 
     private final PictureMapper pictureMapper = new PictureMapper();
@@ -31,8 +33,9 @@ public class JdbcPictureDao implements PictureDao {
     }
 
     private static class PictureMapper implements RowMapper<Picture> {
+
         @Override
-        public Picture mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Picture mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             Long id = rs.getLong("id");
             String telegramFileId = rs.getString("telegram_file_id");
             String sourceUrl = rs.getString("source_url");
@@ -49,7 +52,7 @@ public class JdbcPictureDao implements PictureDao {
     private static class AttachedPictureMapper implements RowMapper<AttachedPicture> {
 
         @Override
-        public AttachedPicture mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public AttachedPicture mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             Long id = rs.getLong("id");
             String telegramFileId = rs.getString("telegram_file_id");
             String sourceUrl = rs.getString("source_url");
@@ -84,7 +87,8 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public Picture update(Picture picture) {
-        template.update("update picture set telegram_file_id = ?, source_url = ?, caption = ? where id = ?", picture.getTelegramFileId(),
+        template.update("update picture set telegram_file_id = ?, source_url = ?, caption = ? where id = ?",
+                picture.getTelegramFileId(),
                 picture.getSourceUrl(), picture.getCaption(), picture.getId());
         return picture;
     }
@@ -96,13 +100,15 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public boolean hasPictureLinks(Long id) {
-        return 0 < template.queryForObject("select count(task_id) from (select task_id from task_picture where picture_id = ? "
-                + "union select task_id from comment_picture where picture_id = ?) as t", Long.class, id, id);
+        return 0 < template.queryForObject(
+                "select count(task_id) from (select task_id from task_picture where picture_id = ? "
+                        + "union select task_id from comment_picture where picture_id = ?) as t", Long.class, id, id);
     }
 
     @Override
     public void savePictureToTaskTextAtPosition(Long pictureId, Long taskId, int position) {
-        template.update("insert into task_picture(task_id, picture_id, position) values(?,?,?)", taskId, pictureId, position);
+        template.update("insert into task_picture(task_id, picture_id, position) values(?,?,?)", taskId, pictureId,
+                position);
     }
 
     @Override
@@ -114,7 +120,8 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public void updatePictureTaskTextPosition(Long pictureId, Long taskId, int position) {
-        template.update("update task_picture set position = ? where picture_id = ? and task_id = ?", position, pictureId, taskId);
+        template.update("update task_picture set position = ? where picture_id = ? and task_id = ?", position,
+                pictureId, taskId);
     }
 
     @Override
@@ -124,7 +131,8 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public void savePictureToTaskCommentAtPosition(Long pictureId, Long taskId, int position) {
-        template.update("insert into comment_picture(task_id, picture_id, position) values(?,?,?)", taskId, pictureId, position);
+        template.update("insert into comment_picture(task_id, picture_id, position) values(?,?,?)", taskId, pictureId,
+                position);
     }
 
     @Override
@@ -136,7 +144,8 @@ public class JdbcPictureDao implements PictureDao {
 
     @Override
     public void updatePictureTaskCommentPosition(Long pictureId, Long taskId, int position) {
-        template.update("update comment_picture set position = ? where picture_id = ? and task_id = ?", position, pictureId, taskId);
+        template.update("update comment_picture set position = ? where picture_id = ? and task_id = ?", position,
+                pictureId, taskId);
     }
 
     @Override

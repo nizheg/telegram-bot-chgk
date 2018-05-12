@@ -1,11 +1,12 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -28,17 +29,20 @@ public class TourList {
     private static final String ICON_TOURNAMENT = Emoji.PAGE_WITH_CURL;
     private static final String ICON_TOURNAMENT_GROUP = Emoji.OPEN_FILE_FOLDER;
     private final static int PAGE_SIZE = 5;
-    @Autowired
-    private TourService tourService;
+    private final TourService tourService;
+
+    public TourList(TourService tourService) {this.tourService = tourService;}
 
     public Message getTournamentsListOfChat(Long chatId, int numberOfPage) {
         StringBuilder messageBuilder = new StringBuilder("<b>Выберите турнир для прохождения:</b>\n");
         int publishedTournamentsCount = tourService.getPublishedTournamentsCount();
-        List<LightTourWithStat> publishedTournaments = tourService.getPublishedTournamentsWithStatForChat(chatId, PAGE_SIZE, numberOfPage);
+        List<LightTourWithStat> publishedTournaments = tourService.getPublishedTournamentsWithStatForChat(chatId,
+                PAGE_SIZE, numberOfPage);
         for (LightTourWithStat publishedTournament : publishedTournaments) {
             LightTour lightTour = publishedTournament.getLightTour();
             messageBuilder.append("\n" + ICON_TOURNAMENT + "<b> " + getTitle(lightTour) + "</b>");
-            messageBuilder.append("\n<i>Выполнено:</i> " + Math.abs(publishedTournament.getDonePercent()) + "% из " + publishedTournament.getTasksCount());
+            messageBuilder.append("\n<i>Выполнено:</i> " + Math.abs(publishedTournament.getDonePercent()) + "% из "
+                    + publishedTournament.getTasksCount());
             messageBuilder.append("\n<i>Выбрать:</i> " + createTourLink(lightTour) + "\n");
         }
         InlineKeyboardMarkup inlineKeyboardMarkup = null;
@@ -78,6 +82,7 @@ public class TourList {
         return TelegramHtmlUtil.escape(lightTour.getTitle());
     }
 
+    @Nullable
     public String getToursListOfTourGroup(long tourId) {
         LightTour compositeTour = tourService.createCompositeTour(tourId);
         if (compositeTour instanceof TourGroup && !(compositeTour instanceof Tournament)) {
@@ -88,10 +93,13 @@ public class TourList {
             }
             LightTour parentTour = tourGroup.getParentTour();
             if (parentTour != null && parentTour.getId() != LightTour.ROOT_ID) {
-                messageBuilder.append(Emoji.LEFTWARDS_BLACK_ARROW + " " + createTourLink(parentTour) + " " + getTitle(parentTour) + "\n");
+                messageBuilder.append(
+                        Emoji.LEFTWARDS_BLACK_ARROW + " " + createTourLink(parentTour) + " " + getTitle(parentTour)
+                                + "\n");
             }
             for (LightTour lightTour : tourGroup.getChildTours()) {
-                if (lightTour.getType() == LightTour.Type.TOURNAMENT && lightTour.getStatus() != LightTour.Status.PUBLISHED) {
+                if (lightTour.getType() == LightTour.Type.TOURNAMENT
+                        && lightTour.getStatus() != LightTour.Status.PUBLISHED) {
                     continue;
                 }
                 String emoji = "";

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.FeedbackMessage;
@@ -25,12 +26,14 @@ public class JdbcFeedbackMessageDao implements FeedbackMessageDao {
 
     public JdbcFeedbackMessageDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
-        this.feedbackMessageInsert = new SimpleJdbcInsert(dataSource).withTableName("feedback_message").usingGeneratedKeyColumns("id");
+        this.feedbackMessageInsert = new SimpleJdbcInsert(dataSource).withTableName("feedback_message")
+                .usingGeneratedKeyColumns("id");
     }
 
     private static class FeedbackMessageMapper implements RowMapper<FeedbackMessage> {
+
         @Override
-        public FeedbackMessage mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public FeedbackMessage mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             String message = rs.getString("message");
             Long id = rs.getLong("id");
             Long telegramUserId = rs.getLong("telegram_user_id");
@@ -57,12 +60,15 @@ public class JdbcFeedbackMessageDao implements FeedbackMessageDao {
 
     @Override
     public FeedbackMessage read(Long id) {
-        return template.queryForObject("select id, message, telegram_user_id from feedback_message where id = ?", new Object[] { id }, feedbackMessageMapper);
+        return template.queryForObject("select id, message, telegram_user_id from feedback_message where id = ?",
+                new Object[] {id}, feedbackMessageMapper);
     }
 
     @Override
     public int countForUserFromDate(Long telegramUserId, Date date) {
-        return template.queryForObject("select count(id) from feedback_message where telegram_user_id = ? and message_time > ?", Integer.class, telegramUserId,
+        return template.queryForObject(
+                "select count(id) from feedback_message where telegram_user_id = ? and message_time > ?", Integer.class,
+                telegramUserId,
                 date);
     }
 }

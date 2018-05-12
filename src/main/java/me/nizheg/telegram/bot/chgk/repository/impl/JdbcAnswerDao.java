@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.Answer;
@@ -30,7 +31,7 @@ public class JdbcAnswerDao implements AnswerDao {
 
     private static class AnswerMapper implements RowMapper<Answer> {
         @Override
-        public Answer mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Answer mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             String value = rs.getString("answer_text");
             Long id = rs.getLong("id");
             Long taskId = rs.getLong("task_id");

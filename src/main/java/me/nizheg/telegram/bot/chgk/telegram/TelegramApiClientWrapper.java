@@ -3,9 +3,10 @@ package me.nizheg.telegram.bot.chgk.telegram;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.Chat;
@@ -63,12 +64,15 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 public class TelegramApiClientWrapper implements TelegramApiClient {
 
     private final TelegramApiClient telegramApiClient;
-    @Autowired
-    private ChatService chatService;
+    private final ChatService chatService;
     private final Log logger = LogFactory.getLog(getClass());
 
-    public TelegramApiClientWrapper(TelegramApiClient telegramApiClient) {
+    public TelegramApiClientWrapper(
+            @Nonnull TelegramApiClient telegramApiClient,
+            @Nonnull ChatService chatService) {
         Validate.notNull(telegramApiClient);
+        Validate.notNull(chatService);
+        this.chatService = chatService;
         this.telegramApiClient = telegramApiClient;
     }
 

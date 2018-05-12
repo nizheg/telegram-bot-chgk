@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.TaskRating;
@@ -47,7 +48,7 @@ public class JdbcTaskRatingDao implements TaskRatingDao {
             // postgres don't allow do it in the same transaction
             newTransaction.execute(new TransactionCallbackWithoutResult() {
                 @Override
-                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                protected void doInTransactionWithoutResult(@Nonnull TransactionStatus transactionStatus) {
                     template.update("UPDATE task_rating SET value = ? WHERE task_id = ? AND telegram_user_id = ?",
                             value, taskId, telegramUserId);
                 }
@@ -62,11 +63,11 @@ public class JdbcTaskRatingDao implements TaskRatingDao {
                 "SELECT tru.c AS up_count, trd.c AS down_count FROM\n" + //
                 "(SELECT count(*) FROM tr WHERE value > 0) tru(c),\n" + //
                 "(SELECT count(*) FROM tr WHERE value < 0) trd(c)", (rs, rowNum) -> {
-                    TaskRating taskRating = new TaskRating();
-                    taskRating.setTaskId(taskId);
-                    taskRating.setLikesCount(rs.getLong("up_count"));
-                    taskRating.setDislikesCount(rs.getLong("down_count"));
-                    return taskRating;
-                }, taskId);
+            TaskRating taskRating = new TaskRating();
+            taskRating.setTaskId(taskId);
+            taskRating.setLikesCount(rs.getLong("up_count"));
+            taskRating.setDislikesCount(rs.getLong("down_count"));
+            return taskRating;
+        }, taskId);
     }
 }

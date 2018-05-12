@@ -3,12 +3,11 @@ package com.vk.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Response {
+
     private Integer response;
     private Error error;
 

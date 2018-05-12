@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,8 +14,9 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 @Component
 public class AnswerSender {
 
-    @Autowired
-    private TaskSender taskSender;
+    private final TaskSender taskSender;
+
+    public AnswerSender(TaskSender taskSender) {this.taskSender = taskSender;}
 
     public void sendAnswerOfTask(StringBuilder resultBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
         if (task == null) {

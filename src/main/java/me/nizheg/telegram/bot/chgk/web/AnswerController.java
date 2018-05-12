@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +15,6 @@ import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.service.AnswerService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @RestController
@@ -25,8 +22,9 @@ import me.nizheg.telegram.bot.chgk.service.AnswerService;
 public class AnswerController {
 
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private AnswerService answerService;
+    private final AnswerService answerService;
+
+    public AnswerController(AnswerService answerService) {this.answerService = answerService;}
 
     @RequestMapping(method = RequestMethod.POST)
     public Answer create(@RequestBody Answer answer) {

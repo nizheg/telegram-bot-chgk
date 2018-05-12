@@ -8,14 +8,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -30,7 +29,8 @@ public class JdbcCategoryDao implements CategoryDao {
 
     @Override
     public Category create(Category category) {
-        template.update("insert into category(id, category_name, position) values (?, ?, ?)", category.getId(), category.getName(), category.getPosition());
+        template.update("insert into category(id, category_name, position) values (?, ?, ?)", category.getId(),
+                category.getName(), category.getPosition());
         return category;
     }
 
@@ -41,7 +41,8 @@ public class JdbcCategoryDao implements CategoryDao {
 
     @Override
     public Category update(Category category) {
-        template.update("update category set category_name = ?, position = ? where id = ?", category.getName(), category.getPosition(), category.getId());
+        template.update("update category set category_name = ?, position = ? where id = ?", category.getName(),
+                category.getPosition(), category.getId());
         return category;
     }
 
@@ -52,7 +53,8 @@ public class JdbcCategoryDao implements CategoryDao {
 
     @Override
     public List<Category> getByTask(Long taskId) {
-        return template.query("select c.* from task_category tc inner join category c on c.id = tc.category_id where tc.task_id = ? order by c.position",
+        return template.query(
+                "select c.* from task_category tc inner join category c on c.id = tc.category_id where tc.task_id = ? order by c.position",
                 categoryMapper, taskId);
     }
 
@@ -67,8 +69,9 @@ public class JdbcCategoryDao implements CategoryDao {
     }
 
     private static class CategoryMapper implements RowMapper<Category> {
+
         @Override
-        public Category mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Category mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             String name = rs.getString("category_name");
             String id = rs.getString("id");
             int position = rs.getInt("position");

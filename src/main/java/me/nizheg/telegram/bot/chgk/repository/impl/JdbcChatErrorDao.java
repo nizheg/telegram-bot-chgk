@@ -17,8 +17,6 @@ import me.nizheg.telegram.bot.chgk.dto.ChatError;
 import me.nizheg.telegram.bot.chgk.repository.ChatErrorDao;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Repository
@@ -38,7 +36,8 @@ public class JdbcChatErrorDao implements ChatErrorDao {
 
     public JdbcChatErrorDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
-        this.chatErrorInsert = new SimpleJdbcInsert(dataSource).withTableName(TABLE_NAME).usingGeneratedKeyColumns("id");
+        this.chatErrorInsert = new SimpleJdbcInsert(dataSource).withTableName(TABLE_NAME)
+                .usingGeneratedKeyColumns("id");
     }
 
     private static class ChatErrorMapper implements RowMapper<ChatError> {

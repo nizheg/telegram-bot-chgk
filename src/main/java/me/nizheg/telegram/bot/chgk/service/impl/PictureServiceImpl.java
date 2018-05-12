@@ -1,20 +1,21 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
-import me.nizheg.telegram.bot.chgk.dto.Picture;
-import me.nizheg.telegram.bot.chgk.repository.PictureDao;
-import me.nizheg.telegram.bot.chgk.service.PictureService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
+import me.nizheg.telegram.bot.chgk.dto.Picture;
+import me.nizheg.telegram.bot.chgk.repository.PictureDao;
+import me.nizheg.telegram.bot.chgk.service.PictureService;
+
 @Service
 public class PictureServiceImpl implements PictureService {
 
-    @Autowired
-    private PictureDao pictureDao;
+    private final PictureDao pictureDao;
+
+    public PictureServiceImpl(PictureDao pictureDao) {this.pictureDao = pictureDao;}
 
     @Override
     public Picture create(Picture picture) {

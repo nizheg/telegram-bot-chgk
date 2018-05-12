@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
@@ -33,6 +35,7 @@ import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 
 @Repository
 public class JdbcTaskDao implements TaskDao {
+
     private final Log logger = LogFactory.getLog(getClass());
     private final JdbcTemplate template;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -64,6 +67,7 @@ public class JdbcTaskDao implements TaskDao {
     }
 
     @Override
+    @CheckForNull
     public LightTask getById(Long id) {
         try {
             return template.queryForObject("select * from task where id = ?", taskMapper, id);
@@ -75,8 +79,10 @@ public class JdbcTaskDao implements TaskDao {
 
     @Override
     public LightTask update(LightTask task) {
-        template.update("update task set task_text = ?, imported_task_text = ?, comment = ?, status=?, tour_id = ?, number_in_tour = ? where id = ?",
-                task.getText(), task.getImportedText(), task.getComment(), task.getStatus().name(), task.getTourId(), task.getNumberInTour(), task.getId());
+        template.update(
+                "update task set task_text = ?, imported_task_text = ?, comment = ?, status=?, tour_id = ?, number_in_tour = ? where id = ?",
+                task.getText(), task.getImportedText(), task.getComment(), task.getStatus().name(), task.getTourId(),
+                task.getNumberInTour(), task.getId());
         return task;
     }
 
@@ -101,17 +107,20 @@ public class JdbcTaskDao implements TaskDao {
             // postgres don't allow do it in the same transaction
             newTransaction.execute(new TransactionCallbackWithoutResult() {
                 @Override
-                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    template.update("update used_task set using_time = ? where chat_id = ? and task_id = ?", new Date(), chatId, taskId);
+                protected void doInTransactionWithoutResult(@Nonnull TransactionStatus transactionStatus) {
+                    template.update("update used_task set using_time = ? where chat_id = ? and task_id = ?", new Date(),
+                            chatId, taskId);
                 }
             });
         }
     }
 
     @Override
+    @CheckForNull
     public LightTask getLastUsedTask(Long chatId) {
         try {
-            return template.queryForObject("select * from task where id = (select task_id from used_task where chat_id = ? order by using_time desc limit 1)",
+            return template.queryForObject(
+                    "select * from task where id = (select task_id from used_task where chat_id = ? order by using_time desc limit 1)",
                     taskMapper, chatId);
         } catch (IncorrectResultSizeDataAccessException ex) {
             return null;
@@ -119,15 +128,18 @@ public class JdbcTaskDao implements TaskDao {
     }
 
     @Override
+    @CheckForNull
     public Date getUsageTime(Long taskId, Long chatId) {
         try {
-            return template.queryForObject("select using_time from used_task where chat_id = ? and task_id = ?", Date.class, chatId, taskId);
+            return template.queryForObject("select using_time from used_task where chat_id = ? and task_id = ?",
+                    Date.class, chatId, taskId);
         } catch (IncorrectResultSizeDataAccessException ex) {
             return null;
         }
     }
 
     @Override
+    @CheckForNull
     public LightTask getUnusedByChat(Long chatId, Category category) {
         String categoryFilter = "";
         List<Object> parameters = new ArrayList<>();
@@ -144,7 +156,8 @@ public class JdbcTaskDao implements TaskDao {
                 "left join task_priority on task_priority.task_id = task.id\n" + //
                 "where status = ?\n" + //
                 "and not exists (select 1 from used_task ut where ut.chat_id = ? and ut.task_id = task.id )\n" + //
-                "and not exists (select 1 from used_task_archive ut where ut.chat_id = ? and ut.task_id = task.id)\n" + //
+                "and not exists (select 1 from used_task_archive ut where ut.chat_id = ? and ut.task_id = task.id)\n" +
+                //
                 "group by id, priority\n" + //
                 "order by coalesce(priority, 100) desc, max(using_time) nulls first, count(chat_id)\n" + //
                 "limit 1)", parameters.toArray(), taskMapper);
@@ -155,6 +168,7 @@ public class JdbcTaskDao implements TaskDao {
     }
 
     @Override
+    @CheckForNull
     public LightTask getNextTaskInTournament(long tournamentId, int currentTourNumber, int currentNumberInTour) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("status", LightTask.Status.PUBLISHED.name());
@@ -166,7 +180,8 @@ public class JdbcTaskDao implements TaskDao {
                 "where \n" + //
                 "\ttour.parent_id = :tournamentId\n" + //
                 "\tand task.status = :status\n" + //
-                "\tand (task.number_in_tour = :currentNumberInTour + 1 and tour.number = :currentTourNumber or tour.number > :currentTourNumber)\n" + //
+                "\tand (task.number_in_tour = :currentNumberInTour + 1 and tour.number = :currentTourNumber or tour.number > :currentTourNumber)\n"
+                + //
                 "order by tour.number, number_in_tour\n" + //
                 "limit 1", parameters, taskMapper);
         if (tasks.isEmpty()) {
@@ -197,7 +212,8 @@ public class JdbcTaskDao implements TaskDao {
         queryBuilder.append("select count(distinct task.id) as ct, count(distinct ut.task_id) as cu\n");
         queryBuilder.append("from task\n");
         if (category != null) {
-            queryBuilder.append("inner join task_category tc on tc.task_id = task.id and tc.category_id = :categoryId\n");
+            queryBuilder.append(
+                    "inner join task_category tc on tc.task_id = task.id and tc.category_id = :categoryId\n");
             parameters.addValue("categoryId", category.getId());
         }
         queryBuilder.append("left join used_task_all ut on ut.task_id = task.id\n");
@@ -231,7 +247,8 @@ public class JdbcTaskDao implements TaskDao {
 
     @Override
     public boolean isExist(String text) {
-        return template.queryForObject("select exists (select 1 from task where " + getTaskTextCondition() + ")", Boolean.class, text, text);
+        return template.queryForObject("select exists (select 1 from task where " + getTaskTextCondition() + ")",
+                Boolean.class, text, text);
     }
 
     private String getTaskTextCondition() {
@@ -252,13 +269,15 @@ public class JdbcTaskDao implements TaskDao {
     @Override
     public void copyUsedTasks(Long fromChatId, Long toChatId) {
         template.update("insert into used_task(task_id, chat_id, using_time)\n" + //
-                "select ut.task_id, ?, ut.using_time from used_task ut \n" + //
-                "where ut.chat_id = ? \n" + //
-                "and not exists (select 1 from used_task ut2 where ut2.chat_id = ? and ut2.task_id = ut.task_id)", toChatId, fromChatId, toChatId);
+                        "select ut.task_id, ?, ut.using_time from used_task ut \n" + //
+                        "where ut.chat_id = ? \n" + //
+                        "and not exists (select 1 from used_task ut2 where ut2.chat_id = ? and ut2.task_id = ut.task_id)",
+                toChatId, fromChatId, toChatId);
         template.update("insert into used_task_archive(task_id, chat_id, using_time)\n" + //
-                "select ut.task_id, ?, ut.using_time from used_task_archive ut \n" + //
-                "where ut.chat_id = ? \n" + //
-                "and not exists (select 1 from used_task_archive ut2 where ut2.chat_id = ? and ut2.task_id = ut.task_id)", toChatId, fromChatId, toChatId);
+                        "select ut.task_id, ?, ut.using_time from used_task_archive ut \n" + //
+                        "where ut.chat_id = ? \n" + //
+                        "and not exists (select 1 from used_task_archive ut2 where ut2.chat_id = ? and ut2.task_id = ut.task_id)",
+                toChatId, fromChatId, toChatId);
     }
 
     @Override
@@ -272,13 +291,15 @@ public class JdbcTaskDao implements TaskDao {
         parameters.addValue("fromStatus", fromStatus.name());
         parameters.addValue("toStatus", toStatus.name());
         parameters.addValue("taskIds", taskIds);
-        namedParameterJdbcTemplate.update("update task set status = :toStatus where id in (:taskIds) and status=:fromStatus", parameters);
+        namedParameterJdbcTemplate.update(
+                "update task set status = :toStatus where id in (:taskIds) and status=:fromStatus", parameters);
 
     }
 
     private static class UsageStatMapper implements RowMapper<UsageStat> {
+
         @Override
-        public UsageStat mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public UsageStat mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             UsageStat stat = new UsageStat();
             stat.setCount(rs.getLong("ct"));
             stat.setUsedCount(rs.getLong("cu"));
@@ -287,8 +308,9 @@ public class JdbcTaskDao implements TaskDao {
     }
 
     private static class TaskMapper implements RowMapper<LightTask> {
+
         @Override
-        public LightTask mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public LightTask mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long id = rs.getLong("id");
             String text = rs.getString("task_text");
             String importedText = rs.getString("imported_task_text");

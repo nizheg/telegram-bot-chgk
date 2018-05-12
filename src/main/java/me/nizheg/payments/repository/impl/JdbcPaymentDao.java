@@ -3,6 +3,7 @@ package me.nizheg.payments.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -59,7 +60,7 @@ public class JdbcPaymentDao implements PaymentDao {
     private static class PaymentTransactionMapper implements RowMapper<PaymentTransaction> {
 
         @Override
-        public PaymentTransaction mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public PaymentTransaction mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
             long id = rs.getLong("id");
             long telegramUserId = rs.getLong("telegram_user_id");
             Date creationTime = rs.getTimestamp("creation_time");

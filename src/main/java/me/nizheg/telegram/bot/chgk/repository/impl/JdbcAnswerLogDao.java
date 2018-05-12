@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.AnswerLog;
@@ -37,7 +39,8 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     public JdbcAnswerLogDao(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-        this.answerLogInsert = new SimpleJdbcInsert(dataSource).withTableName("answer_log").usingGeneratedKeyColumns("id");
+        this.answerLogInsert = new SimpleJdbcInsert(dataSource).withTableName("answer_log")
+                .usingGeneratedKeyColumns("id");
     }
 
     @Override
@@ -57,9 +60,11 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     }
 
     @Override
+    @CheckForNull
     public AnswerLog getByTaskAndChat(Long taskId, Long chatId) {
         try {
-            return template.queryForObject("select * from answer_log where chat_id = ? and task_id = ?", new Object[] { chatId, taskId }, answerLogMapper);
+            return template.queryForObject("select * from answer_log where chat_id = ? and task_id = ?",
+                    new Object[] {chatId, taskId}, answerLogMapper);
         } catch (IncorrectResultSizeDataAccessException ex) {
             return null;
         }
@@ -67,7 +72,8 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
 
     @Override
     public boolean isExistByTaskAndChat(Long taskId, Long chatId) {
-        return template.queryForObject("select exists(select 1 from answer_log where chat_id = ? and task_id = ?)", Boolean.class, chatId, taskId);
+        return template.queryForObject("select exists(select 1 from answer_log where chat_id = ? and task_id = ?)",
+                Boolean.class, chatId, taskId);
     }
 
     @Override
@@ -98,14 +104,19 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     }
 
     @Override
-    public List<StatEntry> getStatForChatUserForTournament(Long chatId, Long userId, String othersUsername, Long tournamentId) {
+    public List<StatEntry> getStatForChatUserForTournament(
+            Long chatId,
+            Long userId,
+            String othersUsername,
+            Long tournamentId) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("chatId", chatId);
         parameters.addValue("userId", userId);
         parameters.addValue("othersUsername", othersUsername);
         StringBuilder sqlBuilder = new StringBuilder();
         if (tournamentId != null) {
-            sqlBuilder.append("with t(id) as (select id from task where task.tour_id in (select id from tour where parent_id = :tournamentId))");
+            sqlBuilder.append(
+                    "with t(id) as (select id from task where task.tour_id in (select id from tour where parent_id = :tournamentId))");
             parameters.addValue("tournamentId", tournamentId);
         }
         sqlBuilder.append("select tu.id, tu.username, tu.firstname, tu.lastname, count(task_id) as c\n");
@@ -131,15 +142,17 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     @Override
     public void copy(Long fromChatId, Long toChatId) {
         template.update("insert into answer_log(telegram_user_id, chat_id, task_id, answer_time)\n" + //
-                "select al.telegram_user_id, ?, al.task_id, al.answer_time from answer_log al\n" + //
-                "where al.chat_id = ? \n" + //
-                "and not exists (select 1 from answer_log al2 where al2.chat_id = ? and al2.task_id = al.task_id)", toChatId, fromChatId, toChatId);
+                        "select al.telegram_user_id, ?, al.task_id, al.answer_time from answer_log al\n" + //
+                        "where al.chat_id = ? \n" + //
+                        "and not exists (select 1 from answer_log al2 where al2.chat_id = ? and al2.task_id = al.task_id)",
+                toChatId, fromChatId, toChatId);
 
     }
 
     private static class AnswerLogMapper implements RowMapper<AnswerLog> {
+
         @Override
-        public AnswerLog mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public AnswerLog mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long id = rs.getLong("id");
             long telegramUserId = rs.getLong("telegram_user_id");
             long chatId = rs.getLong("chat_id");
@@ -156,10 +169,11 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
     }
 
     private static class StatEntryMapper implements RowMapper<StatEntry> {
+
         final JdbcTelegramUserDao.TelegramUserMapper telegramUserMapper = new JdbcTelegramUserDao.TelegramUserMapper();
 
         @Override
-        public StatEntry mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public StatEntry mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long count = rs.getLong("c");
             TelegramUser telegramUser = telegramUserMapper.mapRow(rs, rowNum);
             StatEntry statEntry = new StatEntry();

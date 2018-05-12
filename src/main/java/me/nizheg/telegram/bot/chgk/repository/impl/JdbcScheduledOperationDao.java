@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.ScheduledOperation;
@@ -41,6 +43,7 @@ public class JdbcScheduledOperationDao implements ScheduledOperationDao {
     }
 
     @Override
+    @CheckForNull
     public ScheduledOperation getByChatId(long chatId) {
         try {
             return template.queryForObject("select * from scheduled_operation where chat_id = ?", mapper, chatId);
@@ -59,7 +62,7 @@ public class JdbcScheduledOperationDao implements ScheduledOperationDao {
 
     private static class ScheduledOperationMapper implements RowMapper<ScheduledOperation> {
         @Override
-        public ScheduledOperation mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public ScheduledOperation mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long chatId = rs.getLong("chat_id");
             String operationId = rs.getString("operation_id");
             Date time = rs.getTimestamp("scheduling_time");

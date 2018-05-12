@@ -1,29 +1,30 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.chgk.dto.Property;
 import me.nizheg.telegram.bot.chgk.repository.PropertyDao;
 import me.nizheg.telegram.bot.service.PropertyService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service("propertyService")
 @Transactional
 public class PropertyServiceImpl implements PropertyService {
 
-    @Autowired
-    private PropertyDao propertyDao;
+    private final PropertyDao propertyDao;
+
+    public PropertyServiceImpl(PropertyDao propertyDao) {this.propertyDao = propertyDao;}
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public String getValue(String key) {
         if (propertyDao.isExist(key)) {
             return propertyDao.read(key).getValue();
@@ -33,6 +34,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public Long getLongValue(String key) {
         String stringValue = getValue(key);
         if (stringValue == null) {
@@ -43,6 +45,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public String getValueForChat(String key, Long chatId) {
         if (propertyDao.isExist(key, chatId)) {
             return propertyDao.readByKeyAndChatId(key, chatId).getValue();
@@ -52,6 +55,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public Boolean getBooleanValueForChat(String key, Long chatId) {
         String stringValue = getValueForChat(key, chatId);
         if (stringValue == null) {
@@ -62,6 +66,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public Integer getIntegerValueForChat(String key, Long chatId) {
         String stringValue = getValueForChat(key, chatId);
         if (stringValue == null) {
@@ -72,6 +77,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional(readOnly = true)
+    @Nullable
     public Long getLongValueForChat(String key, Long chatId) {
         String stringValue = getValueForChat(key, chatId);
         if (stringValue == null) {

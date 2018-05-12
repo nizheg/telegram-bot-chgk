@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +22,9 @@ import me.nizheg.telegram.bot.chgk.service.TourService;
 public class TourController {
 
     private final Log logger = LogFactory.getLog(getClass());
-    @Autowired
-    private TourService tourService;
+    private final TourService tourService;
+
+    public TourController(TourService tourService) {this.tourService = tourService;}
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public LightTour read(@PathVariable Long id) {

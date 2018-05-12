@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,26 +16,30 @@ import me.nizheg.telegram.bot.chgk.service.BroadcastSender;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class BroadcastSenderImpl implements BroadcastSender {
 
-    @Autowired
-    private TelegramApiClient telegramApiClient;
-    @Autowired
-    private ChatService chatService;
+    private final TelegramApiClient telegramApiClient;
+    private final ChatService chatService;
 
     private final Log logger = LogFactory.getLog(getClass());
+
+    public BroadcastSenderImpl(
+            TelegramApiClient telegramApiClient,
+            ChatService chatService) {
+        this.telegramApiClient = telegramApiClient;
+        this.chatService = chatService;
+    }
 
     @Override
     public BroadcastStatus sendMessage(String message) {
         if (StringUtils.isEmpty(message)) {
             return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
         }
-        final String sendingMessage = message + "\n\nЕсли вы хотите отписаться от рассылок, выключите бота командой /stop";
+        final String sendingMessage =
+                message + "\n\nЕсли вы хотите отписаться от рассылок, выключите бота командой /stop";
         final List<Long> activeChats = chatService.getActiveChats();
         logger.info(">>>There was found " + activeChats.size() + " active chats for broadcast");
         final BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
@@ -45,7 +48,7 @@ public class BroadcastSenderImpl implements BroadcastSender {
 
         new Thread(() -> {
             int tryingCount = 0;
-            for (int i = 0; i < activeChats.size();) {
+            for (int i = 0; i < activeChats.size(); ) {
                 if (BroadcastStatus.Status.CANCELLED.equals(broadcastStatus.getStatus())) {
                     logger.info("<<<Broadcast is cancelled. Sent " + i + " of " + broadcastStatus.getTotalCount());
                     return;
@@ -78,7 +81,8 @@ public class BroadcastSenderImpl implements BroadcastSender {
                             }
                         }
                     } else if (ex.getHttpStatus() != null
-                            && (ex.getHttpStatus().equals(HttpStatus.FORBIDDEN) || ex.getHttpStatus().equals(HttpStatus.BAD_REQUEST))) {
+                            && (ex.getHttpStatus().equals(HttpStatus.FORBIDDEN) || ex.getHttpStatus()
+                            .equals(HttpStatus.BAD_REQUEST))) {
                         chatService.deactivateChat(chatId);
                     } else {
                         logger.error("Api exception. Skip chat " + chatId, ex);

@@ -1,12 +1,13 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+
+import javax.annotation.CheckForNull;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
@@ -21,19 +22,23 @@ import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class TaskServiceImpl implements TaskService {
 
-    @Autowired
-    private TaskDao taskDao;
-    @Autowired
-    private AnswerService answerService;
-    @Autowired
-    private PictureService pictureService;
+    private final TaskDao taskDao;
+    private final AnswerService answerService;
+    private final PictureService pictureService;
+
+    public TaskServiceImpl(
+            TaskDao taskDao,
+            AnswerService answerService,
+            PictureService pictureService) {
+        this.taskDao = taskDao;
+        this.answerService = answerService;
+        this.pictureService = pictureService;
+    }
 
     @Transactional
     @Override
@@ -142,6 +147,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
+    @CheckForNull
     public Task createCompositeTask(LightTask lightTask) {
         if (lightTask == null) {
             return null;
@@ -174,8 +180,10 @@ public class TaskServiceImpl implements TaskService {
             currentNumberInTour = 0;
             currentTourNumber = 0;
         } else {
-            currentNumberInTour = currentTask == null || currentTask.getNumberInTour() == null ? 0 : currentTask.getNumberInTour();
-            currentTourNumber = currentTaskTourInTournament.getNumber() == null ? 0 : currentTaskTourInTournament.getNumber();
+            currentNumberInTour =
+                    currentTask == null || currentTask.getNumberInTour() == null ? 0 : currentTask.getNumberInTour();
+            currentTourNumber =
+                    currentTaskTourInTournament.getNumber() == null ? 0 : currentTaskTourInTournament.getNumber();
         }
         return taskDao.getNextTaskInTournament(currentTournament.getId(), currentTourNumber, currentNumberInTour);
     }

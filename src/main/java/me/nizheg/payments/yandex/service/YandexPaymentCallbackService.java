@@ -3,7 +3,6 @@ package me.nizheg.payments.yandex.service;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -18,12 +17,18 @@ import me.nizheg.telegram.bot.service.PropertyService;
  */
 @Service
 public class YandexPaymentCallbackService {
-    @Autowired
-    private PropertyService propertyService;
-    @Autowired
-    private PaymentService paymentService;
+
+    private final PropertyService propertyService;
+    private final PaymentService paymentService;
     private String secret;
     private final Log logger = LogFactory.getLog(getClass());
+
+    public YandexPaymentCallbackService(
+            PropertyService propertyService,
+            PaymentService paymentService) {
+        this.propertyService = propertyService;
+        this.paymentService = paymentService;
+    }
 
     @PostConstruct
     public void init() {
@@ -54,7 +59,8 @@ public class YandexPaymentCallbackService {
         }
         String paymentCallbackSha1Hex = calculateSha1Hex(paymentCallback);
         if (!paymentCallbackSha1Hex.equals(paymentCallback.getSha1Hash())) {
-            logger.error("CALLBACK sha1 incorrect. actual:" + paymentCallbackSha1Hex + " required:" + paymentCallback.getSha1Hash());
+            logger.error("CALLBACK sha1 incorrect. actual:" + paymentCallbackSha1Hex + " required:"
+                    + paymentCallback.getSha1Hash());
             if (transactionId != null) {
                 paymentService.updateStatus(transactionId, PaymentStatus.FAILED,
                         "SHA не верен: " + paymentCallbackSha1Hex + " Ожидается " + paymentCallback.getSha1Hash());
@@ -68,8 +74,10 @@ public class YandexPaymentCallbackService {
 
     private String calculateSha1Hex(PaymentCallback paymentCallback) {
         String data =
-                paymentCallback.getNotificationType() + "&" + paymentCallback.getOperationId() + "&" + paymentCallback.getAmount() + "&"
-                        + paymentCallback.getCurrency() + "&" + paymentCallback.getDatetime() + "&" + paymentCallback.getSender() + "&"
+                paymentCallback.getNotificationType() + "&" + paymentCallback.getOperationId() + "&"
+                        + paymentCallback.getAmount() + "&"
+                        + paymentCallback.getCurrency() + "&" + paymentCallback.getDatetime() + "&"
+                        + paymentCallback.getSender() + "&"
                         + paymentCallback.isCodepro() + "&" + secret + "&" + paymentCallback.getLabel();
         return DigestUtils.sha1Hex(data);
     }

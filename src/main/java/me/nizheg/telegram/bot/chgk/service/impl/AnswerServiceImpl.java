@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,15 +9,16 @@ import me.nizheg.telegram.bot.chgk.repository.AnswerDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerService;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Service
 public class AnswerServiceImpl implements AnswerService {
 
-    @Autowired
-    private AnswerDao answerDao;
+    private final AnswerDao answerDao;
+
+    public AnswerServiceImpl(AnswerDao answerDao) {
+        this.answerDao = answerDao;
+    }
 
     @Override
     public Answer create(Answer answer) {
