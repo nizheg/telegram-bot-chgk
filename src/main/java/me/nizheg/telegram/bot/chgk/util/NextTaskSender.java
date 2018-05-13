@@ -1,5 +1,6 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -10,6 +11,7 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.NextTaskOperation;
@@ -26,6 +28,7 @@ import me.nizheg.telegram.util.TelegramApiUtil;
  * @author Nikolay Zhegalin
  */
 @Component
+@Scope(AppConfig.SCOPE_THREAD)
 public class NextTaskSender implements NextTaskOperation {
 
     private final TelegramApiClient telegramApiClient;
@@ -36,13 +39,13 @@ public class NextTaskSender implements NextTaskOperation {
     private final BotInfo botInfo;
 
     public NextTaskSender(
-            TelegramApiClient telegramApiClient,
+            TelegramApiClient asyncTelegramApiClient,
             TaskSender taskSender,
             AnswerSender answerSender,
             RatingHelper ratingHelper,
             TourList tourList,
             BotInfo botInfo) {
-        this.telegramApiClient = telegramApiClient;
+        this.telegramApiClient = asyncTelegramApiClient;
         this.taskSender = taskSender;
         this.answerSender = answerSender;
         this.ratingHelper = ratingHelper;

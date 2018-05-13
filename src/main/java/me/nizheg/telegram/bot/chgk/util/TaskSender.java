@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
@@ -14,6 +15,7 @@ import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.InputFile;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.service.param.Photo;
+import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
@@ -23,15 +25,16 @@ import me.nizheg.telegram.bot.chgk.service.PictureService;
  * @author Nikolay Zhegalin
  */
 @Component
+@Scope(AppConfig.SCOPE_THREAD)
 public class TaskSender {
 
     private final TelegramApiClient telegramApiClient;
     private final PictureService pictureService;
 
     public TaskSender(
-            TelegramApiClient telegramApiClient,
+            TelegramApiClient asyncTelegramApiClient,
             PictureService pictureService) {
-        this.telegramApiClient = telegramApiClient;
+        this.telegramApiClient = asyncTelegramApiClient;
         this.pictureService = pictureService;
     }
 
