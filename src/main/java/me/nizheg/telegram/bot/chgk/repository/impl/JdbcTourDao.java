@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.dto.PageResult;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.repository.TourDao;
 
@@ -115,20 +116,27 @@ public class JdbcTourDao implements TourDao {
     }
 
     @Override
-    public List<LightTour> getPublishedTournamentsByQuery(String query) {
+    public PageResult<LightTour> getPublishedTournamentsByQuery(String query, int limit, int offset) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("type", LightTour.Type.TOURNAMENT.name());
         parameters.addValue("status", LightTour.Status.PUBLISHED.name());
         parameters.addValue("query", query);
         String queryFormat = "select * from tour where type=:type and status=:status and (%s) order by %s";
-        List<LightTour> result = namedParameterJdbcTemplate.query(
-                String.format(queryFormat, "title~*:query", "title"), parameters, tourMapper);
+        String sql = String.format(queryFormat, "title~*:query", "title");
+        List<LightTour> result = queryPaged(sql, limit, offset, parameters);
         if (query.length() > 4 && result.isEmpty()) {
             String similarity = "word_similarity(:query, title)";
-            result = namedParameterJdbcTemplate.query(
-                    String.format(queryFormat, similarity + ">=0.4", similarity), parameters, tourMapper);
+            sql = String.format(queryFormat, similarity + ">=0.4", similarity);
+            result = queryPaged(sql, limit, offset, parameters);
         }
-        return result;
+        long count = namedParameterJdbcTemplate.queryForObject("select count(*) from (" + sql + ") as t",
+                parameters, Long.class);
+        return new PageResult<>(result, count);
+    }
+
+    private List<LightTour> queryPaged(String sql, int limit, int offset, MapSqlParameterSource parameters) {
+        return namedParameterJdbcTemplate.query(sql + " limit " + limit + " offset "
+                + limit * offset, parameters, tourMapper);
     }
 
     @Override

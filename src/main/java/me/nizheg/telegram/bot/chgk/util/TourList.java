@@ -14,6 +14,7 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.dto.PageResult;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
@@ -29,6 +30,7 @@ public class TourList {
     private static final String ICON_TOURNAMENT = Emoji.PAGE_WITH_CURL;
     private static final String ICON_TOURNAMENT_GROUP = Emoji.OPEN_FILE_FOLDER;
     private final static int PAGE_SIZE = 5;
+    private final static int SEARCH_PAGE_SIZE = 10;
     private final TourService tourService;
 
     public TourList(TourService tourService) {
@@ -37,13 +39,19 @@ public class TourList {
 
     public Message getFilteredTournamentsListOfChat(Long chatId, String query) {
         StringBuilder messageBuilder = new StringBuilder("<b>Результаты поиска:</b>");
-        List<LightTour> publishedTournaments = tourService.getPublishedTournamentsByQuery(query);
+        PageResult<LightTour> publishedTournamentsPage = tourService.getPublishedTournamentsByQuery(query,
+                SEARCH_PAGE_SIZE, 0);
+        List<LightTour> publishedTournaments = publishedTournamentsPage.getValues();
         for (LightTour lightTour : publishedTournaments) {
             messageBuilder.append(
                     String.format("\n%s %s %s", ICON_TOURNAMENT, createTourLink(lightTour), getTitle(lightTour)));
         }
         if (publishedTournaments.isEmpty()) {
             messageBuilder.append("\nТурниров, удовлетворящих запросу, не найдено");
+        } else if (publishedTournaments.size() < publishedTournamentsPage.getTotalCount()) {
+            messageBuilder.append(
+                    "\n\n<i>Найдено " + publishedTournamentsPage.getTotalCount() + " турниров. Уточните критерий "
+                            + "поиска.</i>");
         }
         return new Message(messageBuilder.toString(), chatId, ParseMode.HTML);
     }

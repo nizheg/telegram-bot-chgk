@@ -3,6 +3,7 @@ package me.nizheg.telegram.bot.chgk.service;
 import java.util.List;
 
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.dto.PageResult;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 
 /**
@@ -29,5 +30,5 @@ public interface TourService {
 
     List<LightTour> getByType(LightTour.Type type);
 
-    List<LightTour> getPublishedTournamentsByQuery(String query);
+    PageResult<LightTour> getPublishedTournamentsByQuery(String query, int limit, int offset);
 }

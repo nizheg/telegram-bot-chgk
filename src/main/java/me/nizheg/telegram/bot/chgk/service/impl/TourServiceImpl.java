@@ -12,6 +12,7 @@ import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
 import me.nizheg.telegram.bot.chgk.dto.LightTour.Status;
 import me.nizheg.telegram.bot.chgk.dto.LightTour.Type;
+import me.nizheg.telegram.bot.chgk.dto.PageResult;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tour;
 import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
@@ -71,8 +72,8 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override
-    public List<LightTour> getPublishedTournamentsByQuery(String query) {
-        return tourDao.getPublishedTournamentsByQuery(query);
+    public PageResult<LightTour> getPublishedTournamentsByQuery(String query, int limit, int offset) {
+        return tourDao.getPublishedTournamentsByQuery(query, limit, offset);
     }
 
     @Transactional

@@ -5,6 +5,7 @@ import java.util.List;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
 import me.nizheg.telegram.bot.chgk.dto.LightTour.Status;
 import me.nizheg.telegram.bot.chgk.dto.LightTour.Type;
+import me.nizheg.telegram.bot.chgk.dto.PageResult;
 import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
 
 /**
@@ -24,7 +25,7 @@ public interface TourDao {
 
     List<LightTour> getByTypeAndStatus(Type type, Status status);
 
-    List<LightTour> getPublishedTournamentsByQuery(String query);
+    PageResult<LightTour> getPublishedTournamentsByQuery(String query, int limit, int offset);
 
     List<LightTourWithStat> getPublishedTournamentsWithStatForChat(long chatId, int limit, int offset);
 
