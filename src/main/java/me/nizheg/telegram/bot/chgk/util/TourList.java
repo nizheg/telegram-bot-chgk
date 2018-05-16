@@ -31,7 +31,22 @@ public class TourList {
     private final static int PAGE_SIZE = 5;
     private final TourService tourService;
 
-    public TourList(TourService tourService) {this.tourService = tourService;}
+    public TourList(TourService tourService) {
+        this.tourService = tourService;
+    }
+
+    public Message getFilteredTournamentsListOfChat(Long chatId, String query) {
+        StringBuilder messageBuilder = new StringBuilder("<b>Результаты поиска:</b>");
+        List<LightTour> publishedTournaments = tourService.getPublishedTournamentsByQuery(query);
+        for (LightTour lightTour : publishedTournaments) {
+            messageBuilder.append(
+                    String.format("\n%s %s %s", ICON_TOURNAMENT, createTourLink(lightTour), getTitle(lightTour)));
+        }
+        if (publishedTournaments.isEmpty()) {
+            messageBuilder.append("\nТурниров, удовлетворящих запросу, не найдено");
+        }
+        return new Message(messageBuilder.toString(), chatId, ParseMode.HTML);
+    }
 
     public Message getTournamentsListOfChat(Long chatId, int numberOfPage) {
         StringBuilder messageBuilder = new StringBuilder("<b>Выберите турнир для прохождения:</b>\n");
@@ -64,7 +79,7 @@ public class TourList {
             inlineKeyboardMarkup.setInlineKeyboard(Collections.singletonList(keyboard));
             InlineKeyboardButton previous = new InlineKeyboardButton();
             previous.setText(Emoji.LEFTWARDS_BLACK_ARROW);
-            previous.setCallbackData("tournament " + previousPage);
+            previous.setCallbackData("tournament page" + previousPage);
             keyboard.add(previous);
             InlineKeyboardButton root = new InlineKeyboardButton();
             root.setText(Emoji.OPEN_FILE_FOLDER + " Корень");
@@ -72,7 +87,7 @@ public class TourList {
             keyboard.add(root);
             InlineKeyboardButton next = new InlineKeyboardButton();
             next.setText(Emoji.BLACK_RIGHTWARDS_ARROW);
-            next.setCallbackData("tournament " + nextPage);
+            next.setCallbackData("tournament page" + nextPage);
             keyboard.add(next);
         }
         return new Message(messageBuilder.toString(), chatId, ParseMode.HTML, true, null, inlineKeyboardMarkup);
@@ -123,4 +138,5 @@ public class TourList {
     private String createTourLink(LightTour tour) {
         return "/tour_" + tour.getId();
     }
+
 }

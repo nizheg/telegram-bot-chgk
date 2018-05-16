@@ -31,6 +31,7 @@ import me.nizheg.telegram.bot.chgk.repository.TourDao;
  */
 @Repository
 public class JdbcTourDao implements TourDao {
+
     private final Log logger = LogFactory.getLog(getClass());
     private final JdbcTemplate template;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -72,8 +73,10 @@ public class JdbcTourDao implements TourDao {
 
     @Override
     public LightTour update(LightTour tour) {
-        template.update("update tour set parent_id = ?, title = ?, status = ?, type = ?, number = ? where id = ?", tour.getParentTourId(), tour.getTitle(),
-                (tour.getStatus() == null ? null : tour.getStatus().name()), (tour.getType() == null ? null : tour.getType().name()), tour.getNumber(),
+        template.update("update tour set parent_id = ?, title = ?, status = ?, type = ?, number = ? where id = ?",
+                tour.getParentTourId(), tour.getTitle(),
+                (tour.getStatus() == null ? null : tour.getStatus().name()),
+                (tour.getType() == null ? null : tour.getType().name()), tour.getNumber(),
                 tour.getId());
         return tour;
     }
@@ -91,7 +94,8 @@ public class JdbcTourDao implements TourDao {
 
     @Override
     public List<LightTour> getByParentTour(long tourId) {
-        return template.query("select * from tour where parent_id = ? order by number nulls first, id", tourMapper, tourId);
+        return template.query("select * from tour where parent_id = ? order by number nulls first, id", tourMapper,
+                tourId);
     }
 
     @Override
@@ -111,6 +115,23 @@ public class JdbcTourDao implements TourDao {
     }
 
     @Override
+    public List<LightTour> getPublishedTournamentsByQuery(String query) {
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("type", LightTour.Type.TOURNAMENT.name());
+        parameters.addValue("status", LightTour.Status.PUBLISHED.name());
+        parameters.addValue("query", query);
+        String queryFormat = "select * from tour where type=:type and status=:status and (%s) order by %s";
+        List<LightTour> result = namedParameterJdbcTemplate.query(
+                String.format(queryFormat, "title~*:query", "title"), parameters, tourMapper);
+        if (query.length() > 4 && result.isEmpty()) {
+            String similarity = "word_similarity(:query, title)";
+            result = namedParameterJdbcTemplate.query(
+                    String.format(queryFormat, similarity + ">=0.4", similarity), parameters, tourMapper);
+        }
+        return result;
+    }
+
+    @Override
     public List<LightTourWithStat> getPublishedTournamentsWithStatForChat(long chatId, int limit, int offset) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("type", LightTour.Type.TOURNAMENT.name());
@@ -118,15 +139,16 @@ public class JdbcTourDao implements TourDao {
         parameters.addValue("taskStatus", LightTask.Status.PUBLISHED.name());
         parameters.addValue("chatId", chatId);
         String sql =
-                "select tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at,\n" //
-                        + "round(((-1)^(count(al.id) / count(t.id)) * count(al.id)::float / count(t.id)) * 100) as done, count(t.*) as tasks_count " //
+                "select tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at,\n"
+                        + "round(((-1)^(count(al.id) / count(t.id)) * count(al.id)::float / count(t.id)) * 100) as done, count(t.*) as tasks_count "
                         + "from task t\n" //
                         + "inner join tour on tour.id = t.tour_id\n" //
                         + "inner join tour tournament on tournament.id = tour.parent_id\n" //
                         + "left join answer_log al on al.chat_id = :chatId and al.task_id = t.id\n" //
-                        + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus\n" //
-                        + "group by tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at\n" //
-                        + "order by done desc, tournament.played_at desc nulls last limit " + limit + " offset " + limit * offset;
+                        + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus\n"
+                        + "group by tournament.id, tournament.parent_id, tournament.title, tournament.number, tournament.status, tournament.type, tournament.played_at\n"
+                        + "order by done desc, tournament.played_at desc nulls last limit " + limit + " offset "
+                        + limit * offset;
         return namedParameterJdbcTemplate.query(sql, parameters, (rs, rowNum) -> {
             LightTour lightTour = tourMapper.mapRow(rs, rowNum);
             LightTourWithStat lightTourWithStat = new LightTourWithStat(lightTour);
@@ -142,14 +164,17 @@ public class JdbcTourDao implements TourDao {
         parameters.addValue("type", LightTour.Type.TOURNAMENT.name());
         parameters.addValue("status", LightTour.Status.PUBLISHED.name());
         parameters.addValue("taskStatus", LightTask.Status.PUBLISHED.name());
-        return namedParameterJdbcTemplate.queryForObject("select count(distinct (tournament.*))\n" //
-                + "from task t\n" //
-                + "inner join tour on tour.id = t.tour_id\n" //
-                + "inner join tour tournament on tournament.id = tour.parent_id\n" //
-                + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus", parameters, Integer.class);
+        return namedParameterJdbcTemplate.queryForObject(
+                "select count(distinct (tournament.*))\n" //
+                        + "from task t\n" //
+                        + "inner join tour on tour.id = t.tour_id\n" //
+                        + "inner join tour tournament on tournament.id = tour.parent_id\n" //
+                        + "where tournament.type = :type and tournament.status = :status and t.status = :taskStatus",
+                parameters, Integer.class);
     }
 
     private static class TourMapper implements RowMapper<LightTour> {
+
         @Override
         public LightTour mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long id = rs.getLong("id");

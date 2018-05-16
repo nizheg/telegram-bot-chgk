@@ -28,4 +28,6 @@ public interface TourService {
     int getPublishedTournamentsCount();
 
     List<LightTour> getByType(LightTour.Type type);
+
+    List<LightTour> getPublishedTournamentsByQuery(String query);
 }

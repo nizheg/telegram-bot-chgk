@@ -1,8 +1,12 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -21,6 +25,7 @@ import me.nizheg.telegram.bot.command.CommandContext;
 public class TournamentCommand extends ChatCommand {
 
     private static final String COMMAND_NAME = "tournament";
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("(?:page(?<page>[0-9]+))?(?<query>.*)");
 
     private final ChatService chatService;
     private final TourList tourList;
@@ -51,22 +56,29 @@ public class TournamentCommand extends ChatCommand {
         if (!chatService.isChatActive(ctx.getChatId())) {
             return;
         }
-        int page;
-        try {
-            page = Integer.valueOf(ctx.getText());
-        } catch (NumberFormatException ex) {
-            page = 0;
+        Matcher matcher = COMMAND_PATTERN.matcher(ctx.getText());
+        Optional<String> queryParam = Optional.empty();
+        Optional<Integer> pageParam = Optional.empty();
+        if (matcher.matches()) {
+            queryParam = Optional.ofNullable(matcher.group("query")).filter(StringUtils::isNotBlank);
+            pageParam = Optional.ofNullable(matcher.group("page")).map(Integer::valueOf);
         }
-        Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), page);
-        if (ctx.getReplyToBotMessage() != null) {
-            try {
-                getTelegramApiClient().editMessageText(
-                        new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
-            } catch (TelegramApiException ex) {
-                logger.warn("Unable to edit message of tournaments", ex);
-            }
-        } else {
+        int page = pageParam.orElse(0);
+        if (queryParam.isPresent()) {
+            Message tournamentsList = tourList.getFilteredTournamentsListOfChat(ctx.getChatId(), queryParam.get());
             getTelegramApiClient().sendMessage(tournamentsList);
+        } else {
+            Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), page);
+            if (ctx.getReplyToBotMessage() != null) {
+                try {
+                    getTelegramApiClient().editMessageText(
+                            new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
+                } catch (TelegramApiException ex) {
+                    logger.warn("Unable to edit message of tournaments", ex);
+                }
+            } else {
+                getTelegramApiClient().sendMessage(tournamentsList);
+            }
         }
     }
 

@@ -70,6 +70,11 @@ public class TourServiceImpl implements TourService {
         return tourDao.getByTypeAndStatus(type, null);
     }
 
+    @Override
+    public List<LightTour> getPublishedTournamentsByQuery(String query) {
+        return tourDao.getPublishedTournamentsByQuery(query);
+    }
+
     @Transactional
     @Override
     public LightTour createCompositeTour(long id) {

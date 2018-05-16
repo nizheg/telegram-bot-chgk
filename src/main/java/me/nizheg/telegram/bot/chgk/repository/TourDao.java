@@ -11,6 +11,7 @@ import me.nizheg.telegram.bot.chgk.dto.composite.LightTourWithStat;
  * @author Nikolay Zhegalin
  */
 public interface TourDao {
+
     boolean isTourExists(long tourId);
 
     LightTour create(LightTour lightTour);
@@ -23,7 +24,10 @@ public interface TourDao {
 
     List<LightTour> getByTypeAndStatus(Type type, Status status);
 
+    List<LightTour> getPublishedTournamentsByQuery(String query);
+
     List<LightTourWithStat> getPublishedTournamentsWithStatForChat(long chatId, int limit, int offset);
 
     int getPublishedTournamentsCount();
+
 }
