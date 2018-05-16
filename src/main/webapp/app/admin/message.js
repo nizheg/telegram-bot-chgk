@@ -5,10 +5,14 @@
     function MessageController($log,
                                $routeParams,
                                $location,
-                               api) {
+                               api,
+                               dictionary) {
         var t = this;
         t.status = {};
         t.statusDescription = "";
+        t.enableWebPagePreview = false;
+        t.parseMode = null;
+        t.parseModes = dictionary.getParseModes();
         api.getMessageStatus().then(function (data) {
                     t.status = data;
                     t.statusDescription = t.printStatus(data);
@@ -41,7 +45,7 @@
         }
 
         t.sendMessage = function () {
-            api.sendMessage(t.message).then(function (data) {
+            api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (data) {
                 t.status = data;
                 t.statusDescription = t.printStatus(data);
             });

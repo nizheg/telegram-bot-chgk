@@ -10,6 +10,8 @@ import java.util.List;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
+import me.nizheg.telegram.bot.api.service.param.ForwardingMessage;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.service.BroadcastSender;
@@ -34,17 +36,15 @@ public class BroadcastSenderImpl implements BroadcastSender {
     }
 
     @Override
-    public BroadcastStatus sendMessage(String message) {
-        if (StringUtils.isEmpty(message)) {
+    public BroadcastStatus sendMessage(Message message) {
+        if (StringUtils.isEmpty(message.getText())) {
             return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
         }
-        final String sendingMessage =
-                message + "\n\nЕсли вы хотите отписаться от рассылок, выключите бота командой /stop";
         final List<Long> activeChats = chatService.getActiveChats();
         logger.info(">>>There was found " + activeChats.size() + " active chats for broadcast");
         final BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
         broadcastStatus.setTotalCount(activeChats.size());
-        broadcastStatus.setSendingMessage(sendingMessage);
+        broadcastStatus.setSendingMessage(message.getText());
 
         new Thread(() -> {
             int tryingCount = 0;
@@ -56,7 +56,8 @@ public class BroadcastSenderImpl implements BroadcastSender {
                 Long chatId = activeChats.get(i);
                 i++;
                 try {
-                    telegramApiClient.sendMessage(new Message(sendingMessage, chatId, null, true));
+                    message.setChatId(new ChatId(chatId));
+                    telegramApiClient.sendMessage(message);
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -99,5 +100,10 @@ public class BroadcastSenderImpl implements BroadcastSender {
             logger.info("<<<Broadcast is finished");
         }).start();
         return broadcastStatus;
+    }
+
+    @Override
+    public BroadcastStatus forwardMessage(ForwardingMessage forwardingMessage) {
+        return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Операция в данный момент не поддерживается");
     }
 }

@@ -18,6 +18,9 @@
             },
             getTourStatuses: function () {
                 return [{id: 'NEW', name: 'Новый'}, {id: 'PUBLISHED', name: 'Опубликован'}, {id: 'DELETED', name: 'Удален'}]
+            },
+            getParseModes: function() {
+                return [{id: 'HTML', name: 'HTML'}, {id: 'MARKDOWN', name: 'MARKDOWN'}, {id: null, name: 'TEXT'}]
             }
         };
     }

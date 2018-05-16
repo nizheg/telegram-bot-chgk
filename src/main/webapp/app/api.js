@@ -131,8 +131,10 @@
                     return response.data
                 });
             },
-            sendMessage: function (text) {
-                return $http.post('api/message', {"receiver": "all", "text": text}).then(function (response) {
+            sendMessage: function (text, disableWebPagePreview, parseMode) {
+                return $http.post('api/message', {"receiver": "all", "text": text, "disableWebPagePreview":
+                disableWebPagePreview, "parseMode": parseMode})
+                .then(function (response) {
                     return response.data
                 });
             },

@@ -6,6 +6,10 @@
     <textarea ng-disabled="t.isInProcess()" rows="10" ng-model="t.message">{{ t.message }}</textarea>
 </div>
 
+<label><input type="checkbox" ng-model="t.enableWebPagePreview"/> Отображать превью</label><br>
+<label>Тип разметки
+    <select ng-model="t.parseMode" ng-options="pm.id as pm.name for pm in t.parseModes"></select></label>
+
 <form ng-submit="t.sendMessage()">
     <input class="btn-primary" ng-disabled="t.isInProcess()" type="submit" value="Отправить">
 </form>
