@@ -1,8 +1,6 @@
 package me.nizheg.telegram.bot.chgk.dto;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class BroadcastStatus {
@@ -14,7 +12,7 @@ public class BroadcastStatus {
     private volatile int finished;
 
     public enum Status {
-        NOT_STARTED, REJECTED, IN_PROCESS, FINISHED, CANCELLED
+        NOT_STARTED, REJECTED, INIT, IN_PROCESS, FINISHED, CANCELLED
     }
 
     public BroadcastStatus() {

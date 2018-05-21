@@ -23,6 +23,9 @@
             switch (status.status) {
                 case 'NOT_STARTED':
                     return 'Запущенного задания отправки нет';
+                case 'INIT':
+                    t.message = status.sendingMessage;
+                    return 'Сообщение для Forward инициировано';
                 case 'REJECTED':
                     return 'Ошибка. ' + status.errorMessage;
                 case 'IN_PROCESS':
@@ -41,7 +44,7 @@
         };
 
         t.isInProcess = function () {
-            return 'IN_PROCESS' == t.status.status;
+            return 'IN_PROCESS' == t.status.status || 'INIT' == t.status.status;
         }
 
         t.sendMessage = function () {

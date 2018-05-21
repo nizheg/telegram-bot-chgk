@@ -17,6 +17,7 @@ import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -28,6 +29,7 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
 import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
 import me.nizheg.telegram.bot.chgk.command.AnswerCommand;
+import me.nizheg.telegram.bot.chgk.command.BroadcastCommand;
 import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
 import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
 import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
@@ -37,6 +39,7 @@ import me.nizheg.telegram.bot.chgk.command.HintCommand;
 import me.nizheg.telegram.bot.chgk.command.NextCommand;
 import me.nizheg.telegram.bot.chgk.command.RatingCommand;
 import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
+import me.nizheg.telegram.bot.chgk.command.SaveForwardedMessage;
 import me.nizheg.telegram.bot.chgk.command.StartCommand;
 import me.nizheg.telegram.bot.chgk.command.StatCommand;
 import me.nizheg.telegram.bot.chgk.command.StopCommand;
@@ -55,6 +58,7 @@ import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.FeedbackService;
+import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
@@ -69,6 +73,7 @@ import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
 import me.nizheg.telegram.bot.command.HelpCommand;
+import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.service.CallbackQueryParser;
 import me.nizheg.telegram.bot.service.CommandExecutor;
@@ -138,6 +143,8 @@ public class AppConfig {
     private WarningSender warningSender;
     @Autowired
     private ChatGameService chatGameService;
+    @Autowired
+    private MessageService messageService;
 
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
@@ -187,7 +194,14 @@ public class AppConfig {
     @Bean
     @Autowired
     public UpdateHandler updateHandler(CommandExecutor commandExecutor) {
-        return new UpdateHandlerImpl(messageParser(), callbackQueryParser(), commandsHolder(), commandExecutor);
+        UpdateHandlerImpl updateHandler = new UpdateHandlerImpl(messageParser(), callbackQueryParser(),
+                commandsHolder(), commandExecutor);
+        updateHandler.setNonCommandMessageProcessors(nonCommandMessageProcessors());
+        return updateHandler;
+    }
+
+    private List<NonCommandMessageProcessor> nonCommandMessageProcessors() {
+        return Collections.singletonList(new SaveForwardedMessage(telegramUserService, messageService));
     }
 
     @Bean
@@ -226,7 +240,8 @@ public class AppConfig {
                 helpCommand(),
                 defaultCommand(),
                 ratingCommand(),
-                donateCommand()
+                donateCommand(),
+                broadcastCommand()
         ));
     }
 
@@ -296,6 +311,11 @@ public class AppConfig {
     @Bean
     public TimerCommand timerCommand() {
         return new TimerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatGameService);
+    }
+
+    @Bean
+    public BroadcastCommand broadcastCommand() {
+        return new BroadcastCommand(() -> asyncTelegramApiClient(telegramApiClient()), messageService);
     }
 
     @Bean

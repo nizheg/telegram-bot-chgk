@@ -11,5 +11,5 @@ public interface BroadcastSender {
 
     BroadcastStatus sendMessage(Message message);
 
-    BroadcastStatus forwardMessage(ForwardingMessage forwardingMessage);
+    BroadcastStatus forwardMessage(ForwardingMessage forwardingMessage, String description);
 }

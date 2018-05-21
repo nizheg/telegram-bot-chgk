@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
@@ -40,11 +42,30 @@ public class BroadcastSenderImpl implements BroadcastSender {
         if (StringUtils.isEmpty(message.getText())) {
             return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
         }
+        return doBroadcast(message::getText, chatId -> {
+            message.setChatId(chatId);
+            telegramApiClient.sendMessage(message);
+        });
+    }
+
+    @Override
+    public BroadcastStatus forwardMessage(ForwardingMessage forwardingMessage, String description) {
+        if (forwardingMessage == null || forwardingMessage.getFromChatId() == null
+                || forwardingMessage.getMessageId() == null) {
+            return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Сообщение для рассылки не установлено");
+        }
+        return doBroadcast(() -> description, chatId -> {
+            forwardingMessage.setChatId(chatId);
+            telegramApiClient.forwardMessage(forwardingMessage);
+        });
+    }
+
+    private BroadcastStatus doBroadcast(Supplier<String> messageTextSupplier, Consumer<ChatId> messageSender) {
         final List<Long> activeChats = chatService.getActiveChats();
         logger.info(">>>There was found " + activeChats.size() + " active chats for broadcast");
         final BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
         broadcastStatus.setTotalCount(activeChats.size());
-        broadcastStatus.setSendingMessage(message.getText());
+        broadcastStatus.setSendingMessage(messageTextSupplier.get());
 
         new Thread(() -> {
             int tryingCount = 0;
@@ -56,8 +77,7 @@ public class BroadcastSenderImpl implements BroadcastSender {
                 Long chatId = activeChats.get(i);
                 i++;
                 try {
-                    message.setChatId(new ChatId(chatId));
-                    telegramApiClient.sendMessage(message);
+                    messageSender.accept(new ChatId(chatId));
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -102,8 +122,4 @@ public class BroadcastSenderImpl implements BroadcastSender {
         return broadcastStatus;
     }
 
-    @Override
-    public BroadcastStatus forwardMessage(ForwardingMessage forwardingMessage) {
-        return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Операция в данный момент не поддерживается");
-    }
 }

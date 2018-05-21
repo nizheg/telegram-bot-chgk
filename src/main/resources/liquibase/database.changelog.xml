@@ -435,4 +435,21 @@
             <column name="result" type="java.sql.Types.VARCHAR(500)"/>
         </createTable>
     </changeSet>
+
+    <changeSet id="27" author="nzhegalin">
+        <createTable tableName="user_role">
+            <column name="telegram_user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_name" type="java.sql.Types.VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiration_time" type="timestamp with time zone">
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_role" columnNames="role_name,telegram_user_id"/>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="telegram_user_id"
+                                 constraintName="fk_user_role_telegram_user_id"
+                                 referencedTableName="telegram_user" referencedColumnNames="id"/>
+    </changeSet>
 </databaseChangeLog>
