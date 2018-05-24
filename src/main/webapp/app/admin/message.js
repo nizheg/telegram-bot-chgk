@@ -23,20 +23,19 @@
             switch (status.status) {
                 case 'NOT_STARTED':
                     return 'Запущенного задания отправки нет';
-                case 'INIT':
-                    t.message = status.sendingMessage;
-                    return 'Сообщение для Forward инициировано';
+                case 'FORWARD_INITIATED':
+                    return 'Forward-сообщение инициировано:\n' + status.message;
                 case 'REJECTED':
-                    return 'Ошибка. ' + status.errorMessage;
+                    return 'Ошибка. ' + status.message;
                 case 'IN_PROCESS':
                     return 'Отправка в процессе.\nВыполнено: ' + status.finished + ' из ' + status.totalCount +
-                            '\nОтправляемое сообщение: \n' + status.sendingMessage;
+                            '\nОтправляемое сообщение: \n' + status.message;
                 case 'FINISHED':
                     return 'Отправка завершена. Отправлено ' + status.finished + ' из ' + status.totalCount +
-                            '\nОтправленное сообщение: \n' + status.sendingMessage;
+                            '\nОтправленное сообщение: \n' + status.message;
                 case 'CANCELLED':
                     return 'Отправка отменена. Отправлено ' + status.finished + ' из ' + status.totalCount +
-                            '\nОтправляемое сообщение: \n' + status.sendingMessage;
+                            '\nОтправляемое сообщение: \n' + status.message;
                 default :
                     return '';
             }
@@ -44,7 +43,11 @@
         };
 
         t.isInProcess = function () {
-            return 'IN_PROCESS' == t.status.status || 'INIT' == t.status.status;
+            return 'IN_PROCESS' == t.status.status;
+        }
+
+        t.isInitiated = function() {
+            return 'FORWARD_INITIATED' == t.status.status;
         }
 
         t.sendMessage = function () {

@@ -3,7 +3,7 @@
 
 <div>
     <p>Текст сообщения</p>
-    <textarea ng-disabled="t.isInProcess()" rows="10" ng-model="t.message">{{ t.message }}</textarea>
+    <textarea ng-disabled="t.isInProcess() || t.isInitiated()" rows="10" ng-model="t.message">{{ t.message }}</textarea>
 </div>
 
 <label><input type="checkbox" ng-model="t.enableWebPagePreview"/> Отображать превью</label><br>
@@ -15,5 +15,5 @@
 </form>
 
 <form ng-submit="t.cancelSending()">
-    <input class="btn-primary" ng-disabled="!t.isInProcess()" type="submit" value="Отменить">
+    <input class="btn-primary" ng-disabled="!t.isInProcess() && !t.isInitiated()" type="submit" value="Отменить">
 </form>

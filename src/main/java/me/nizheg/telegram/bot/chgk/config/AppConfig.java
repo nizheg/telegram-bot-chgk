@@ -29,7 +29,6 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
 import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
 import me.nizheg.telegram.bot.chgk.command.AnswerCommand;
-import me.nizheg.telegram.bot.chgk.command.BroadcastCommand;
 import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
 import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
 import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
@@ -240,8 +239,7 @@ public class AppConfig {
                 helpCommand(),
                 defaultCommand(),
                 ratingCommand(),
-                donateCommand(),
-                broadcastCommand()
+                donateCommand()
         ));
     }
 
@@ -311,11 +309,6 @@ public class AppConfig {
     @Bean
     public TimerCommand timerCommand() {
         return new TimerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatGameService);
-    }
-
-    @Bean
-    public BroadcastCommand broadcastCommand() {
-        return new BroadcastCommand(() -> asyncTelegramApiClient(telegramApiClient()), messageService);
     }
 
     @Bean

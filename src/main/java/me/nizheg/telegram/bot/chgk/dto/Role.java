@@ -1,8 +1,6 @@
 package me.nizheg.telegram.bot.chgk.dto;
 
 /**
- * //todo add comments
- *
  * @author Nikolay Zhegalin
  */
 public enum Role {

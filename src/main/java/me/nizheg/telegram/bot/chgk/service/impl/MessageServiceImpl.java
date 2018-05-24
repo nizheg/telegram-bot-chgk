@@ -1,8 +1,11 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
+import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -29,7 +32,6 @@ public class MessageServiceImpl implements MessageService {
     private final TelegramApiClient telegramApiClient;
     private final TaskSender taskSender;
 
-    private final Object lock = new Object();
     private BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.NOT_STARTED);
     private volatile ForwardingMessage forwardingMessage;
 
@@ -45,44 +47,25 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public BroadcastStatus setMessageForForwarding(ForwardingMessage forwardingMessage) {
-        synchronized (lock) {
-            if (BroadcastStatus.Status.NOT_STARTED.equals(broadcastStatus.getStatus()) || BroadcastStatus.Status.INIT
-                    .equals(broadcastStatus.getStatus())) {
+    public synchronized BroadcastStatus setMessageForForwarding(@Nonnull ForwardingMessage forwardingMessage) {
+        Validate.notNull(forwardingMessage);
+        switch (broadcastStatus.getStatus()) {
+            case NOT_STARTED:
+            case REJECTED:
+            case FORWARD_INITIATED:
+            case FINISHED:
+            case CANCELLED:
                 this.forwardingMessage = forwardingMessage;
-                this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.INIT);
-                this.broadcastStatus.setSendingMessage(forwardingMessage.getText());
-                return this.broadcastStatus;
-            } else {
-                return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Установка сообщения для Forward сейчас "
-                        + "не разрешена");
-            }
+                this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.FORWARD_INITIATED);
+                this.broadcastStatus.setMessage(forwardingMessage.getText());
+                break;
+            default:
         }
-
+        return this.broadcastStatus;
     }
 
     @Override
-    public BroadcastStatus forwardToAll() {
-        synchronized (lock) {
-            if (BroadcastStatus.Status.IN_PROCESS.equals(broadcastStatus.getStatus())) {
-                return new BroadcastStatus(BroadcastStatus.Status.REJECTED,
-                        "Предыдущая задача отправки ещё не завершена.");
-            } else if (BroadcastStatus.Status.INIT.equals(broadcastStatus.getStatus())){
-                this.broadcastStatus = broadcastSender.forwardMessage(convertMessage(forwardingMessage),
-                        forwardingMessage.getText());
-            }
-            return this.broadcastStatus;
-        }
-
-    }
-
-    @Override
-    public BroadcastStatus send(SendingMessage message, TelegramUser me) {
-        synchronized (lock) {
-            if (this.forwardingMessage != null) {
-                return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Рассылка находится в режиме Forward");
-            }
-        }
+    public synchronized BroadcastStatus send(SendingMessage message, TelegramUser me) {
         String receiver = Optional.ofNullable(message.getReceiver()).orElse(RECEIVER_ME);
         switch (receiver) {
             case RECEIVER_ME:
@@ -97,20 +80,21 @@ public class MessageServiceImpl implements MessageService {
                         sendingMessage.setChatId(new ChatId(me.getId()));
                         telegramApiClient.sendMessage(sendingMessage);
                     }
-                    this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.FINISHED);
-                    return this.broadcastStatus;
+                    return new BroadcastStatus(BroadcastStatus.Status.FINISHED);
                 }
-                return new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пользователь не определен");
+                return new BroadcastStatus(BroadcastStatus.Status.REJECTED);
             case RECEIVER_ALL:
-                synchronized (lock) {
-                    if (BroadcastStatus.Status.IN_PROCESS.equals(broadcastStatus.getStatus())) {
-                        return new BroadcastStatus(BroadcastStatus.Status.REJECTED,
-                                "Предыдущая задача отправки ещё не завершена.");
-                    } else {
+                switch (broadcastStatus.getStatus()) {
+                    case FORWARD_INITIATED:
+                        this.broadcastStatus = broadcastSender.forwardMessage(convertMessage(forwardingMessage),
+                                forwardingMessage.getText());
+                        break;
+                    case IN_PROCESS:
+                        break;
+                    default:
                         this.broadcastStatus = broadcastSender.sendMessage(convertMessage(message));
-                        return this.broadcastStatus;
-                    }
                 }
+                return this.broadcastStatus;
             default:
                 throw new UnsupportedOperationException("Not supported now");
         }
@@ -136,21 +120,17 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public BroadcastStatus setStatus(BroadcastStatus status) {
+    public synchronized BroadcastStatus setStatus(BroadcastStatus status) {
         if (BroadcastStatus.Status.CANCELLED.equals(status.getStatus())) {
-            synchronized (lock) {
-                broadcastStatus.setStatus(BroadcastStatus.Status.CANCELLED);
-                this.forwardingMessage = null;
-            }
+            broadcastStatus.setStatus(BroadcastStatus.Status.CANCELLED);
+            this.forwardingMessage = null;
         }
         return broadcastStatus;
     }
 
     @Override
-    public BroadcastStatus getStatus() {
-        synchronized (lock) {
-            return broadcastStatus;
-        }
+    public synchronized BroadcastStatus getStatus() {
+        return broadcastStatus;
     }
 
 }

@@ -6,13 +6,12 @@ package me.nizheg.telegram.bot.chgk.dto;
 public class BroadcastStatus {
 
     private Status status;
-    private String sendingMessage;
-    private String errorMessage;
+    private String message;
     private volatile int totalCount;
     private volatile int finished;
 
     public enum Status {
-        NOT_STARTED, REJECTED, INIT, IN_PROCESS, FINISHED, CANCELLED
+        NOT_STARTED, REJECTED, FORWARD_INITIATED, IN_PROCESS, FINISHED, CANCELLED
     }
 
     public BroadcastStatus() {
@@ -23,9 +22,9 @@ public class BroadcastStatus {
         this.status = status;
     }
 
-    public BroadcastStatus(Status status, String errorMessage) {
+    public BroadcastStatus(Status status, String message) {
         this.status = status;
-        this.errorMessage = errorMessage;
+        this.message = message;
     }
 
     public synchronized Status getStatus() {
@@ -36,20 +35,12 @@ public class BroadcastStatus {
         this.status = status;
     }
 
-    public synchronized String getErrorMessage() {
-        return errorMessage;
+    public synchronized String getMessage() {
+        return message;
     }
 
-    public synchronized void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public synchronized String getSendingMessage() {
-        return sendingMessage;
-    }
-
-    public synchronized void setSendingMessage(String sendingMessage) {
-        this.sendingMessage = sendingMessage;
+    public synchronized void setMessage(String message) {
+        this.message = message;
     }
 
     public int getTotalCount() {

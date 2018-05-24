@@ -65,7 +65,7 @@ public class BroadcastSenderImpl implements BroadcastSender {
         logger.info(">>>There was found " + activeChats.size() + " active chats for broadcast");
         final BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
         broadcastStatus.setTotalCount(activeChats.size());
-        broadcastStatus.setSendingMessage(messageTextSupplier.get());
+        broadcastStatus.setMessage(messageTextSupplier.get());
 
         new Thread(() -> {
             int tryingCount = 0;
