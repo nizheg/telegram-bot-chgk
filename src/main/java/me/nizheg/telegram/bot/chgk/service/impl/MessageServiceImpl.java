@@ -65,24 +65,22 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public synchronized BroadcastStatus send(SendingMessage message, TelegramUser me) {
+    public synchronized BroadcastStatus send(SendingMessage message) {
         String receiver = Optional.ofNullable(message.getReceiver()).orElse(RECEIVER_ME);
         switch (receiver) {
             case RECEIVER_ME:
-                if (me != null) {
+                return Optional.ofNullable(message.getSender()).map(TelegramUser::getId).map(myId -> {
                     Long taskId = message.getTaskId();
                     if (taskId != null) {
-                        Task currentTask = chatGameService.getGame(new Chat(me.getId(), true))
-                                .setCurrentTask(taskId);
-                        taskSender.sendTaskText(currentTask, me.getId());
+                        Task currentTask = chatGameService.getGame(new Chat(myId, true)).setCurrentTask(taskId);
+                        taskSender.sendTaskText(currentTask, myId);
                     } else {
                         me.nizheg.telegram.bot.api.service.param.Message sendingMessage = convertMessage(message);
-                        sendingMessage.setChatId(new ChatId(me.getId()));
+                        sendingMessage.setChatId(new ChatId(myId));
                         telegramApiClient.sendMessage(sendingMessage);
                     }
                     return new BroadcastStatus(BroadcastStatus.Status.FINISHED);
-                }
-                return new BroadcastStatus(BroadcastStatus.Status.REJECTED);
+                }).orElse(new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Sender is not resolved"));
             case RECEIVER_ALL:
                 switch (broadcastStatus.getStatus()) {
                     case FORWARD_INITIATED:

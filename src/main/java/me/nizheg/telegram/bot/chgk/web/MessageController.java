@@ -36,7 +36,10 @@ public class MessageController {
         return Optional.ofNullable(principal)
                 .filter(p -> StringUtils.isNotBlank(p.getName()))
                 .map(p -> telegramUserService.getByUsername(p.getName()))
-                .map(me -> messageService.send(message, me))
+                .map(me -> {
+                    message.setSender(me);
+                    return messageService.send(message);
+                })
                 .orElse(new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пользователь не найден"));
     }
 

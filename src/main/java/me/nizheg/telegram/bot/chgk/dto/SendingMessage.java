@@ -3,9 +3,12 @@ package me.nizheg.telegram.bot.chgk.dto;
 import javax.annotation.Nullable;
 
 public class SendingMessage {
+
     public static final String RECEIVER_ALL = "all";
     public static final String RECEIVER_ME = "me";
 
+    @Nullable
+    private TelegramUser sender;
     @Nullable
     private String receiver;
     @Nullable
@@ -16,6 +19,15 @@ public class SendingMessage {
     private Boolean disableWebPagePreview;
     @Nullable
     private String parseMode;
+
+    @Nullable
+    public TelegramUser getSender() {
+        return sender;
+    }
+
+    public void setSender(@Nullable TelegramUser sender) {
+        this.sender = sender;
+    }
 
     @Nullable
     public String getReceiver() {

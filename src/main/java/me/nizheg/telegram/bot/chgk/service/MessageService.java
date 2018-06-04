@@ -5,13 +5,12 @@ import javax.annotation.Nonnull;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.ForwardingMessage;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
-import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 
 public interface MessageService {
 
     BroadcastStatus setMessageForForwarding(@Nonnull ForwardingMessage forwardingMessage);
 
-    BroadcastStatus send(SendingMessage message, TelegramUser me);
+    BroadcastStatus send(SendingMessage message);
 
     BroadcastStatus setStatus(BroadcastStatus status);
 
