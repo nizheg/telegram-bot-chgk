@@ -32,7 +32,10 @@ public class SaveForwardedMessage implements NonCommandMessageProcessor {
         Optional.ofNullable(ctx.getMessage())
                 .filter(message -> message.getForwardFromChat() != null)
                 .filter(message -> telegramUserService.userHasRole(ctx.getFrom().getId(), Role.SUPER_ADMIN))
-                .ifPresent(this::saveForwardedMessage);
+                .ifPresent(message -> {
+                    this.saveForwardedMessage(message);
+                    ctx.setText(null);
+                });
     }
 
     private void saveForwardedMessage(@Nonnull Message message) {

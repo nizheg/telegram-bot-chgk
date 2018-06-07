@@ -91,7 +91,7 @@ import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 @Configuration
 @ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
         "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
-        "info.chgk", "me.nizheg.payments"})
+        "me.nizheg.telegram.bot.chgk.command", "info.chgk", "me.nizheg.payments"})
 //@PropertySource()
 public class AppConfig {
 
@@ -195,9 +195,10 @@ public class AppConfig {
     }
 
     @Bean
-    @Autowired(required = false)
     public CommandExecutor commandsExecutor(
+            @Autowired(required = false)
             List<ChatEventListener> eventListeners,
+            @Autowired(required = false)
             List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
         return new CommandExecutorImpl(telegramApiClient(), eventListeners, nonCommandMessageProcessors);
     }

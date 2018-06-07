@@ -161,6 +161,7 @@ public class MessageServiceImpl implements MessageService {
     private void sendMessage(SendingMessage message, List<Long> chatIds) {
         if (StringUtils.isEmpty(message.getText())) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
+            return;
         }
         Message telegramMessage = convertMessage(message);
         doBroadcast(message::getText, chatIds, chatId -> {
@@ -174,6 +175,7 @@ public class MessageServiceImpl implements MessageService {
                 || forwardingMessage.getMessageId() == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
                     "Сообщение для рассылки не установлено");
+            return;
         }
         final me.nizheg.telegram.bot.api.service.param.ForwardingMessage telegramForwardedMessage =
                 convertMessage(forwardingMessage);
