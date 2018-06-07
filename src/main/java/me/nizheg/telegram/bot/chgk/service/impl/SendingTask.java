@@ -2,7 +2,6 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -45,37 +44,30 @@ public class SendingTask implements Runnable {
             i++;
             try {
                 messageSender.accept(new ChatId(chatId));
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    logger.error("interrupted", e);
-                    Thread.interrupted();
-                    return;
-                }
                 tryingCount = 0;
             } catch (TelegramApiException ex) {
-
-
-                if (ex.getHttpStatus() != null && ex.getHttpStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
-                    if (tryingCount > 3) {
-                        logger.error("Chat is skipped " + chatId, ex);
-                    } else {
-                        tryingCount++;
-                        i--;
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                            logger.error("interrupted", e);
-                            Thread.interrupted();
-                            return;
+                switch (ex.getHttpStatus()) {
+                    case TOO_MANY_REQUESTS:
+                        logger.warn("Too many requests detected");
+                        if (tryingCount > 3) {
+                            logger.error("Chat is skipped " + chatId, ex);
+                        } else {
+                            tryingCount++;
+                            i--;
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e) {
+                                logger.error("interrupted", e);
+                                Thread.currentThread().interrupt();
+                                return;
+                            }
                         }
-                    }
-                } else if (ex.getHttpStatus() != null &&
-                        (ex.getHttpStatus().equals(HttpStatus.FORBIDDEN)
-                                || ex.getHttpStatus().equals(HttpStatus.BAD_REQUEST))) {
-                    sendingFailedCallback.accept(chatId);
-                } else {
-                    logger.error("Api exception. Skip chat " + chatId, ex);
+                    case FORBIDDEN:
+                    case BAD_REQUEST:
+                        sendingFailedCallback.accept(chatId);
+                        break;
+                    default:
+                        logger.error("Api exception. Skip chat " + chatId, ex);
                 }
             } catch (RuntimeException ex) {
                 logger.error("Unexpected exception. Skip chat " + chatId, ex);
