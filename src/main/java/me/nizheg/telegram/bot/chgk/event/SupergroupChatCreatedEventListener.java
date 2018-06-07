@@ -8,8 +8,6 @@ import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.event.SupergroupChatCreatedEvent;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Component

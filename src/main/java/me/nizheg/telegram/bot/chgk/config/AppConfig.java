@@ -17,7 +17,6 @@ import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -38,7 +37,6 @@ import me.nizheg.telegram.bot.chgk.command.HintCommand;
 import me.nizheg.telegram.bot.chgk.command.NextCommand;
 import me.nizheg.telegram.bot.chgk.command.RatingCommand;
 import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
-import me.nizheg.telegram.bot.chgk.command.SaveForwardedMessage;
 import me.nizheg.telegram.bot.chgk.command.StartCommand;
 import me.nizheg.telegram.bot.chgk.command.StatCommand;
 import me.nizheg.telegram.bot.chgk.command.StopCommand;
@@ -193,20 +191,15 @@ public class AppConfig {
     @Bean
     @Autowired
     public UpdateHandler updateHandler(CommandExecutor commandExecutor) {
-        UpdateHandlerImpl updateHandler = new UpdateHandlerImpl(messageParser(), callbackQueryParser(),
-                commandsHolder(), commandExecutor);
-        updateHandler.setNonCommandMessageProcessors(nonCommandMessageProcessors());
-        return updateHandler;
-    }
-
-    private List<NonCommandMessageProcessor> nonCommandMessageProcessors() {
-        return Collections.singletonList(new SaveForwardedMessage(telegramUserService, messageService));
+        return new UpdateHandlerImpl(messageParser(), callbackQueryParser(), commandsHolder(), commandExecutor);
     }
 
     @Bean
     @Autowired(required = false)
-    public CommandExecutor commandsExecutor(List<ChatEventListener> eventListeners) {
-        return new CommandExecutorImpl(telegramApiClient(), eventListeners);
+    public CommandExecutor commandsExecutor(
+            List<ChatEventListener> eventListeners,
+            List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
+        return new CommandExecutorImpl(telegramApiClient(), eventListeners, nonCommandMessageProcessors);
     }
 
     @Bean
