@@ -1,8 +1,5 @@
 package me.nizheg.telegram.bot.chgk.config;
 
-import com.vk.VkApi;
-import com.vk.impl.VkApiImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -32,7 +29,6 @@ import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
 import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
 import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
 import me.nizheg.telegram.bot.chgk.command.DonateCommand;
-import me.nizheg.telegram.bot.chgk.command.FeedbackCommand;
 import me.nizheg.telegram.bot.chgk.command.HintCommand;
 import me.nizheg.telegram.bot.chgk.command.NextCommand;
 import me.nizheg.telegram.bot.chgk.command.RatingCommand;
@@ -54,7 +50,6 @@ import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
-import me.nizheg.telegram.bot.chgk.service.FeedbackService;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
@@ -110,8 +105,6 @@ public class AppConfig {
     private TelegramUserService telegramUserService;
     @Autowired
     private PaymentService paymentService;
-    @Autowired
-    private FeedbackService feedbackService;
     @Autowired
     private AnswerLogService answerLogService;
     @Autowired
@@ -177,12 +170,6 @@ public class AppConfig {
     }
 
     @Bean
-    public VkApi vkApi() {
-        String vkToken = propertyService.getValue("vk.access.token");
-        return new VkApiImpl(vkToken);
-    }
-
-    @Bean
     @Autowired
     public MessageReceiver messageReceiver(UpdateHandler updateHandler) {
         return new MessageReceiver(telegramApiClient(), updateHandler, propertyService);
@@ -224,7 +211,6 @@ public class AppConfig {
                 hintCommand(),
                 nextCommand(),
                 stopCommand(),
-                feedbackCommand(),
                 statCommand(),
                 tourCommand(),
                 tournamentCommand(),
@@ -277,11 +263,6 @@ public class AppConfig {
     @Bean
     public StopCommand stopCommand() {
         return new StopCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService);
-    }
-
-    @Bean
-    public FeedbackCommand feedbackCommand() {
-        return new FeedbackCommand(() -> asyncTelegramApiClient(telegramApiClient()), feedbackService);
     }
 
     @Bean
