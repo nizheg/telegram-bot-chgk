@@ -14,6 +14,10 @@
     <input class="btn-primary" ng-disabled="t.isInProcess()" type="submit" value="Отправить">
 </form>
 
+<form ng-submit="t.sendMessageToMe()">
+    <input class="btn-primary" ng-disabled="t.isInProcess()" type="submit" value="Отправить мне">
+</form>
+
 <form ng-submit="t.cancelSending()">
     <input class="btn-primary" ng-disabled="!t.isInProcess() && !t.isInitiated()" type="submit" value="Отменить">
 </form>

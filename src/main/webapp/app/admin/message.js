@@ -56,6 +56,12 @@
                 t.statusDescription = t.printStatus(data);
             });
         };
+        t.sendMessageToMe = function () {
+            api.sendMessageToMe(t.message, !t.enableWebPagePreview, t.parseMode).then(function (data) {
+                t.status = data;
+                t.statusDescription = t.printStatus(data);
+            });
+        };
         t.cancelSending = function () {
             api.cancelMessageSending().then(function (data) {
                 t.status = data;

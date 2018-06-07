@@ -138,6 +138,13 @@
                     return response.data
                 });
             },
+            sendMessageToMe: function (text, disableWebPagePreview, parseMode) {
+                return $http.post('api/message', {"receiver": "me", "text": text, "disableWebPagePreview":
+                disableWebPagePreview, "parseMode": parseMode})
+                .then(function (response) {
+                    return response.data
+                });
+            },
             getMessageStatus: function () {
                 return $http.get('api/message/status')
                         .then(function (response) {
