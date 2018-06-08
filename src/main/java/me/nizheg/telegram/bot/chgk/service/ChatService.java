@@ -28,7 +28,9 @@ public interface ChatService {
 
     ChatError storeChatError(ChatError chatError);
 
-    void handleGroupToSuperGroupConverting(Long groupId, Long superGroupId);
+    void createMappingToSupergroup(Long groupId, Long superGroupId);
+
+    void migrateChatToAnother(Long groupId, Long superGroupId);
 
     List<Chat> getChatsWithScheduledOperation();
 }

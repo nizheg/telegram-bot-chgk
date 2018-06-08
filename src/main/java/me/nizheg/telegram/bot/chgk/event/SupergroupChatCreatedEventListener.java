@@ -30,7 +30,9 @@ public class SupergroupChatCreatedEventListener implements ChatEventListener {
             return;
         }
         SupergroupChatCreatedEvent supergroupChatCreatedEvent = (SupergroupChatCreatedEvent) chatEvent;
-        chatService.handleGroupToSuperGroupConverting(supergroupChatCreatedEvent.getGroupId(),
+        chatService.createMappingToSupergroup(supergroupChatCreatedEvent.getGroupId(),
+                        supergroupChatCreatedEvent.getSuperGroupId());
+        chatService.migrateChatToAnother(supergroupChatCreatedEvent.getGroupId(),
                 supergroupChatCreatedEvent.getSuperGroupId());
     }
 }

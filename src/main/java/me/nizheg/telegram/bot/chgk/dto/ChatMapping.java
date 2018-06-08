@@ -3,11 +3,10 @@ package me.nizheg.telegram.bot.chgk.dto;
 import java.io.Serializable;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public class ChatMapping implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private Long groupId;

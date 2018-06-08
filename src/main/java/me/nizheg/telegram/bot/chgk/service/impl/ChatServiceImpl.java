@@ -8,17 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
@@ -149,20 +145,19 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public void createMappingToSupergroup(final Long groupId, final Long superGroupId) {
+        ChatMapping chatMapping = new ChatMapping();
+        chatMapping.setGroupId(groupId);
+        chatMapping.setSuperGroupId(superGroupId);
+        chatMappingDao.create(chatMapping);
+    }
+
+    @Override
     @Transactional
-    public void handleGroupToSuperGroupConverting(final Long groupId, final Long superGroupId) {
-        newTransaction.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(@Nonnull TransactionStatus transactionStatus) {
-                ChatMapping chatMapping = new ChatMapping();
-                chatMapping.setGroupId(groupId);
-                chatMapping.setSuperGroupId(superGroupId);
-                chatMappingDao.create(chatMapping);
-            }
-        });
-        propertyService.copyProperties(groupId, superGroupId);
-        taskDao.copyUsedTasks(groupId, superGroupId);
-        answerLogDao.copy(groupId, superGroupId);
+    public void migrateChatToAnother(final Long fromChatId, final Long toChatId) {
+        propertyService.copyProperties(fromChatId, toChatId);
+        taskDao.copyUsedTasks(fromChatId, toChatId);
+        answerLogDao.copy(fromChatId, toChatId);
     }
 
     @Override
