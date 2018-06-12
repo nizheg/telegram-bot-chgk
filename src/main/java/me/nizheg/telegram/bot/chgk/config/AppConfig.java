@@ -6,9 +6,11 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.SimpleThreadScope;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -87,7 +89,7 @@ import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 @ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
         "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
         "me.nizheg.telegram.bot.chgk.command", "info.chgk", "me.nizheg.payments"})
-//@PropertySource()
+@PropertySource("classpath:/config.properties")
 public class AppConfig {
 
     public static final String SCOPE_THREAD = "thread";
@@ -143,10 +145,12 @@ public class AppConfig {
 
     @Resource
     @Bean
-    public DataSource dataSource() {
+    public DataSource dataSource(
+            @Autowired Environment environment) {
         final JndiDataSourceLookup dsLookup = new JndiDataSourceLookup();
         dsLookup.setResourceRef(true);
-        return dsLookup.getDataSource("jdbc/chgk");
+        String databaseJndiName = environment.getProperty("database.jndi");
+        return dsLookup.getDataSource(databaseJndiName);
     }
 
     @Bean
@@ -184,9 +188,9 @@ public class AppConfig {
     @Bean
     public CommandExecutor commandsExecutor(
             @Autowired(required = false)
-            List<ChatEventListener> eventListeners,
+                    List<ChatEventListener> eventListeners,
             @Autowired(required = false)
-            List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
+                    List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
         return new CommandExecutorImpl(telegramApiClient(), eventListeners, nonCommandMessageProcessors);
     }
 

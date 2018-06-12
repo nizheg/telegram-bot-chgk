@@ -13,7 +13,7 @@
         <dependency>
             <groupId>me.nizheg</groupId>
             <artifactId>telegram-bot</artifactId>
-            <version>3.4.0.2-SNAPSHOT</version>
+            <version>3.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -91,14 +91,35 @@
     </properties>
 
     <build>
-        <finalName>chgk-bot</finalName>
+        <finalName>${build.final.name}</finalName>
+        <filters>
+            <filter>build.properties</filter>
+        </filters>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>build.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
                     <outputDirectory>webapps</outputDirectory>
-                    <warName>chgk</warName>
+                    <warName>${war.name}</warName>
                 </configuration>
             </plugin>
             <plugin>
@@ -136,7 +157,7 @@
                             <changeLogFile>src/main/resources/liquibase/database.changelog.xml</changeLogFile>
                             <driver>org.postgresql.Driver</driver>
                             <url>
-                                jdbc:postgresql://${DB_HOST}:${DB_PORT}/chgk
+                                jdbc:postgresql://${DB_HOST}:${DB_PORT}/${db.name}
                             </url>
                             <username>${DB_USERNAME}</username>
                             <password>${DB_PASSWORD}</password>
