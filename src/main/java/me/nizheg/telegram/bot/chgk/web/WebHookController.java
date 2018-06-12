@@ -24,4 +24,9 @@ public class WebHookController {
         logger.debug(Thread.currentThread().getName() + ": received update");
         updateHandler.handleUpdate(update);
     }
+
+    @RequestMapping(value = "ignore", method = RequestMethod.POST)
+    public void ignore(@RequestBody Update update) {
+        logger.debug(Thread.currentThread().getName() + ": received update -> ignore");
+    }
 }
