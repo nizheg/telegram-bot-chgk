@@ -41,10 +41,10 @@ import me.nizheg.telegram.bot.chgk.command.StopCommand;
 import me.nizheg.telegram.bot.chgk.command.TimerCommand;
 import me.nizheg.telegram.bot.chgk.command.TourCommand;
 import me.nizheg.telegram.bot.chgk.command.TournamentCommand;
+import me.nizheg.telegram.bot.chgk.domain.AnswerOperation;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
-import me.nizheg.telegram.bot.chgk.domain.NextTaskOperation;
 import me.nizheg.telegram.bot.chgk.domain.WarningOperation;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
@@ -118,7 +118,7 @@ public class AppConfig {
     @Autowired
     private ChatService chatService;
     @Autowired
-    private NextTaskOperation nextTaskOperation;
+    private AnswerOperation nextTaskOperation;
     @Autowired
     private WarningOperation warningOperation;
     @Autowired
@@ -292,8 +292,10 @@ public class AppConfig {
 
     @Bean
     public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand() {
-        return new ClearCurrentTaskAndSendNextCommand(() -> asyncTelegramApiClient(telegramApiClient()),
-                chatGameService);
+        ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand = new ClearCurrentTaskAndSendNextCommand(
+                () -> asyncTelegramApiClient(telegramApiClient()), chatGameService);
+        clearCurrentTaskAndSendNextCommand.setCommandsHolderSupplier(this::commandsHolder);
+        return clearCurrentTaskAndSendNextCommand;
     }
 
     @Bean(initMethod = "init")

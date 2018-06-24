@@ -2,19 +2,15 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
-import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
-import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
+import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -82,20 +78,9 @@ public class AnswerCommand extends ChatGameCommand {
         Long chatId = ctx.getChatId();
         Long taskId = parseTaskId(ctx);
         HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
-        if (hintForTask.getTask() != null) {
-            InlineKeyboardMarkup replyMarkup = null;
-            if (hintForTask.isTaskCurrent()) {
-                replyMarkup = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
-                buttonGroup.add(ratingHelper.createRatingButtons(hintForTask.getTask().getId()));
-                InlineKeyboardButton nextButton = new InlineKeyboardButton();
-                nextButton.setText("Дальше");
-                nextButton.setCallbackData("next");
-                buttonGroup.add(Collections.singletonList(nextButton));
-                replyMarkup.setInlineKeyboard(buttonGroup);
-            }
-            StringBuilder messageBuilder = new StringBuilder("<b>Ответ:</b>\n");
-            answerSender.sendAnswerOfTask(messageBuilder, hintForTask.getTask(), chatId, replyMarkup);
+        Task task = hintForTask.getTask();
+        if (task != null) {
+            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), chatId);
         } else {
             throw new NoTaskException(ctx.getChatId());
         }

@@ -83,20 +83,21 @@ public class RepeatCommand extends ChatGameCommand {
         if (currentTask != null) {
             logger.debug("Repeat [" + currentTask.getId() + "]");
             ReplyMarkup replyMarkup = null;
-            if (!(chatGame instanceof AutoChatGame)) {
-                if (ctx.isPrivateChat()) {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + currentTask.getId(),
-                            "Дальше", "next");
-                } else {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + currentTask.getId(),
-                            "Дальше", "next");
-                }
+            if (ctx.isPrivateChat()) {
+                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + currentTask.getId(),
+                        "Дальше", "next");
+            } else {
+                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + currentTask.getId(),
+                        "Дальше", "next");
             }
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Повторяю вопрос</b>\n");
             taskSender.sendTaskText(messageBuilder, currentTask, chatId, replyMarkup);
             if (chatGame instanceof AutoChatGame) {
-                warningSender.sendTimeWarning(new Chat(ctx.getChat()), ((AutoChatGame) chatGame).getTimeToNextTask());
+                int timeLeft = ((AutoChatGame) chatGame).getTimeLeft();
+                if (timeLeft > 0) {
+                    warningSender.sendTimeWarning(new Chat(ctx.getChat()), timeLeft);
+                }
             }
         } else {
             throw new NoTaskException(chatId);

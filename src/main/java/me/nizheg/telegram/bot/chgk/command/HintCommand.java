@@ -82,8 +82,7 @@ public class HintCommand extends ChatGameCommand {
 
     private void sendAnswerToUser(CommandContext ctx, Task currentTask) {
         try {
-            StringBuilder messageBuilder = new StringBuilder("<b>Ответ:</b>\n");
-            answerSender.sendAnswerOfTask(messageBuilder, currentTask, ctx.getFrom().getId(), null);
+            answerSender.sendAnswer(currentTask, false, ctx.getFrom().getId());
         } catch (TelegramApiException ex) {
             getTelegramApiClient()
                     .sendMessage(new Message(

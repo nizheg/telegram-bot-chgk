@@ -317,7 +317,7 @@ public class ChatGame {
         return result;
     }
 
-    public synchronized HintResult getHintForTask(Chat chat, Long taskId) {
+    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) {
         Task currentTask = getCurrentTask();
         HintResult hintResult = new HintResult();
 

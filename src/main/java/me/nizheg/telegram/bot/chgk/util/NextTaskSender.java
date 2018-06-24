@@ -14,7 +14,6 @@ import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
-import me.nizheg.telegram.bot.chgk.domain.NextTaskOperation;
 import me.nizheg.telegram.bot.chgk.domain.NextTaskResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.StatEntry;
@@ -29,7 +28,7 @@ import me.nizheg.telegram.util.TelegramApiUtil;
  */
 @Component
 @Scope(AppConfig.SCOPE_THREAD)
-public class NextTaskSender implements NextTaskOperation {
+public class NextTaskSender {
 
     private final TelegramApiClient telegramApiClient;
     private final TaskSender taskSender;
@@ -53,7 +52,6 @@ public class NextTaskSender implements NextTaskOperation {
         this.botInfo = botInfo;
     }
 
-    @Override
     public void sendNextTask(ChatGame chatGame) {
         Long chatId = chatGame.getChatId();
         try {
@@ -78,14 +76,12 @@ public class NextTaskSender implements NextTaskOperation {
                 telegramApiClient.sendMessage(message);
             } else {
                 ReplyMarkup replyMarkup = null;
-                if (!(chatGame instanceof AutoChatGame)) {
-                    if (chatGame.getChat().isPrivate()) {
-                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + nextTask.getId(),
-                                "Дальше", "next");
-                    } else {
-                        replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + nextTask.getId(),
-                                "Дальше", "next");
-                    }
+                if (chatGame.getChat().isPrivate()) {
+                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + nextTask.getId(),
+                            "Дальше", "next");
+                } else {
+                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + nextTask.getId(),
+                            "Дальше", "next");
                 }
                 StringBuilder messageBuilder = new StringBuilder();
                 messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Внимание, вопрос!</b>  ");
@@ -106,8 +102,7 @@ public class NextTaskSender implements NextTaskOperation {
         }
     }
 
-    @Override
-    public void sendAnswerOfPreviousTask(Chat chat, Task task) {
+    private void sendAnswerOfPreviousTask(Chat chat, Task task) {
         if (task != null) {
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
             replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));

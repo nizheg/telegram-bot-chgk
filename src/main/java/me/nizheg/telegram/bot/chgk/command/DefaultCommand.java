@@ -19,7 +19,6 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
-import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswer;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswerResult;
@@ -166,12 +165,10 @@ public class DefaultCommand extends ChatCommand {
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
             buttonGroup.add(ratingHelper.createRatingButtons(currentTask.getId()));
-            if (!(chatGame instanceof AutoChatGame)) {
-                InlineKeyboardButton nextButton = new InlineKeyboardButton();
-                nextButton.setText("Дальше");
-                nextButton.setCallbackData("next");
-                buttonGroup.add(Collections.singletonList(nextButton));
-            }
+            InlineKeyboardButton nextButton = new InlineKeyboardButton();
+            nextButton.setText("Дальше");
+            nextButton.setCallbackData("next");
+            buttonGroup.add(Collections.singletonList(nextButton));
             replyMarkup.setInlineKeyboard(buttonGroup);
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
         } else {
