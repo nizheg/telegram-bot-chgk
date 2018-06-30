@@ -54,6 +54,9 @@
                     controllerAs: 't'
 
                 })
+                .when('/tasks_archive', {
+                    templateUrl: 'app/admin/tasks-archive.html'
+                })
                 .otherwise({
                     templateUrl: 'app/main.html'
                 });

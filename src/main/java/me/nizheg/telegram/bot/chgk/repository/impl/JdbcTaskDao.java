@@ -33,6 +33,8 @@ import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 
+import static me.nizheg.telegram.bot.chgk.dto.LightTask.Status.PUBLISHED;
+
 @Repository
 public class JdbcTaskDao implements TaskDao {
 
@@ -147,7 +149,7 @@ public class JdbcTaskDao implements TaskDao {
             categoryFilter = "inner join task_category tc on tc.task_id = task.id and category_id = ? \n";
             parameters.add(category.getId());
         }
-        parameters.add(LightTask.Status.PUBLISHED.name());
+        parameters.add(PUBLISHED.name());
         parameters.add(chatId);
         parameters.add(chatId);
         List<LightTask> tasks = template.query("select * from task where id = (select id from task\n" + //
@@ -171,7 +173,7 @@ public class JdbcTaskDao implements TaskDao {
     @CheckForNull
     public LightTask getNextTaskInTournament(long tournamentId, int currentTourNumber, int currentNumberInTour) {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("status", LightTask.Status.PUBLISHED.name());
+        parameters.addValue("status", PUBLISHED.name());
         parameters.addValue("tournamentId", tournamentId);
         parameters.addValue("currentNumberInTour", currentNumberInTour);
         parameters.addValue("currentTourNumber", currentTourNumber);
@@ -204,7 +206,7 @@ public class JdbcTaskDao implements TaskDao {
     public UsageStat getUsageStatForChatByChatId(long chatId, Category category) {
         StringBuilder queryBuilder = new StringBuilder();
         MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("status", LightTask.Status.PUBLISHED.name());
+        parameters.addValue("status", PUBLISHED.name());
         parameters.addValue("chatId", chatId);
         queryBuilder.append("with used_task_all as (\n");
         queryBuilder.append(getUsedTaskCompositeQuery());
@@ -225,7 +227,7 @@ public class JdbcTaskDao implements TaskDao {
     public UsageStat getUsageStatForChatByTournament(long chatId, long tournamentId) {
         StringBuilder queryBuilder = new StringBuilder();
         MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("status", LightTask.Status.PUBLISHED.name());
+        parameters.addValue("status", PUBLISHED.name());
         parameters.addValue("tournamentId", tournamentId);
         parameters.addValue("chatId", chatId);
         queryBuilder.append("with used_task_all as (\n");
@@ -294,6 +296,48 @@ public class JdbcTaskDao implements TaskDao {
         namedParameterJdbcTemplate.update(
                 "update task set status = :toStatus where id in (:taskIds) and status=:fromStatus", parameters);
 
+    }
+
+    @Override
+    public int archiveTasks() {
+        template.execute("lock table used_task_archive, used_task, task");
+        String archiveSql = "insert into used_task_archive\n"
+                + "select task_id, chat_id, using_time from used_task ut\n"
+                + "where not exists (select 1 from used_task_archive uta where uta.task_id = ut.task_id and uta.chat_id = ut.chat_id)\n"
+                + "except\n"
+                + "select ut1.task_id, ut1.chat_id, ut1.using_time\n"
+                + "from used_task ut1\n"
+                + "inner join ("
+                + " select id, max(using_time) "
+                + " from task "
+                + " left join used_task on used_task.task_id = task.id "
+                + " where status =:published group by id) "
+                + " as t1(id, using_time) on t1.id = ut1.task_id and t1.using_time = ut1.using_time\n"
+                + "except\n"
+                + "select ut2.task_id, ut2.chat_id, ut2.using_time\n"
+                + "from used_task ut2\n"
+                + "inner join ("
+                + " select chat_id, max(using_time) "
+                + " from used_task "
+                + " group by chat_id) "
+                + " as t2(chat_id, using_time) on ut2.chat_id = t2.chat_id and ut2.using_time = t2.using_time\n"
+                + "except \n"
+                + "select task_id, chat_id, using_time\n"
+                + "from used_task_archive";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("published", PUBLISHED.name());
+        int archived = namedParameterJdbcTemplate.update(archiveSql, parameters);
+        String removeMovedRecords = "delete from used_task ut "
+                + "where exists ("
+                + " select 1 from used_task_archive uta "
+                + " where uta.task_id = ut.task_id "
+                + "     and uta.chat_id = ut.chat_id "
+                + "     and uta.using_time = ut.using_time)";
+        int removed = template.update(removeMovedRecords);
+        if (archived != removed) {
+            throw new IllegalStateException("Archived and removed count is not the same");
+        }
+        return removed;
     }
 
     private static class UsageStatMapper implements RowMapper<UsageStat> {

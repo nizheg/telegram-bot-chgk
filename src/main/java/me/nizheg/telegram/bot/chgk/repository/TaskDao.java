@@ -49,4 +49,8 @@ public interface TaskDao {
 
     void updateStatus(List<Long> taskIds, LightTask.Status fromStatus, LightTask.Status toStatus);
 
+    /**
+     * Transaction required
+     */
+    int archiveTasks();
 }

@@ -205,4 +205,10 @@ public class TaskServiceImpl implements TaskService {
     public LightTask getLastUsedTask(long chatId) {
         return taskDao.getLastUsedTask(chatId);
     }
+
+    @Transactional
+    @Override
+    public int archiveTasks() {
+        return taskDao.archiveTasks();
+    }
 }

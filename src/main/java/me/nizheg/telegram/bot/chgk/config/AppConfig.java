@@ -14,6 +14,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Arrays;
 import java.util.List;
@@ -90,6 +91,7 @@ import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
         "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
         "me.nizheg.telegram.bot.chgk.command", "info.chgk", "me.nizheg.payments"})
 @PropertySource("classpath:/config.properties")
+@EnableTransactionManagement
 public class AppConfig {
 
     public static final String SCOPE_THREAD = "thread";

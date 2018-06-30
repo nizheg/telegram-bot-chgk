@@ -58,4 +58,6 @@ public interface TaskService {
     UsageStat getUsageStatForChatByTournament(long chatId, Tournament tournament);
 
     LightTask getLastUsedTask(long chatId);
+
+    int archiveTasks();
 }
