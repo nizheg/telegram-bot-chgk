@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -146,6 +147,15 @@ public class AutoChatGame extends ChatGame {
             cleanActiveOperation();
         }
         return userAnswerResult;
+    }
+
+    @Override
+    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) {
+        HintResult hintForTask = super.getHintForTask(chat, taskId);
+        if (chat.getId() == getChatId() && hintForTask.isTaskCurrent()) {
+            cleanActiveOperation();
+        }
+        return hintForTask;
     }
 
     private synchronized void scheduleOperation(String id, int ms) {
