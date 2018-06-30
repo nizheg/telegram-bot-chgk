@@ -452,4 +452,8 @@
                                  constraintName="fk_user_role_telegram_user_id"
                                  referencedTableName="telegram_user" referencedColumnNames="id"/>
     </changeSet>
+
+    <changeSet id="28" author="nzhegalin">
+        <dropUniqueConstraint tableName="chat" uniqueColumns="username" constraintName="chat_username_key"/>
+    </changeSet>
 </databaseChangeLog>
