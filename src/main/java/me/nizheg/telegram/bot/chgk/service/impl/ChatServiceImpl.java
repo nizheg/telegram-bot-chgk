@@ -155,8 +155,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void migrateChatToAnother(final Long fromChatId, final Long toChatId) {
+        propertyService.deletePropertiesForChat(toChatId);
         propertyService.copyProperties(fromChatId, toChatId);
+        taskDao.deleteUsedTasks(toChatId);
         taskDao.copyUsedTasks(fromChatId, toChatId);
+        answerLogDao.deleteByChatId(toChatId);
         answerLogDao.copy(fromChatId, toChatId);
     }
 

@@ -28,4 +28,6 @@ public interface PropertyDao {
     boolean isExist(String key, Long chatId);
 
     void copyProperties(Long fromChatId, Long toChatId);
+
+    void deleteByChatId(Long chatId);
 }

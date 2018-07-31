@@ -108,6 +108,11 @@ public class JdbcPropertyDao implements PropertyDao {
                 new Date(), fromChatId);
     }
 
+    @Override
+    public void deleteByChatId(Long chatId) {
+        template.update("delete from property where chat_id = ?", chatId);
+    }
+
     private static class PropertyMapper implements RowMapper<Property> {
 
         @Override

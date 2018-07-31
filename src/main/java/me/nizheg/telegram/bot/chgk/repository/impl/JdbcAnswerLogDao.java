@@ -149,6 +149,11 @@ public class JdbcAnswerLogDao implements AnswerLogDao {
 
     }
 
+    @Override
+    public void deleteByChatId(Long chatId) {
+        template.update("delete from answer_log where chat_id = ?", chatId);
+    }
+
     private static class AnswerLogMapper implements RowMapper<AnswerLog> {
 
         @Override

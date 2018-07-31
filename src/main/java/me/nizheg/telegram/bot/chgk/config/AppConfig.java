@@ -33,6 +33,7 @@ import me.nizheg.telegram.bot.chgk.command.ClearCurrentTaskAndSendNextCommand;
 import me.nizheg.telegram.bot.chgk.command.DefaultCommand;
 import me.nizheg.telegram.bot.chgk.command.DonateCommand;
 import me.nizheg.telegram.bot.chgk.command.HintCommand;
+import me.nizheg.telegram.bot.chgk.command.MigrateCommand;
 import me.nizheg.telegram.bot.chgk.command.NextCommand;
 import me.nizheg.telegram.bot.chgk.command.RatingCommand;
 import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
@@ -225,6 +226,7 @@ public class AppConfig {
                 helpCommand(),
                 defaultCommand(),
                 ratingCommand(),
+                migrateCommand(),
                 donateCommand()
         ));
     }
@@ -321,6 +323,11 @@ public class AppConfig {
     @Bean
     public DonateCommand donateCommand() {
         return new DonateCommand(() -> asyncTelegramApiClient(telegramApiClient()), paymentService, propertyService);
+    }
+
+    @Bean
+    public MigrateCommand migrateCommand() {
+        return new MigrateCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService);
     }
 
     @Bean

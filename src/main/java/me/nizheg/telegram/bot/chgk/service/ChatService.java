@@ -30,7 +30,7 @@ public interface ChatService {
 
     void createMappingToSupergroup(Long groupId, Long superGroupId);
 
-    void migrateChatToAnother(Long groupId, Long superGroupId);
+    void migrateChatToAnother(Long fromChatId, Long toChatId);
 
     List<Chat> getChatsWithScheduledOperation();
 }

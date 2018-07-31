@@ -1,10 +1,10 @@
 package me.nizheg.telegram.bot.chgk.repository;
 
+import java.util.List;
+
 import me.nizheg.telegram.bot.chgk.dto.AnswerLog;
 import me.nizheg.telegram.bot.chgk.dto.composite.StatEntry;
 import me.nizheg.telegram.bot.chgk.repository.param.StatSearchParams;
-
-import java.util.List;
 
 /**
  * @author Nikolay Zhegalin
@@ -23,4 +23,6 @@ public interface AnswerLogDao {
     List<StatEntry> getStatForChatUserForTournament(Long chatId, Long userId, String othersUsername, Long tournamentId);
 
     void copy(Long fromChatId, Long toChatId);
+
+    void deleteByChatId(Long chatId);
 }

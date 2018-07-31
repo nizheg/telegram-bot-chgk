@@ -283,6 +283,12 @@ public class JdbcTaskDao implements TaskDao {
     }
 
     @Override
+    public void deleteUsedTasks(Long chatId) {
+        template.update("delete from used_task where chat_id = ?", chatId);
+        template.update("delete from used_task_archive where chat_id = ?", chatId);
+    }
+
+    @Override
     public List<LightTask> getByTour(long id) {
         return template.query("select * from task where tour_id = ? order by number_in_tour", taskMapper, id);
     }

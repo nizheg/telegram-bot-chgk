@@ -157,4 +157,9 @@ public class PropertyServiceImpl implements PropertyService {
     public void copyProperties(Long fromChatId, Long toChatId) {
         propertyDao.copyProperties(fromChatId, toChatId);
     }
+
+    @Override
+    public void deletePropertiesForChat(Long chatId) {
+        propertyDao.deleteByChatId(chatId);
+    }
 }

@@ -45,6 +45,8 @@ public interface TaskDao {
 
     void copyUsedTasks(Long fromChatId, Long toChatId);
 
+    void deleteUsedTasks(Long chatId);
+
     List<LightTask> getByTour(long id);
 
     void updateStatus(List<Long> taskIds, LightTask.Status fromStatus, LightTask.Status toStatus);
