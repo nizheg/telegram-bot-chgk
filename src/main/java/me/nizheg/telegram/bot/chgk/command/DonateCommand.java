@@ -149,8 +149,7 @@ public class DonateCommand extends ChatCommand {
 
     @Override
     public String getDescription() {
-        return "/donate <sum> - внести пожертвование на оплату сервера (<sum> рублей)\nТакже можно воспользоваться ссылкой: "
-                + getPaymentDirectLink();
+        return "/donate <sum> - внести пожертвование на оплату сервера (<sum> рублей)";
     }
 
     private String getPaymentDirectLink() {
