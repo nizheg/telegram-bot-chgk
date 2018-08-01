@@ -54,6 +54,7 @@ import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
+import me.nizheg.telegram.bot.chgk.service.Cipher;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
@@ -140,6 +141,8 @@ public class AppConfig {
     private ChatGameService chatGameService;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private Cipher cipher;
 
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
@@ -327,7 +330,8 @@ public class AppConfig {
 
     @Bean
     public MigrateCommand migrateCommand() {
-        return new MigrateCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService);
+        return new MigrateCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+                cipher);
     }
 
     @Bean
