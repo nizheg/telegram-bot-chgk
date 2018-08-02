@@ -3,7 +3,10 @@ package me.nizheg.telegram.bot.chgk.domain;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -38,11 +41,12 @@ import me.nizheg.telegram.bot.service.PropertyService;
  */
 public class ChatGame {
 
-    private final static int SECOND = 1000;
+    private final static Duration TIMEOUT_BETWEEN_TASKS = Duration.of(5, ChronoUnit.SECONDS);
     private final static long NULL_TASK_ID = -1;
     protected final Chat chat;
     private final static LevenshteinDistance LEVENSHTEIN_DISTANCE = LevenshteinDistance.getDefaultInstance();
     private Task currentTask;
+    private OffsetDateTime currentTaskUsageTime;
     private Category category;
     private Tournament currentTournament;
     private final PropertyService propertyService;
@@ -81,6 +85,9 @@ public class ChatGame {
             this.currentTask = null;
         } else {
             this.currentTask = taskService.createCompositeTask(lightTask);
+        }
+        if (this.currentTask != null) {
+            this.currentTaskUsageTime = taskService.getUsageTime(this.currentTask.getId(), chatId);
         }
         String categoryId = propertyService.getValueForChat(Properties.CATEGORY_KEY, chatId);
         Category category;
@@ -161,12 +168,18 @@ public class ChatGame {
         if (taskId == null) {
             taskId = NULL_TASK_ID;
         }
-        taskService.setTaskUsed(taskId, getChatId());
+        long chatId = getChatId();
+        taskService.setTaskUsed(taskId, chatId);
         Task compositeTask = null;
         if (taskId != NULL_TASK_ID) {
             compositeTask = taskService.createCompositeTask(taskId);
         }
         this.currentTask = compositeTask;
+        if (this.currentTask != null) {
+            this.currentTaskUsageTime = taskService.getUsageTime(this.currentTask.getId(), chatId);
+        } else {
+            this.currentTaskUsageTime = null;
+        }
         return compositeTask;
     }
 
@@ -197,8 +210,8 @@ public class ChatGame {
         NextTaskResult result = new NextTaskResult();
         Task currentTask = getCurrentTask();
         if (currentTask != null) {
-            Date usageTime = getUsageTime();
-            if (usageTime != null && System.currentTimeMillis() - usageTime.getTime() <= 5 * SECOND) {
+            OffsetDateTime usageTime = getUsageTime();
+            if (usageTime != null && Duration.between(usageTime, Instant.now()).compareTo(TIMEOUT_BETWEEN_TASKS) <= 0) {
                 throw new TooOftenCallingException("Следующий вопрос можно получить не раньше, чем через 5 с");
             }
             Task unansweredTask = throwUnansweredTask();
@@ -247,12 +260,8 @@ public class ChatGame {
     }
 
     @Nullable
-    protected Date getUsageTime() {
-        Task currentTask = getCurrentTask();
-        if (currentTask == null) {
-            return null;
-        }
-        return taskService.getUsageTime(currentTask.getId(), getChatId());
+    protected OffsetDateTime getUsageTime() {
+        return currentTaskUsageTime;
     }
 
     public synchronized UserAnswerResult userAnswer(UserAnswer userAnswer) {

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
@@ -85,7 +85,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Date getUsageTime(Long taskId, Long chatId) {
+    public OffsetDateTime getUsageTime(Long taskId, Long chatId) {
         return taskDao.getUsageTime(taskId, chatId);
     }
 

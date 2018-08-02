@@ -1,6 +1,6 @@
 package me.nizheg.telegram.bot.chgk.service;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
@@ -29,7 +29,7 @@ public interface TaskService {
 
     void setTaskUsed(Long id, Long chatId);
 
-    Date getUsageTime(Long taskId, Long chatId);
+    OffsetDateTime getUsageTime(Long taskId, Long chatId);
 
     LightTask getUnusedByChatTask(Long chatId, Category category);
 

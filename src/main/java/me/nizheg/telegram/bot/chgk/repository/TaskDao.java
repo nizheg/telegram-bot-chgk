@@ -1,6 +1,6 @@
 package me.nizheg.telegram.bot.chgk.repository;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
@@ -23,7 +23,7 @@ public interface TaskDao {
 
     LightTask getLastUsedTask(Long chatId);
 
-    Date getUsageTime(Long taskId, Long chatId);
+    OffsetDateTime getUsageTime(Long taskId, Long chatId);
 
     LightTask getUnusedByChat(Long chatId, Category category);
 

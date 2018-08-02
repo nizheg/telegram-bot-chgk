@@ -1,8 +1,8 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
-import me.nizheg.telegram.bot.chgk.dto.composite.Task;
+import java.time.OffsetDateTime;
 
-import java.util.Date;
+import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 
 /**
 * @author Nikolay Zhegalin
@@ -11,7 +11,7 @@ public class UserAnswerResult {
     private boolean isCorrect = false;
     private String exactAnswer = null;
     private Long firstAnsweredUser = null;
-    private Date usageTime;
+    private OffsetDateTime usageTime;
     private Task currentTask;
 
     public boolean isCorrect() {
@@ -38,11 +38,11 @@ public class UserAnswerResult {
         this.firstAnsweredUser = firstAnsweredUser;
     }
 
-    public Date getUsageTime() {
+    public OffsetDateTime getUsageTime() {
         return usageTime;
     }
 
-    public void setUsageTime(Date usageTime) {
+    public void setUsageTime(OffsetDateTime usageTime) {
         this.usageTime = usageTime;
     }
 

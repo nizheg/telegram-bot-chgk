@@ -18,6 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -131,10 +132,10 @@ public class JdbcTaskDao implements TaskDao {
 
     @Override
     @CheckForNull
-    public Date getUsageTime(Long taskId, Long chatId) {
+    public OffsetDateTime getUsageTime(Long taskId, Long chatId) {
         try {
             return template.queryForObject("select using_time from used_task where chat_id = ? and task_id = ?",
-                    Date.class, chatId, taskId);
+                    OffsetDateTime.class, chatId, taskId);
         } catch (IncorrectResultSizeDataAccessException ex) {
             return null;
         }
