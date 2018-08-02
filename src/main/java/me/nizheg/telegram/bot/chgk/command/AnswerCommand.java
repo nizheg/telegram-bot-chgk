@@ -6,11 +6,14 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
+import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
+import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -77,12 +80,16 @@ public class AnswerCommand extends ChatGameCommand {
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
         Long chatId = ctx.getChatId();
         Long taskId = parseTaskId(ctx);
-        HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
-        Task task = hintForTask.getTask();
-        if (task != null) {
-            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), chatId);
-        } else {
-            throw new NoTaskException(ctx.getChatId());
+        try {
+            HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
+            Task task = hintForTask.getTask();
+            if (task != null) {
+                answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), chatId);
+            } else {
+                throw new NoTaskException(ctx.getChatId());
+            }
+        } catch (GameException e) {
+            getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
         }
     }
 

@@ -14,6 +14,7 @@ import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
+import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -72,11 +73,15 @@ public class HintCommand extends ChatGameCommand {
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
         Long chatId = ctx.getChatId();
         Long taskId = parseTaskId(ctx);
-        HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
-        if (hintForTask.getTask() != null) {
-            sendAnswerToUser(ctx, hintForTask.getTask());
-        } else {
-            throw new NoTaskException(chatId);
+        try {
+            HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
+            if (hintForTask.getTask() != null) {
+                sendAnswerToUser(ctx, hintForTask.getTask());
+            } else {
+                throw new NoTaskException(chatId);
+            }
+        } catch (GameException e) {
+            getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
         }
     }
 

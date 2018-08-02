@@ -6,6 +6,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -41,7 +42,7 @@ import me.nizheg.telegram.bot.service.PropertyService;
  */
 public class ChatGame {
 
-    private final static Duration TIMEOUT_BETWEEN_TASKS = Duration.of(5, ChronoUnit.SECONDS);
+    private final static Duration TIME_TO_ACTION_AFTER_NEW_TASK = Duration.of(5, ChronoUnit.SECONDS);
     private final static long NULL_TASK_ID = -1;
     protected final Chat chat;
     private final static LevenshteinDistance LEVENSHTEIN_DISTANCE = LevenshteinDistance.getDefaultInstance();
@@ -211,7 +212,9 @@ public class ChatGame {
         Task currentTask = getCurrentTask();
         if (currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();
-            if (usageTime != null && Duration.between(usageTime, Instant.now()).compareTo(TIMEOUT_BETWEEN_TASKS) <= 0) {
+            if (usageTime != null
+                    && Duration.between(usageTime, Instant.now().atOffset(ZoneOffset.UTC))
+                    .compareTo(TIME_TO_ACTION_AFTER_NEW_TASK) <= 0) {
                 throw new TooOftenCallingException("Следующий вопрос можно получить не раньше, чем через 5 с");
             }
             Task unansweredTask = throwUnansweredTask();
@@ -260,7 +263,7 @@ public class ChatGame {
     }
 
     @Nullable
-    protected OffsetDateTime getUsageTime() {
+    protected synchronized OffsetDateTime getUsageTime() {
         return currentTaskUsageTime;
     }
 
@@ -326,7 +329,7 @@ public class ChatGame {
         return result;
     }
 
-    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) {
+    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) throws TooOftenCallingException {
         Task currentTask = getCurrentTask();
         HintResult hintResult = new HintResult();
 
@@ -337,6 +340,12 @@ public class ChatGame {
                 hintResult.setTaskCurrent(false);
             }
         } else if (currentTask != null) {
+            OffsetDateTime usageTime = getUsageTime();
+            if (usageTime != null
+                    && Duration.between(usageTime, Instant.now().atOffset(ZoneOffset.UTC)).compareTo
+                    (TIME_TO_ACTION_AFTER_NEW_TASK) <= 0) {
+                throw new TooOftenCallingException("Подсказку можно получить не раньше, чем через 5 с");
+            }
             hintResult.setTask(currentTask);
             hintResult.setTaskCurrent(true);
         }

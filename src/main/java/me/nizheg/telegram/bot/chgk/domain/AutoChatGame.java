@@ -18,6 +18,7 @@ import me.nizheg.telegram.bot.chgk.dto.ScheduledOperation;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
+import me.nizheg.telegram.bot.chgk.exception.TooOftenCallingException;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
@@ -150,7 +151,7 @@ public class AutoChatGame extends ChatGame {
     }
 
     @Override
-    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) {
+    public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) throws TooOftenCallingException {
         HintResult hintForTask = super.getHintForTask(chat, taskId);
         if (chat.getId() == getChatId() && hintForTask.isTaskCurrent()) {
             cleanActiveOperation();
@@ -215,9 +216,13 @@ public class AutoChatGame extends ChatGame {
 
         @Override
         public void doOperation() {
-            HintResult hintForTask = getHintForTask(getChat(), null);
-            Optional.ofNullable(hintForTask.getTask())
-                    .ifPresent(task -> answerOperation.sendAnswerWithRatingAndNextButtons(task, getChatId()));
+            try {
+                HintResult hintForTask = getHintForTask(getChat(), null);
+                Optional.ofNullable(hintForTask.getTask())
+                        .ifPresent(task -> answerOperation.sendAnswerWithRatingAndNextButtons(task, getChatId()));
+            } catch (TooOftenCallingException e) {
+                throw new IllegalStateException(e);
+            }
         }
     }
 

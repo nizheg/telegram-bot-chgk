@@ -3,9 +3,9 @@ package me.nizheg.telegram.bot.chgk.command;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -159,7 +159,7 @@ public class DefaultCommand extends ChatCommand {
                 }
             }
 
-            Date usageTime = userAnswerResult.getUsageTime();
+            OffsetDateTime usageTime = userAnswerResult.getUsageTime();
             resultBuilder.append(
                     "\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: " + printDiffTillNow(usageTime));
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
@@ -187,7 +187,7 @@ public class DefaultCommand extends ChatCommand {
         return compliment;
     }
 
-    private String printDiffTillNow(Date date) {
+    private String printDiffTillNow(OffsetDateTime date) {
         if (date == null) {
             return "0";
         }
