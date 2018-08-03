@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -121,7 +122,8 @@ public class ChatGameServiceImpl implements ChatGameService {
             chatGame = putInCache(chat);
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("Get game is executed in " + (System.nanoTime() - start) + " nanos for chat " + chatId);
+            long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+            logger.trace("Get game is executed in " + elapsedTime + " ms for chat " + chatId);
         }
         return chatGame;
     }
