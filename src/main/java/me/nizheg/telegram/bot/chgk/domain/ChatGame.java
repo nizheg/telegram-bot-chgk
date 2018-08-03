@@ -3,11 +3,9 @@ package me.nizheg.telegram.bot.chgk.domain;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
+import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -42,7 +40,6 @@ import me.nizheg.telegram.bot.service.PropertyService;
  */
 public class ChatGame {
 
-    private final static Duration TIME_TO_ACTION_AFTER_NEW_TASK = Duration.of(5, ChronoUnit.SECONDS);
     private final static long NULL_TASK_ID = -1;
     protected final Chat chat;
     private final static LevenshteinDistance LEVENSHTEIN_DISTANCE = LevenshteinDistance.getDefaultInstance();
@@ -57,6 +54,7 @@ public class ChatGame {
     private final AnswerLogService answerLogService;
     private final TelegramUserService telegramUserService;
     private final BotInfo botInfo;
+    private final Clock clock;
 
     public ChatGame(
             Chat chat,
@@ -66,7 +64,8 @@ public class ChatGame {
             TaskService taskService,
             AnswerLogService answerLogService,
             TelegramUserService telegramUserService,
-            BotInfo botInfo) {
+            BotInfo botInfo,
+            Clock clock) {
         Validate.notNull(chat);
         this.propertyService = propertyService;
         this.categoryService = categoryService;
@@ -76,6 +75,7 @@ public class ChatGame {
         this.telegramUserService = telegramUserService;
         this.botInfo = botInfo;
         this.chat = chat;
+        this.clock = clock;
     }
 
     @PostConstruct
@@ -212,9 +212,7 @@ public class ChatGame {
         Task currentTask = getCurrentTask();
         if (currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();
-            if (usageTime != null
-                    && Duration.between(usageTime, Instant.now().atOffset(ZoneOffset.UTC))
-                    .compareTo(TIME_TO_ACTION_AFTER_NEW_TASK) <= 0) {
+            if (usageTime != null && Duration.between(usageTime, OffsetDateTime.now(clock)).getSeconds() < 5) {
                 throw new TooOftenCallingException("Следующий вопрос можно получить не раньше, чем через 5 с");
             }
             Task unansweredTask = throwUnansweredTask();
@@ -341,9 +339,7 @@ public class ChatGame {
             }
         } else if (currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();
-            if (usageTime != null
-                    && Duration.between(usageTime, Instant.now().atOffset(ZoneOffset.UTC)).compareTo
-                    (TIME_TO_ACTION_AFTER_NEW_TASK) <= 0) {
+            if (usageTime != null && Duration.between(usageTime, OffsetDateTime.now(clock)).getSeconds() < 5) {
                 throw new TooOftenCallingException("Подсказку можно получить не раньше, чем через 5 с");
             }
             hintResult.setTask(currentTask);

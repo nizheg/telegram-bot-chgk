@@ -1,8 +1,8 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,29 +13,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class DateUtils {
 
-    public static Map<TimeUnit, Long> computeDiffTillNow(Date date) {
-        long diffInMillies = System.currentTimeMillis() - date.getTime();
+    public static Map<TimeUnit, Long> computeDiff(OffsetDateTime from, OffsetDateTime to) {
+        long diffInSeconds = Duration.between(from, to).getSeconds();
         List<TimeUnit> units = Arrays.asList(TimeUnit.DAYS, TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS);
         Map<TimeUnit, Long> result = new LinkedHashMap<>();
-        long milliesRest = diffInMillies;
+        long secondsRest = diffInSeconds;
         for (TimeUnit unit : units) {
-            long diff = unit.convert(milliesRest, TimeUnit.MILLISECONDS);
-            long diffInMilliesForUnit = unit.toMillis(diff);
-            milliesRest = milliesRest - diffInMilliesForUnit;
-            result.put(unit, diff);
-        }
-        return result;
-    }
-
-    public static Map<TimeUnit, Long> computeDiffTillNow(OffsetDateTime date) {        ;
-        long diffInMillies = System.currentTimeMillis() - date.toEpochSecond() * 1000;
-        List<TimeUnit> units = Arrays.asList(TimeUnit.DAYS, TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS);
-        Map<TimeUnit, Long> result = new LinkedHashMap<>();
-        long milliesRest = diffInMillies;
-        for (TimeUnit unit : units) {
-            long diff = unit.convert(milliesRest, TimeUnit.MILLISECONDS);
-            long diffInMilliesForUnit = unit.toMillis(diff);
-            milliesRest = milliesRest - diffInMilliesForUnit;
+            long diff = unit.convert(secondsRest, TimeUnit.SECONDS);
+            long diffInSecondsForUnit = unit.toSeconds(diff);
+            secondsRest -= diffInSecondsForUnit;
             result.put(unit, diff);
         }
         return result;

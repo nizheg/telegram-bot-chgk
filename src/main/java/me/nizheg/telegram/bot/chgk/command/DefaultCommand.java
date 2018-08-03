@@ -3,6 +3,7 @@ package me.nizheg.telegram.bot.chgk.command;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswer;
@@ -50,6 +52,7 @@ public class DefaultCommand extends ChatCommand {
     private final TelegramUserService telegramUserService;
     private final RatingHelper ratingHelper;
     private final BotInfo botInfo;
+    private final Clock clock;
 
     public DefaultCommand(
             @Nonnull TelegramApiClient telegramApiClient,
@@ -58,7 +61,8 @@ public class DefaultCommand extends ChatCommand {
             @Nonnull TaskSender taskSender,
             @Nonnull TelegramUserService telegramUserService,
             @Nonnull RatingHelper ratingHelper,
-            @Nonnull BotInfo botInfo) {
+            @Nonnull BotInfo botInfo,
+            @Nonnull Clock clock) {
         super(telegramApiClient);
         Validate.notNull(chatGameService, "chatService should be defined");
         Validate.notNull(chatGameService, "chatGameService should be defined");
@@ -66,12 +70,14 @@ public class DefaultCommand extends ChatCommand {
         Validate.notNull(telegramUserService, "telegramUserService should be defined");
         Validate.notNull(ratingHelper, "ratingHelper should be defined");
         Validate.notNull(botInfo, "botInfo should be defined");
+        Validate.notNull(clock, "clock should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.telegramUserService = telegramUserService;
         this.ratingHelper = ratingHelper;
         this.botInfo = botInfo;
+        this.clock = clock;
     }
 
     public DefaultCommand(
@@ -81,7 +87,8 @@ public class DefaultCommand extends ChatCommand {
             @Nonnull TaskSender taskSender,
             @Nonnull TelegramUserService telegramUserService,
             @Nonnull RatingHelper ratingHelper,
-            @Nonnull BotInfo botInfo) {
+            @Nonnull BotInfo botInfo,
+            @Nonnull Clock clock) {
         super(telegramApiClientSupplier);
         Validate.notNull(chatGameService, "chatService should be defined");
         Validate.notNull(chatGameService, "chatGameService should be defined");
@@ -89,12 +96,14 @@ public class DefaultCommand extends ChatCommand {
         Validate.notNull(telegramUserService, "telegramUserService should be defined");
         Validate.notNull(ratingHelper, "ratingHelper should be defined");
         Validate.notNull(botInfo, "botInfo should be defined");
+        Validate.notNull(clock, "clock should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.telegramUserService = telegramUserService;
         this.ratingHelper = ratingHelper;
         this.botInfo = botInfo;
+        this.clock = clock;
     }
 
     @Override
@@ -172,7 +181,7 @@ public class DefaultCommand extends ChatCommand {
             replyMarkup.setInlineKeyboard(buttonGroup);
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
         } else {
-            getTelegramApiClient().sendMessage(new me.nizheg.telegram.bot.api.service.param.Message(
+            getTelegramApiClient().sendMessage(new Message(
                     "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.", chatId, ParseMode.HTML));
         }
 
@@ -191,7 +200,7 @@ public class DefaultCommand extends ChatCommand {
         if (date == null) {
             return "0";
         }
-        Map<TimeUnit, Long> diffMap = DateUtils.computeDiffTillNow(date);
+        Map<TimeUnit, Long> diffMap = DateUtils.computeDiff(date, OffsetDateTime.now(clock));
         StringBuilder resultBuilder = new StringBuilder();
         for (Map.Entry<TimeUnit, Long> timeUnitEntry : diffMap.entrySet()) {
             if (timeUnitEntry.getValue() > 0) {

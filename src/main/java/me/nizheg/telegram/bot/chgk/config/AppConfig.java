@@ -16,6 +16,7 @@ import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 
@@ -338,7 +339,7 @@ public class AppConfig {
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public ChatGame chatGame(Chat chat) {
         return new ChatGame(chat, propertyService, categoryService, tourService, taskService,
-                answerLogService, telegramUserService, botInfo);
+                answerLogService, telegramUserService, botInfo, clock());
     }
 
     @Bean
@@ -376,6 +377,11 @@ public class AppConfig {
                 return autoChatGame(chat, timeout);
             }
         };
+    }
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
     }
 
 }
