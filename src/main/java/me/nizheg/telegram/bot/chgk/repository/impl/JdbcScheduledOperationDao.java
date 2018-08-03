@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -65,7 +65,7 @@ public class JdbcScheduledOperationDao implements ScheduledOperationDao {
         public ScheduledOperation mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
             long chatId = rs.getLong("chat_id");
             String operationId = rs.getString("operation_id");
-            Date time = rs.getTimestamp("scheduling_time");
+            OffsetDateTime time = rs.getObject("scheduling_time", OffsetDateTime.class);
             ScheduledOperation operation = new ScheduledOperation();
             operation.setChatId(chatId);
             operation.setOperationId(operationId);

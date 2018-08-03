@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
@@ -263,6 +264,11 @@ public class ChatGame {
     @Nullable
     protected synchronized OffsetDateTime getUsageTime() {
         return currentTaskUsageTime;
+    }
+
+    @Nonnull
+    protected Clock getClock() {
+        return clock;
     }
 
     public synchronized UserAnswerResult userAnswer(UserAnswer userAnswer) {

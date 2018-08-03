@@ -5,12 +5,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Clock;
-import java.util.Date;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
@@ -93,10 +95,6 @@ public class AutoChatGame extends ChatGame {
         return timeout;
     }
 
-    private int getTimeoutMillis() {
-        return timeout * SECOND;
-    }
-
     public void start() {
         state = STATE_STARTED;
     }
@@ -115,7 +113,7 @@ public class AutoChatGame extends ChatGame {
             return 0;
         }
         int result = 0;
-        int delay = (int) ((scheduledOperationLog.getTime().getTime() - System.currentTimeMillis()) / SECOND);
+        int delay = (int) Duration.between(now(), scheduledOperationLog.getTime()).getSeconds();
         String operationId = scheduledOperationLog.getOperationId();
         if (OPERATION_ID_ANSWER.equals(operationId)) {
             result = delay;
@@ -125,11 +123,16 @@ public class AutoChatGame extends ChatGame {
         return Math.max(result, 0);
     }
 
+    @Nonnull
+    private OffsetDateTime now() {
+        return OffsetDateTime.now(getClock());
+    }
+
     @Override
     public synchronized NextTaskResult nextTask() throws GameException {
         start();
         NextTaskResult nextTaskResult = super.nextTask();
-        scheduleOperation(OPERATION_ID_WARNING, getTimeoutMillis() - TIME_WARNING_BEFORE_ANSWER * SECOND);
+        scheduleOperation(OPERATION_ID_WARNING, getTimeout() - TIME_WARNING_BEFORE_ANSWER);
         return nextTaskResult;
     }
 
@@ -138,7 +141,7 @@ public class AutoChatGame extends ChatGame {
         start();
         Task task = super.repeatTask();
         if (scheduledOperation == null && isTaskUnanswered()) {
-            scheduleOperation(OPERATION_ID_WARNING, getTimeoutMillis() - TIME_WARNING_BEFORE_ANSWER * SECOND);
+            scheduleOperation(OPERATION_ID_WARNING, getTimeout() - TIME_WARNING_BEFORE_ANSWER);
         }
         return task;
     }
@@ -161,11 +164,11 @@ public class AutoChatGame extends ChatGame {
         return hintForTask;
     }
 
-    private synchronized void scheduleOperation(String id, int ms) {
-        scheduleOperation(id, new Date(System.currentTimeMillis() + ms));
+    private synchronized void scheduleOperation(String id, int delay) {
+        scheduleOperation(id, now().plusSeconds(delay));
     }
 
-    private synchronized void scheduleOperation(String id, Date time) {
+    private synchronized void scheduleOperation(String id, OffsetDateTime time) {
         Runnable runner = operationRunners.get(id);
         if (runner == null) {
             throw new IllegalStateException("Illegal id of operation. There are no runner for it");
@@ -183,7 +186,7 @@ public class AutoChatGame extends ChatGame {
         scheduledOperationLog.setTime(time);
         scheduledOperationLog.setChatId(getChatId());
         saveScheduledOperationLog(scheduledOperationLog);
-        this.scheduledOperation = taskScheduler.schedule(runner, time);
+        this.scheduledOperation = taskScheduler.schedule(runner, time.toInstant());
     }
 
     private void saveScheduledOperationLog(ScheduledOperation operation) {
@@ -233,7 +236,7 @@ public class AutoChatGame extends ChatGame {
         @Override
         public void doOperation() {
             warningOperation.sendTimeWarning(chat, TIME_WARNING_BEFORE_ANSWER);
-            scheduleOperation(OPERATION_ID_ANSWER, TIME_WARNING_BEFORE_ANSWER * SECOND);
+            scheduleOperation(OPERATION_ID_ANSWER, TIME_WARNING_BEFORE_ANSWER);
         }
     }
 
