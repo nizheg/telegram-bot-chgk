@@ -347,7 +347,7 @@ public class AppConfig {
     public AutoChatGame autoChatGame(Chat chat, int timeout) {
         return new AutoChatGame(chat, timeout, propertyService, categoryService, tourService, taskService,
                 answerLogService, botInfo, telegramUserService, taskScheduler(), nextTaskOperation, warningOperation,
-                scheduledOperationService);
+                scheduledOperationService, clock());
     }
 
     @Bean

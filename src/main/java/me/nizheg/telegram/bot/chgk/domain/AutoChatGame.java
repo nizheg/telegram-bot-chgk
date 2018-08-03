@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.TaskScheduler;
 
+import java.time.Clock;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,9 +65,10 @@ public class AutoChatGame extends ChatGame {
             TaskScheduler taskScheduler,
             AnswerOperation answerOperation,
             WarningOperation warningOperation,
-            ScheduledOperationService scheduledOperationService) {
+            ScheduledOperationService scheduledOperationService,
+            Clock clock) {
         super(chat, propertyService, categoryService, tourService, taskService, answerLogService, telegramUserService,
-                botInfo);
+                botInfo, clock);
         this.timeout = timeout;
         this.taskScheduler = taskScheduler;
         this.answerOperation = answerOperation;
