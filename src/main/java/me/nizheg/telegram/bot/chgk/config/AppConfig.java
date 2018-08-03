@@ -316,7 +316,7 @@ public class AppConfig {
     @Bean
     public DefaultCommand defaultCommand() {
         return new DefaultCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                taskSender, telegramUserService, ratingHelper, botInfo);
+                taskSender, telegramUserService, ratingHelper, botInfo, clock());
     }
 
     @Bean
