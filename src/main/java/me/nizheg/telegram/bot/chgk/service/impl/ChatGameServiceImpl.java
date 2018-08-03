@@ -106,7 +106,7 @@ public class ChatGameServiceImpl implements ChatGameService {
     @Override
     @Transactional
     public ChatGame getGame(final Chat chat) {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         long chatId = chat.getId();
         ChatGame chatGame = chatGames.get(chatId);
         if (chatGame == null) {
@@ -121,7 +121,7 @@ public class ChatGameServiceImpl implements ChatGameService {
             chatGame = putInCache(chat);
         }
         if (logger.isTraceEnabled()) {
-            logger.trace("Get game is executed in " + (System.currentTimeMillis() - start) + " ms for chat " + chatId);
+            logger.trace("Get game is executed in " + (System.nanoTime() - start) + " nanos for chat " + chatId);
         }
         return chatGame;
     }
