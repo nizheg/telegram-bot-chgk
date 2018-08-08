@@ -15,7 +15,6 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-import me.nizheg.telegram.util.TelegramApiUtil;
 
 /**
  * @author Nikolay Zhegalin
@@ -72,9 +71,7 @@ public class TimerCommand extends ChatCommand {
         chatGameService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
         getTelegramApiClient().sendMessage(new Message(
                 Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>",
-                ctx.getChatId(), ParseMode.HTML, true, null,
-                TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next",
-                        "Повторить вопрос", "repeat")));
+                ctx.getChatId(), ParseMode.HTML));
     }
 
     private void resetTimer(CommandContext ctx) {
