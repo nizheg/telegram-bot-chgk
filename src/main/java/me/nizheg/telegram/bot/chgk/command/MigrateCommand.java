@@ -59,8 +59,8 @@ public class MigrateCommand extends ChatCommand {
             try {
                 fromChatId = Long.valueOf(cipher.decrypt(ctx.getText()));
             } catch (CipherException | RuntimeException e) {
-                throw new CommandException("<i>Некорректный параметр. Вернитесь в чат, откуда вы "
-                        + "желаете перенести статистику, и воспользуйтесь в нём командой /migrate</i>", e);
+                throw new CommandException("Некорректный параметр. Вернитесь в чат, откуда вы "
+                        + "желаете перенести статистику, и воспользуйтесь в нём командой /migrate", e);
             }
             getTelegramApiClient().sendChatAction(ChatAction.TYPING, new ChatId(chatId));
             chatGameService.stopChatGame(ctx.getChatId());
