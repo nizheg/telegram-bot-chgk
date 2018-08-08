@@ -88,7 +88,8 @@ public class NextCommand extends ChatGameCommand {
         answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
         Boolean isTaskIdIllegal = (Boolean) ctx.getAttribute(ATTRIBUTE_ILLEGAL_TASK_ID);
         if (isTaskIdIllegal != null && isTaskIdIllegal) {
-            answerCallbackRequest.setText("");
+            answerCallbackRequest.setText("Данная кнопка устарела. Воспользуйтесь актуальной или командой /next");
+            answerCallbackRequest.setShowAlert(true);
         }
         getTelegramApiClient().answerCallbackQuery(answerCallbackRequest);
     }

@@ -296,7 +296,8 @@ public class ChatGame {
             }
             builder.isCorrect(isCorrect)
                     .exactAnswer(exactAnswer)
-                    .currentTask(this.currentTask);
+                    .currentTask(this.currentTask)
+                    .usageTime(getUsageTime());
             if (isCorrect) {
                 boolean isUserGetHintFromBot = false;
                 User answeredUser = user;
@@ -313,7 +314,6 @@ public class ChatGame {
                 AnswerLog answerLog = logAnswerOfUser(answeredUser, currentTaskId);
                 long firstAnsweredUserId = answerLog.getTelegramUserId();
                 builder.firstAnsweredUser(firstAnsweredUserId);
-                builder.usageTime(getUsageTime());
             }
         }
         return builder.build();
