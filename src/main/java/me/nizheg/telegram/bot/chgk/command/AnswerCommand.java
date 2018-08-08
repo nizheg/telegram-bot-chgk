@@ -3,9 +3,7 @@ package me.nizheg.telegram.bot.chgk.command;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
-import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
@@ -61,14 +59,13 @@ public class AnswerCommand extends ChatGameCommand {
 
     @Override
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
-        Long chatId = ctx.getChatId();
         Long taskId = parseTaskId(ctx);
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
-            Task task = hintForTask.getTask().orElseThrow(() -> new NoTaskException());
-            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), chatId);
+            Task task = hintForTask.getTask().orElseThrow(NoTaskException::new);
+            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), ctx.getChatId());
         } catch (GameException e) {
-            getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
+            throw new CommandException(e.getMessage(), e);
         }
     }
 

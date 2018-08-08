@@ -62,14 +62,13 @@ public class HintCommand extends ChatGameCommand {
 
     @Override
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
-        Long chatId = ctx.getChatId();
         Long taskId = parseTaskId(ctx);
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
             Task hintForTaskTask = hintForTask.getTask().orElseThrow(NoTaskException::new);
             sendAnswerToUser(ctx, hintForTaskTask);
         } catch (GameException e) {
-            getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
+            throw new CommandException(e.getMessage(), e);
         }
     }
 

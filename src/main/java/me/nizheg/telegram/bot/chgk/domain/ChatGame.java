@@ -322,7 +322,7 @@ public class ChatGame {
     public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) throws TooOftenCallingException {
         HintResult.HintResultBuilder builder = HintResult.builder();
         if (taskId != null &&
-                Optional.ofNullable(this.currentTask).filter(task -> taskId.equals(task.getId())).isPresent()) {
+                Optional.ofNullable(this.currentTask).filter(task -> !taskId.equals(task.getId())).isPresent()) {
             Task requestedTask = taskService.createCompositeTask(taskId);
             builder.task(requestedTask).isTaskCurrent(false);
         } else if (this.currentTask != null) {
