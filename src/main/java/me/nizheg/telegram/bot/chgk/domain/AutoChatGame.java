@@ -42,7 +42,6 @@ public class AutoChatGame extends ChatGame {
     private final static int STATE_STARTED = 0;
     private final static int STATE_PAUSED = 1;
     private final static int STATE_STOPPED = 2;
-    private final static int SECOND = 1000;
     private final Map<String, Runner> operationRunners = new HashMap<>();
     private final TaskScheduler taskScheduler;
     private final AnswerOperation answerOperation;
@@ -137,9 +136,9 @@ public class AutoChatGame extends ChatGame {
     }
 
     @Override
-    public synchronized Task repeatTask() {
+    public synchronized Optional<Task> repeatTask() {
         start();
-        Task task = super.repeatTask();
+        Optional<Task> task = super.repeatTask();
         if (scheduledOperation == null && isTaskUnanswered()) {
             scheduleOperation(OPERATION_ID_WARNING, getTimeout() - TIME_WARNING_BEFORE_ANSWER);
         }
@@ -223,7 +222,7 @@ public class AutoChatGame extends ChatGame {
         public void doOperation() {
             try {
                 HintResult hintForTask = getHintForTask(getChat(), null);
-                Optional.ofNullable(hintForTask.getTask())
+                hintForTask.getTask()
                         .ifPresent(task -> answerOperation.sendAnswerWithRatingAndNextButtons(task, getChatId()));
             } catch (TooOftenCallingException e) {
                 throw new IllegalStateException(e);

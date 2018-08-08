@@ -1,17 +1,19 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
-import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.AnswerLog;
@@ -39,45 +41,37 @@ import me.nizheg.telegram.bot.service.PropertyService;
 /**
  * @author Nikolay Zhegalin
  */
+@RequiredArgsConstructor
 public class ChatGame {
 
     private final static long NULL_TASK_ID = -1;
-    protected final Chat chat;
     private final static LevenshteinDistance LEVENSHTEIN_DISTANCE = LevenshteinDistance.getDefaultInstance();
+
+    @NonNull
+    protected final Chat chat;
+    @NonNull
+    private final PropertyService propertyService;
+    @NonNull
+    private final CategoryService categoryService;
+    @NonNull
+    private final TourService tourService;
+    @NonNull
+    private final TaskService taskService;
+    @NonNull
+    private final AnswerLogService answerLogService;
+    @NonNull
+    private final TelegramUserService telegramUserService;
+    @NonNull
+    private final BotInfo botInfo;
+    @NonNull
+    private final Clock clock;
+    @Nullable
     private Task currentTask;
+    @Nullable
     private OffsetDateTime currentTaskUsageTime;
     private Category category;
+    @Nullable
     private Tournament currentTournament;
-    private final PropertyService propertyService;
-    private final CategoryService categoryService;
-    private final TourService tourService;
-    private final TaskService taskService;
-    private final AnswerLogService answerLogService;
-    private final TelegramUserService telegramUserService;
-    private final BotInfo botInfo;
-    private final Clock clock;
-
-    public ChatGame(
-            Chat chat,
-            PropertyService propertyService,
-            CategoryService categoryService,
-            TourService tourService,
-            TaskService taskService,
-            AnswerLogService answerLogService,
-            TelegramUserService telegramUserService,
-            BotInfo botInfo,
-            Clock clock) {
-        Validate.notNull(chat);
-        this.propertyService = propertyService;
-        this.categoryService = categoryService;
-        this.tourService = tourService;
-        this.taskService = taskService;
-        this.answerLogService = answerLogService;
-        this.telegramUserService = telegramUserService;
-        this.botInfo = botInfo;
-        this.chat = chat;
-        this.clock = clock;
-    }
 
     @PostConstruct
     public synchronized void init() {
@@ -98,12 +92,12 @@ public class ChatGame {
         } else {
             category = categoryService.read(Category.ALL);
         }
-        setCategory(category);
+        this.category = category;
         Long tourId = propertyService.getLongValueForChat(Properties.TOUR_KEY, chatId);
         if (tourId != null) {
             LightTour compositeTour = tourService.createCompositeTour(tourId);
             if (compositeTour instanceof Tournament) {
-                setTournament((Tournament) compositeTour);
+                this.currentTournament = (Tournament) compositeTour;
             }
         }
     }
@@ -116,57 +110,32 @@ public class ChatGame {
         return chat;
     }
 
-    public synchronized Task repeatTask() {
-        return currentTask;
+    public synchronized Optional<Task> repeatTask() {
+        return Optional.ofNullable(currentTask);
     }
 
-    protected synchronized Task getCurrentTask() {
-        return currentTask;
-    }
-
-    public synchronized boolean isCurrentTaskFromTournament() {
-        Task currentTask = getCurrentTask();
-        Long currentTaskTourId = currentTask == null ? null : currentTask.getTourId();
-        boolean isCurrentTaskFromTournament = false;
-        if (currentTaskTourId != null) {
-            for (LightTour lightTour : getTournament().getChildTours()) {
-                if (currentTaskTourId.equals(lightTour.getId())) {
-                    isCurrentTaskFromTournament = true;
-                    break;
-                }
-            }
-        }
-        return isCurrentTaskFromTournament;
-    }
-
+    @NonNull
     public synchronized Category getCategory() {
         return category;
     }
 
-    private void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public synchronized Tournament getTournament() {
-        return currentTournament;
-    }
-
-    private void setTournament(Tournament currentTournament) {
-        this.currentTournament = currentTournament;
+    //TODO: remove
+    public synchronized Optional<Tournament> getTournament() {
+        return Optional.ofNullable(currentTournament);
     }
 
     public synchronized Category setCategory(String categoryId) {
         categoryId = categoryId == null ? Category.ALL : categoryId;
         propertyService.setValueForChat(Properties.CATEGORY_KEY, categoryId, getChatId());
         Category category = categoryService.read(categoryId);
-        setCategory(category);
+        this.category = category;
         if (!Category.TOUR.equals(categoryId)) {
             clearTournament();
         }
         return category;
     }
 
-    public synchronized Task setCurrentTask(Long taskId) {
+    public synchronized Task setCurrentTask(@Nullable Long taskId) {
         if (taskId == null) {
             taskId = NULL_TASK_ID;
         }
@@ -189,51 +158,72 @@ public class ChatGame {
         setCurrentTask(NULL_TASK_ID);
     }
 
-    public synchronized Tournament setTournament(Long tourId) throws IllegalIdException {
+    public synchronized TournamentResult setTournament(Long tourId) throws IllegalIdException {
+        TournamentResult.TournamentResultBuilder builder = TournamentResult.builder();
         LightTour compositeTour = tourService.createCompositeTour(tourId);
         if (!(compositeTour instanceof Tournament)) {
             throw new IllegalIdException("Tour with id " + tourId + " is not tournament");
         }
+        final Tournament tournament = (Tournament) compositeTour;
         if (!LightTour.Status.PUBLISHED.equals(compositeTour.getStatus())) {
             throw new IllegalIdException("Tour with id " + tourId + " is not published yet");
         }
         propertyService.setValueForChat(Properties.TOUR_KEY, tourId, getChatId());
-        setTournament((Tournament) compositeTour);
+        this.currentTournament = tournament;
+        builder.tournament(tournament);
         setCategory(Category.TOUR);
-        return (Tournament) compositeTour;
+        builder.isCurrentTaskFromTournament(isCurrentTaskFromTournament(tournament));
+        builder.currentTask(this.currentTask);
+        return builder.build();
+    }
+
+    private boolean isCurrentTaskFromTournament(Tournament tournament) {
+        return Optional.ofNullable(this.currentTask)
+                .map(LightTask::getTourId)
+                .flatMap(currentTaskTourId ->
+                        tournament.getChildTours()
+                                .stream()
+                                .filter(lightTour -> currentTaskTourId.equals(lightTour.getId()))
+                                .findAny())
+                .isPresent();
     }
 
     private void clearTournament() {
         propertyService.setValueForChat(Properties.TOUR_KEY, (Long) null, getChatId());
-        setTournament((Tournament) null);
+        this.currentTournament = null;
+    }
+
+    public synchronized Optional<NextTaskResult> nextTaskIfEquals(long taskId) throws GameException {
+        if (Optional.ofNullable(this.currentTask).filter(task -> taskId == task.getId()).isPresent()) {
+            return Optional.of(nextTask());
+        }
+        return Optional.empty();
     }
 
     public synchronized NextTaskResult nextTask() throws GameException {
-        NextTaskResult result = new NextTaskResult();
-        Task currentTask = getCurrentTask();
-        if (currentTask != null) {
+        NextTaskResult.NextTaskResultBuilder builder = NextTaskResult.builder();
+        if (this.currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();
             if (usageTime != null && Duration.between(usageTime, OffsetDateTime.now(clock)).getSeconds() < 5) {
                 throw new TooOftenCallingException("Следующий вопрос можно получить не раньше, чем через 5 с");
             }
             Task unansweredTask = throwUnansweredTask();
-            result.setUnansweredTask(unansweredTask);
+            builder.unansweredTask(unansweredTask);
         }
         LightTask nextTask;
         Category category = getCategory();
         boolean isTournament = category != null && Category.TOUR.equals(category.getId());
-        result.setTournament(isTournament);
+        builder.isTournament(isTournament);
         if (isTournament) {
-            Tournament currentTournament = getTournament();
-            if (currentTournament == null) {
+            if (this.currentTournament == null) {
                 throw new TournamentIsNotSelectedException("Турнир не выбран");
             } else {
-                result.setTournament(currentTournament);
-                nextTask = taskService.getNextTaskInTournament(currentTournament, currentTask);
+                builder.tournament(this.currentTournament);
+                nextTask = taskService.getNextTaskInTournament(this.currentTournament, this.currentTask);
                 if (nextTask == null) {
-                    result.setTournamentStat(
+                    builder.tournamentStat(
                             answerLogService.getStatForChatUserForTournament(getChatId(), botInfo.getBotUser().getId(),
-                                    NextTaskResult.STAT_USERS, currentTournament.getId()));
+                                    NextTaskResult.STAT_USERS, this.currentTournament.getId()));
                 }
             }
         } else {
@@ -241,24 +231,22 @@ public class ChatGame {
         }
         if (nextTask != null) {
             Task task = setCurrentTask(nextTask.getId());
-            result.setNextTask(task);
+            builder.nextTask(task);
         }
-        return result;
+        return builder.build();
     }
 
     @Nullable
     protected Task throwUnansweredTask() {
-        Task currentTask = getCurrentTask();
-        if (currentTask != null && isTaskUnanswered()) {
-            logAnswerOfUser(botInfo.getBotUser(), currentTask.getId());
-            return currentTask;
+        if (this.currentTask != null && isTaskUnanswered()) {
+            logAnswerOfUser(botInfo.getBotUser(), this.currentTask.getId());
+            return this.currentTask;
         }
         return null;
     }
 
     protected boolean isTaskUnanswered() {
-        Task currentTask = getCurrentTask();
-        return currentTask != null && !answerLogService.isExistByTaskAndChat(currentTask.getId(), getChatId());
+        return this.currentTask != null && !answerLogService.isExistByTaskAndChat(currentTask.getId(), getChatId());
     }
 
     @Nullable
@@ -273,14 +261,12 @@ public class ChatGame {
 
     public synchronized UserAnswerResult userAnswer(UserAnswer userAnswer) {
         String text = userAnswer.getText();
-        Long chatId = getChatId();
         User user = userAnswer.getUser();
-        UserAnswerResult result = new UserAnswerResult();
+        UserAnswerResult.UserAnswerResultBuilder builder = UserAnswerResult.builder();
 
-        Task currentTask = getCurrentTask();
-        if (currentTask != null) {
-            Long currentTaskId = currentTask.getId();
-            List<Answer> answers = currentTask.getAnswers();
+        if (this.currentTask != null) {
+            long currentTaskId = this.currentTask.getId();
+            List<Answer> answers = this.currentTask.getAnswers();
             boolean isCorrect = false;
             String exactAnswer = null;
             for (Answer answer : answers) {
@@ -308,9 +294,9 @@ public class ChatGame {
                     break;
                 }
             }
-            result.setCorrect(isCorrect);
-            result.setExactAnswer(exactAnswer);
-            result.setCurrentTask(currentTask);
+            builder.isCorrect(isCorrect)
+                    .exactAnswer(exactAnswer)
+                    .currentTask(this.currentTask);
             if (isCorrect) {
                 boolean isUserGetHintFromBot = false;
                 User answeredUser = user;
@@ -326,35 +312,28 @@ public class ChatGame {
                 }
                 AnswerLog answerLog = logAnswerOfUser(answeredUser, currentTaskId);
                 long firstAnsweredUserId = answerLog.getTelegramUserId();
-                result.setFirstAnsweredUser(firstAnsweredUserId);
-                result.setUsageTime(taskService.getUsageTime(currentTaskId, chatId));
+                builder.firstAnsweredUser(firstAnsweredUserId);
+                builder.usageTime(getUsageTime());
             }
         }
-        return result;
+        return builder.build();
     }
 
     public synchronized HintResult getHintForTask(Chat chat, @Nullable Long taskId) throws TooOftenCallingException {
-        Task currentTask = getCurrentTask();
-        HintResult hintResult = new HintResult();
-
-        if (taskId != null && currentTask != null && !taskId.equals(currentTask.getId())) {
+        HintResult.HintResultBuilder builder = HintResult.builder();
+        if (taskId != null &&
+                Optional.ofNullable(this.currentTask).filter(task -> taskId.equals(task.getId())).isPresent()) {
             Task requestedTask = taskService.createCompositeTask(taskId);
-            if (requestedTask != null) {
-                hintResult.setTask(requestedTask);
-                hintResult.setTaskCurrent(false);
-            }
-        } else if (currentTask != null) {
+            builder.task(requestedTask).isTaskCurrent(false);
+        } else if (this.currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();
             if (usageTime != null && Duration.between(usageTime, OffsetDateTime.now(clock)).getSeconds() < 5) {
                 throw new TooOftenCallingException("Подсказку можно получить не раньше, чем через 5 с");
             }
-            hintResult.setTask(currentTask);
-            hintResult.setTaskCurrent(true);
+            builder.task(this.currentTask).isTaskCurrent(true);
         }
-        if (hintResult.getTask() != null) {
-            Long hintTaskId = hintResult.getTask().getId();
-            logBotSendHintToChat(chat, hintTaskId);
-        }
+        HintResult hintResult = builder.build();
+        hintResult.getTask().ifPresent(task -> logBotSendHintToChat(chat, task.getId()));
         return hintResult;
     }
 

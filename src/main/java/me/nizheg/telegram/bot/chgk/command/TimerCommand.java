@@ -74,9 +74,9 @@ public class TimerCommand extends ChatCommand {
         chatGameService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
         getTelegramApiClient().sendMessage(new Message(
                 Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>",
-                ctx
-                        .getChatId(), ParseMode.HTML, true, null,
-                TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next", "Повторить вопрос", "repeat")));
+                ctx.getChatId(), ParseMode.HTML, true, null,
+                TelegramApiUtil.createInlineButtonMarkup("Новый вопрос", "next",
+                        "Повторить вопрос", "repeat")));
     }
 
     private void resetTimer(CommandContext ctx) {

@@ -57,7 +57,7 @@ public class TaskController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public LightTask update(@PathVariable Long id, @RequestBody LightTask task) {
+    public LightTask update(@PathVariable long id, @RequestBody LightTask task) {
         logger.debug("update task " + id);
         task.setId(id);
         return taskService.update(task);

@@ -256,8 +256,7 @@ public class AppConfig {
     @Bean
     public AnswerCommand answerCommand() {
         return new AnswerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                answerSender,
-                ratingHelper);
+                answerSender);
     }
 
     @Bean

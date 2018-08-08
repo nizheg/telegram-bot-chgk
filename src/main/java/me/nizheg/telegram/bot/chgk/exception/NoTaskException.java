@@ -11,8 +11,8 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 public class NoTaskException extends CommandException {
 
     public NoTaskException(Long chatId) {
-        super(new Message("<i>Активных вопросов не обнаружено.</i>", chatId, ParseMode.HTML, null, null, TelegramApiUtil.createInlineButtonMarkup(
-                "Получить вопрос", "next")));
+        super(new Message("<i>Активных вопросов не обнаружено.</i>", chatId, ParseMode.HTML, null, null,
+                TelegramApiUtil.createInlineButtonMarkup("Получить вопрос", "next")));
     }
 
 }

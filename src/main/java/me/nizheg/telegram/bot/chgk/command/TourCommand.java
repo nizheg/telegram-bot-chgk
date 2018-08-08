@@ -15,7 +15,8 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
-import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
+import me.nizheg.telegram.bot.chgk.domain.TournamentResult;
+import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.exception.IllegalIdException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -95,19 +96,23 @@ public class TourCommand extends ChatGameCommand {
         }
 
         try {
-            Tournament tournament = chatGame.setTournament(tourId);
-            boolean isCurrentTaskFromTournament = chatGame.isCurrentTaskFromTournament();
+            TournamentResult tournamentResult = chatGame.setTournament(tourId);
             ReplyMarkup buttonMarkup;
-            if (isCurrentTaskFromTournament) {
-                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать заново", "clear_and_next", "Продолжить",
-                        "next");
+            String currentTaskId = tournamentResult.getCurrentTask()
+                    .map(LightTask::getId)
+                    .map(Object::toString).orElse("");
+            if (tournamentResult.isCurrentTaskFromTournament()) {
+                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup(
+                        "Начать заново", "clear_and_next " + currentTaskId,
+                        "Продолжить", "next " + currentTaskId);
             } else {
-                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next");
+                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next " + currentTaskId);
             }
             getTelegramApiClient().sendMessage(
-                    new Message("Выбран турнир <b>" + TelegramHtmlUtil.escape(tournament.getTitle()) + "</b>", chatId,
-                            ParseMode.HTML,
-                            true, null, buttonMarkup));
+                    new Message("Выбран турнир <b>" +
+                            TelegramHtmlUtil.escape(tournamentResult.getTournament().getTitle()) +
+                            "</b>",
+                            chatId, ParseMode.HTML, true, null, buttonMarkup));
         } catch (IllegalIdException e) {
             logger.error("Illegal id of tournament for chat " + chatId, e);
             throw new CommandException(new Message("<i>Неверный идентификатор турнира</i>", chatId, ParseMode.HTML));

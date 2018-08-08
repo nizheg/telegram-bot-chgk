@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
@@ -153,17 +154,15 @@ public class TaskServiceImpl implements TaskService {
             return null;
         }
         Task task = new Task(lightTask);
-        Long id = lightTask.getId();
-        if (id != null) {
-            task.setAnswers(answerService.getByTask(id));
-            task.setCommentPictures(pictureService.getPicturesOfTaskComment(id));
-            task.setTextPictures(pictureService.getPicturesOfTaskText(id));
-        }
+        long id = lightTask.getId();
+        task.setAnswers(answerService.getByTask(id));
+        task.setCommentPictures(pictureService.getPicturesOfTaskComment(id));
+        task.setTextPictures(pictureService.getPicturesOfTaskText(id));
         return task;
     }
 
     @Override
-    public LightTask getNextTaskInTournament(Tournament currentTournament, Task currentTask) {
+    public LightTask getNextTaskInTournament(Tournament currentTournament, @Nullable Task currentTask) {
         Long currentTaskTourId = currentTask == null ? null : currentTask.getTourId();
         LightTour currentTaskTourInTournament = null;
         if (currentTaskTourId != null) {

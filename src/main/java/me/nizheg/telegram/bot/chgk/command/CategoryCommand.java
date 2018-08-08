@@ -1,17 +1,16 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
+import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.KeyboardButton;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
@@ -48,18 +47,13 @@ public class CategoryCommand extends ChatGameCommand {
     private volatile List<Category> categories = new ArrayList<>();
 
     public CategoryCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull CategoryService categoryService,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TaskService taskService,
-            @Nonnull TourList tourList) {
+            @NonNull TelegramApiClient telegramApiClient,
+            @NonNull CategoryService categoryService,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull TaskService taskService,
+            @NonNull TourList tourList) {
         super(telegramApiClient);
-        Validate.notNull(categoryService, "categoryService should be defined");
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(taskService, "taskService should be defined");
-        Validate.notNull(tourList, "tourList should be defined");
         this.categoryService = categoryService;
         this.chatService = chatService;
         this.chatGameService = chatGameService;
@@ -68,18 +62,13 @@ public class CategoryCommand extends ChatGameCommand {
     }
 
     public CategoryCommand(
-            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @Nonnull CategoryService categoryService,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TaskService taskService,
-            @Nonnull TourList tourList) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @NonNull CategoryService categoryService,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull TaskService taskService,
+            @NonNull TourList tourList) {
         super(telegramApiClientSupplier);
-        Validate.notNull(categoryService, "categoryService should be defined");
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(taskService, "taskService should be defined");
-        Validate.notNull(tourList, "tourList should be defined");
         this.categoryService = categoryService;
         this.chatService = chatService;
         this.chatGameService = chatGameService;
@@ -162,8 +151,9 @@ public class CategoryCommand extends ChatGameCommand {
         UsageStat stat = null;
         long chatId = chatGame.getChatId();
         if (isTourCategory(currentCategory)) {
-            Tournament currentTournament = chatGame.getTournament();
-            if (currentTournament != null) {
+            Optional<Tournament> currentTournamentOptional = chatGame.getTournament();
+            if (currentTournamentOptional.isPresent()) {
+                Tournament currentTournament = currentTournamentOptional.get();
                 categoryName = currentTournament.getTitle();
                 stat = taskService.getUsageStatForChatByTournament(chatId, currentTournament);
             } else {

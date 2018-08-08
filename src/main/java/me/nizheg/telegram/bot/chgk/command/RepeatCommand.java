@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -79,16 +80,20 @@ public class RepeatCommand extends ChatGameCommand {
     @Override
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
         Long chatId = ctx.getChatId();
-        Task currentTask = chatGame.repeatTask();
-        if (currentTask != null) {
-            logger.debug("Repeat [" + currentTask.getId() + "]");
-            ReplyMarkup replyMarkup = null;
+        Optional<Task> currentTaskOptional = chatGame.repeatTask();
+        if (currentTaskOptional.isPresent()) {
+            Task currentTask = currentTaskOptional.get();
+            long currentTaskId = currentTask.getId();
+            if (logger.isDebugEnabled()) {
+                logger.debug("Repeat [" + currentTaskId + "]");
+            }
+            ReplyMarkup replyMarkup;
             if (ctx.isPrivateChat()) {
-                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + currentTask.getId(),
-                        "Дальше", "next");
+                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + currentTaskId,
+                        "Дальше", "next " + currentTaskId);
             } else {
-                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + currentTask.getId(),
-                        "Дальше", "next");
+                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + currentTaskId,
+                        "Дальше", "next " + currentTaskId);
             }
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Повторяю вопрос</b>\n");

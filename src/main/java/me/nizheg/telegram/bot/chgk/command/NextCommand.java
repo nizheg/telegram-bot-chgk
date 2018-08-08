@@ -1,50 +1,49 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import org.apache.commons.lang3.Validate;
-
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
+import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
+import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
+import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
+import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
 import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.command.CommandException;
 
 /**
  * @author Nikolay Zhegalin
  */
 public class NextCommand extends ChatGameCommand {
 
+    private static final String ATTRIBUTE_ILLEGAL_TASK_ID = "TASK_ID_IS_ILLEGAL";
+
     private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final NextTaskSender nextTaskSender;
 
     public NextCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull NextTaskSender nextTaskSender) {
+            @NonNull TelegramApiClient telegramApiClient,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull NextTaskSender nextTaskSender) {
         super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(nextTaskSender, "nextTaskSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.nextTaskSender = nextTaskSender;
     }
 
     public NextCommand(
-            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull NextTaskSender nextTaskSender) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull NextTaskSender nextTaskSender) {
         super(telegramApiClientSupplier);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(nextTaskSender, "nextTaskSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.nextTaskSender = nextTaskSender;
@@ -61,8 +60,37 @@ public class NextCommand extends ChatGameCommand {
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) {
-        nextTaskSender.sendNextTask(chatGame);
+    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+        Long currentTaskId = null;
+        if (ctx.getCallbackQueryId() != null) {
+            try {
+                currentTaskId = Long.valueOf(ctx.getText());
+            } catch (NumberFormatException ex) {
+                //ignore
+            }
+        }
+        try {
+            nextTaskSender.sendNextTask(chatGame, currentTaskId);
+        } catch (CurrentTaskIsOtherException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Current task is other from " + currentTaskId);
+            }
+            ctx.setAttribute(ATTRIBUTE_ILLEGAL_TASK_ID, true);
+        } catch (GameException e) {
+            throw new CommandException(new Message("<i>" + e.getMessage() + "</i>", ctx.getChatId(), ParseMode.HTML),
+                    e);
+        }
+    }
+
+    @Override
+    public void sendCallbackResponse(CommandContext ctx) {
+        AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
+        answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
+        Boolean isTaskIdIllegal = (Boolean) ctx.getAttribute(ATTRIBUTE_ILLEGAL_TASK_ID);
+        if (isTaskIdIllegal != null && isTaskIdIllegal) {
+            answerCallbackRequest.setText("");
+        }
+        getTelegramApiClient().answerCallbackQuery(answerCallbackRequest);
     }
 
     @Override

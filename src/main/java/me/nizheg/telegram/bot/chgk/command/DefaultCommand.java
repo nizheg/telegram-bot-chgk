@@ -1,7 +1,6 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -9,11 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
+import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -55,22 +54,15 @@ public class DefaultCommand extends ChatCommand {
     private final Clock clock;
 
     public DefaultCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TaskSender taskSender,
-            @Nonnull TelegramUserService telegramUserService,
-            @Nonnull RatingHelper ratingHelper,
-            @Nonnull BotInfo botInfo,
-            @Nonnull Clock clock) {
+            @NonNull TelegramApiClient telegramApiClient,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull TaskSender taskSender,
+            @NonNull TelegramUserService telegramUserService,
+            @NonNull RatingHelper ratingHelper,
+            @NonNull BotInfo botInfo,
+            @NonNull Clock clock) {
         super(telegramApiClient);
-        Validate.notNull(chatGameService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(taskSender, "taskSender should be defined");
-        Validate.notNull(telegramUserService, "telegramUserService should be defined");
-        Validate.notNull(ratingHelper, "ratingHelper should be defined");
-        Validate.notNull(botInfo, "botInfo should be defined");
-        Validate.notNull(clock, "clock should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
@@ -81,22 +73,15 @@ public class DefaultCommand extends ChatCommand {
     }
 
     public DefaultCommand(
-            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TaskSender taskSender,
-            @Nonnull TelegramUserService telegramUserService,
-            @Nonnull RatingHelper ratingHelper,
-            @Nonnull BotInfo botInfo,
-            @Nonnull Clock clock) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull TaskSender taskSender,
+            @NonNull TelegramUserService telegramUserService,
+            @NonNull RatingHelper ratingHelper,
+            @NonNull BotInfo botInfo,
+            @NonNull Clock clock) {
         super(telegramApiClientSupplier);
-        Validate.notNull(chatGameService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(taskSender, "taskSender should be defined");
-        Validate.notNull(telegramUserService, "telegramUserService should be defined");
-        Validate.notNull(ratingHelper, "ratingHelper should be defined");
-        Validate.notNull(botInfo, "botInfo should be defined");
-        Validate.notNull(clock, "clock should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
@@ -130,53 +115,62 @@ public class DefaultCommand extends ChatCommand {
 
         if (userAnswerResult.isCorrect()) {
             StringBuilder resultBuilder = new StringBuilder();
-            long firstAnsweredUserId = userAnswerResult.getFirstAnsweredUser();
-            String exactAnswer = userAnswerResult.getExactAnswer();
+            long firstAnsweredUserId = userAnswerResult.getFirstAnsweredUser().orElse(user.getId());
+            Optional<String> exactAnswerOptional = userAnswerResult.getExactAnswer();
 
             if (firstAnsweredUserId == user.getId()) {
                 resultBuilder.append(createCompliment(user));
-                if (exactAnswer != null) {
-                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text)
-                            + "</i>\" не совсем точный ответ, но я его засчитываю.\nПравильный ответ: <b>"
-                            + exactAnswer + "</b>");
+                if (exactAnswerOptional.isPresent()) {
+                    resultBuilder.append("\"<i>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</i>\" не совсем точный ответ, но я его засчитываю.\nПравильный ответ: <b>")
+                            .append(exactAnswerOptional.get())
+                            .append("</b>");
                 } else {
-                    resultBuilder.append(
-                            "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ.");
+                    resultBuilder.append("\"<b>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</b>\" - это абсолютно верный ответ.");
                 }
             } else if (firstAnsweredUserId == botInfo.getBotUser().getId()) {
-                if (exactAnswer != null) {
-                    resultBuilder.append("\"<i>" + TelegramHtmlUtil.escape(text)
-                            + "</i>\" не совсем точный ответ, и я уже сообщал правильный: <b>"
-                            + exactAnswer + "</b>");
+                if (exactAnswerOptional.isPresent()) {
+                    resultBuilder.append("\"<i>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</i>\" не совсем точный ответ, и я уже сообщал правильный: <b>")
+                            .append(exactAnswerOptional.get())
+                            .append("</b>");
                 } else {
-                    resultBuilder.append("\"<b>" + TelegramHtmlUtil.escape(text)
-                            + "</b>\" - это абсолютно верный ответ, но я уже сообщал вам его.");
+                    resultBuilder.append("\"<b>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</b>\" - это абсолютно верный ответ, но я уже сообщал вам его.");
                 }
             } else {
                 TelegramUser firstAnsweredUser = telegramUserService.getTelegramUser(firstAnsweredUserId);
-                if (exactAnswer != null) {
-                    resultBuilder.append(
-                            "\"<i>" + TelegramHtmlUtil.escape(text) + "</i>\" не совсем точный ответ, и <b>"
-                                    + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname())
-                                    + "</b> уже ответил(а) на этот вопрос ранее.\nПравильный ответ: <b>"
-                                    + exactAnswer + "</b>");
+                if (exactAnswerOptional.isPresent()) {
+                    resultBuilder.append("\"<i>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</i>\" не совсем точный ответ, и <b>")
+                            .append(TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname()))
+                            .append("</b> уже ответил(а) на этот вопрос ранее.\nПравильный ответ: <b>")
+                            .append(exactAnswerOptional.get())
+                            .append("</b>");
                 } else {
-                    resultBuilder.append(
-                            "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это абсолютно верный ответ, но <b>"
-                                    + TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname())
-                                    + "</b> был(а) быстрее.");
+                    resultBuilder.append("\"<b>")
+                            .append(TelegramHtmlUtil.escape(text))
+                            .append("</b>\" - это абсолютно верный ответ, но <b>")
+                            .append(TelegramHtmlUtil.escape(firstAnsweredUser.getFirstname()))
+                            .append("</b> был(а) быстрее.");
                 }
             }
 
             OffsetDateTime usageTime = userAnswerResult.getUsageTime();
-            resultBuilder.append(
-                    "\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: " + printDiffTillNow(usageTime));
+            resultBuilder.append("\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: ")
+                    .append(printDiffTillNow(usageTime));
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
             buttonGroup.add(ratingHelper.createRatingButtons(currentTask.getId()));
             InlineKeyboardButton nextButton = new InlineKeyboardButton();
             nextButton.setText("Дальше");
-            nextButton.setCallbackData("next");
+            nextButton.setCallbackData("next " + currentTask.getId());
             buttonGroup.add(Collections.singletonList(nextButton));
             replyMarkup.setInlineKeyboard(buttonGroup);
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
@@ -204,7 +198,10 @@ public class DefaultCommand extends ChatCommand {
         StringBuilder resultBuilder = new StringBuilder();
         for (Map.Entry<TimeUnit, Long> timeUnitEntry : diffMap.entrySet()) {
             if (timeUnitEntry.getValue() > 0) {
-                resultBuilder.append(" " + timeUnitEntry.getValue() + " " + timeUnitToString(timeUnitEntry.getKey()));
+                resultBuilder.append(" ")
+                        .append(timeUnitEntry.getValue())
+                        .append(" ")
+                        .append(timeUnitToString(timeUnitEntry.getKey()));
             }
         }
         return resultBuilder.toString();

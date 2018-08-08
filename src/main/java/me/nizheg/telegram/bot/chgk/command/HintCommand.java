@@ -1,11 +1,8 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import org.apache.commons.lang3.Validate;
-
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
-
+import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
@@ -32,28 +29,22 @@ public class HintCommand extends ChatGameCommand {
     private final AnswerSender answerSender;
 
     public HintCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull AnswerSender answerSender) {
+            @NonNull TelegramApiClient telegramApiClient,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull AnswerSender answerSender) {
         super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(answerSender, "answerSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;
     }
 
     public HintCommand(
-            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull AnswerSender answerSender) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @NonNull ChatService chatService,
+            @NonNull ChatGameService chatGameService,
+            @NonNull AnswerSender answerSender) {
         super(telegramApiClientSupplier);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(answerSender, "answerSender should be defined");
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.answerSender = answerSender;
@@ -75,11 +66,8 @@ public class HintCommand extends ChatGameCommand {
         Long taskId = parseTaskId(ctx);
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
-            if (hintForTask.getTask() != null) {
-                sendAnswerToUser(ctx, hintForTask.getTask());
-            } else {
-                throw new NoTaskException(chatId);
-            }
+            Task hintForTaskTask = hintForTask.getTask().orElseThrow(() -> new NoTaskException(chatId));
+            sendAnswerToUser(ctx, hintForTaskTask);
         } catch (GameException e) {
             getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
         }
@@ -91,7 +79,8 @@ public class HintCommand extends ChatGameCommand {
         } catch (TelegramApiException ex) {
             getTelegramApiClient()
                     .sendMessage(new Message(
-                            "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас (необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
+                            "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас "
+                                    + "(необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
                             ctx.getChatId(), ParseMode.HTML));
         }
     }

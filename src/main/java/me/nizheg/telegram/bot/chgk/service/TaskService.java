@@ -3,6 +3,8 @@ package me.nizheg.telegram.bot.chgk.service;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTask.Status;
@@ -51,7 +53,7 @@ public interface TaskService {
 
     Task createCompositeTask(LightTask lightTask);
 
-    LightTask getNextTaskInTournament(Tournament currentTournament, Task currentTask);
+    LightTask getNextTaskInTournament(Tournament currentTournament, @Nullable Task currentTask);
 
     UsageStat getUsageStatForChat(long chatId, Category category);
 

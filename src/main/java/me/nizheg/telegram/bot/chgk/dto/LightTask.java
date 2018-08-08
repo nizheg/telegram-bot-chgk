@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class LightTask implements Serializable {
 
     private static final long serialVersionUID = 4L;
-    private Long id;
+    private long id;
     private String text;
     private String importedText;
     private String comment;
@@ -13,11 +13,11 @@ public class LightTask implements Serializable {
     private Long tourId;
     private Integer numberInTour;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

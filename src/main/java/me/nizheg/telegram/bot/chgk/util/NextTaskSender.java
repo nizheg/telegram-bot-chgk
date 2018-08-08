@@ -5,6 +5,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -18,6 +22,7 @@ import me.nizheg.telegram.bot.chgk.domain.NextTaskResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.StatEntry;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
+import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
 import me.nizheg.telegram.util.Emoji;
@@ -52,20 +57,31 @@ public class NextTaskSender {
         this.botInfo = botInfo;
     }
 
-    public void sendNextTask(ChatGame chatGame) {
+    public void sendNextTask(ChatGame chatGame, @Nullable Long currentTaskId) throws GameException {
         Long chatId = chatGame.getChatId();
         try {
-            NextTaskResult nextTaskResult = chatGame.nextTask();
-            sendAnswerOfPreviousTask(chatGame.getChat(), nextTaskResult.getUnansweredTask());
-            Task nextTask = nextTaskResult.getNextTask();
-            if (nextTask == null) {
+            NextTaskResult nextTaskResult;
+            if (currentTaskId != null) {
+                Optional<NextTaskResult> nextTaskResultOptional = chatGame.nextTaskIfEquals(currentTaskId);
+                if (nextTaskResultOptional.isPresent()) {
+                    nextTaskResult = nextTaskResultOptional.get();
+                } else {
+                    throw new CurrentTaskIsOtherException();
+                }
+            } else {
+                nextTaskResult = chatGame.nextTask();
+            }
+            nextTaskResult.getUnansweredTask()
+                    .ifPresent(unansweredTask -> sendAnswerOfPreviousTask(chatGame.getChat(), unansweredTask));
+            Optional<Task> nextTaskOptional = nextTaskResult.getNextTask();
+            if (!nextTaskOptional.isPresent()) {
                 String messageText;
                 if (nextTaskResult.isTournament()) {
                     StringBuilder messageBuilder = new StringBuilder(Emoji.GLOWING_STAR + " <b>Турнир пройден.</b>");
                     List<StatEntry> tournamentStat = nextTaskResult.getTournamentStat();
                     if (tournamentStat != null && !tournamentStat.isEmpty()) {
-                        messageBuilder.append(
-                                "\n<i>Cчёт Знатоки против Бота: </i>" + createScoreMessage(tournamentStat));
+                        messageBuilder.append("\n<i>Счёт Знатоки против Бота: </i>")
+                                .append(createScoreMessage(tournamentStat));
                     }
                     messageText = messageBuilder.toString();
                 } else {
@@ -75,40 +91,37 @@ public class NextTaskSender {
                 message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup("Выбрать категорию", "category"));
                 telegramApiClient.sendMessage(message);
             } else {
-                ReplyMarkup replyMarkup = null;
+                ReplyMarkup replyMarkup;
+                Task nextTask = nextTaskOptional.get();
+                Long taskId = nextTask.getId();
                 if (chatGame.getChat().isPrivate()) {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + nextTask.getId(),
-                            "Дальше", "next");
+                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + taskId,
+                            "Дальше", "next " + taskId);
                 } else {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + nextTask.getId(),
-                            "Дальше", "next");
+                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + taskId,
+                            "Дальше", "next " + taskId);
                 }
                 StringBuilder messageBuilder = new StringBuilder();
                 messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Внимание, вопрос!</b>  ");
                 if (chatGame instanceof AutoChatGame) {
-                    messageBuilder.append(
-                            Emoji.HOURGLASS_WITH_FLOWING_SAND + "<b>" + ((AutoChatGame) chatGame).getTimeout() / 60
-                                    + "</b>");
+                    messageBuilder.append(Emoji.HOURGLASS_WITH_FLOWING_SAND + "<b>")
+                            .append(((AutoChatGame) chatGame).getTimeout() / 60)
+                            .append("</b>");
                 }
                 messageBuilder.append("\n");
                 taskSender.sendTaskText(messageBuilder, nextTask, chatId, replyMarkup);
             }
-
         } catch (TournamentIsNotSelectedException e) {
             Message message = tourList.getTournamentsListOfChat(chatId, 0);
             telegramApiClient.sendMessage(message);
-        } catch (GameException e) {
-            telegramApiClient.sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));
         }
     }
 
-    private void sendAnswerOfPreviousTask(Chat chat, Task task) {
-        if (task != null) {
-            InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-            replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
-            answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task,
-                    chat.getId(), replyMarkup);
-        }
+    private void sendAnswerOfPreviousTask(@Nonnull Chat chat, @Nonnull Task task) {
+        InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
+        replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
+        answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task,
+                chat.getId(), replyMarkup);
     }
 
     private String createScoreMessage(List<StatEntry> statForChat) {

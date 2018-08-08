@@ -1,27 +1,26 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import lombok.Builder;
+import lombok.Value;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 
 /**
  * @author Nikolay Zhegalin
  */
+@Value
+@Builder
 public class HintResult {
-    private Task task;
-    private boolean isTaskCurrent = true;
 
-    public Task getTask() {
-        return task;
+    @Nullable
+    private final Task task;
+    private final boolean isTaskCurrent;
+
+    public Optional<Task> getTask() {
+        return Optional.ofNullable(task);
     }
 
-    public void setTask(Task task) {
-        this.task = task;
-    }
-
-    public boolean isTaskCurrent() {
-        return isTaskCurrent;
-    }
-
-    public void setTaskCurrent(boolean isTaskCurrent) {
-        this.isTaskCurrent = isTaskCurrent;
-    }
 }

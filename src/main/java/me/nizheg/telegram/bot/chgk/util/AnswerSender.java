@@ -37,10 +37,11 @@ public class AnswerSender implements AnswerOperation {
         if (isWithButtons) {
             replyMarkup = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
-            buttonGroup.add(ratingHelper.createRatingButtons(task.getId()));
+            long taskId = task.getId();
+            buttonGroup.add(ratingHelper.createRatingButtons(taskId));
             InlineKeyboardButton nextButton = new InlineKeyboardButton();
             nextButton.setText("Дальше");
-            nextButton.setCallbackData("next");
+            nextButton.setCallbackData("next " + taskId);
             buttonGroup.add(Collections.singletonList(nextButton));
             replyMarkup.setInlineKeyboard(buttonGroup);
         }

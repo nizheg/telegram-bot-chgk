@@ -1,56 +1,38 @@
 package me.nizheg.telegram.bot.chgk.domain;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 
 /**
-* @author Nikolay Zhegalin
-*/
+ * @author Nikolay Zhegalin
+ */
+@Value
+@Builder
 public class UserAnswerResult {
-    private boolean isCorrect = false;
-    private String exactAnswer = null;
-    private Long firstAnsweredUser = null;
-    private OffsetDateTime usageTime;
-    private Task currentTask;
 
-    public boolean isCorrect() {
-        return isCorrect;
+    @NonNull
+    private final boolean isCorrect;
+    @Nullable
+    private String exactAnswer;
+    @Nullable
+    private Long firstAnsweredUser;
+    @NonNull
+    private final OffsetDateTime usageTime;
+    @NonNull
+    private final Task currentTask;
+
+    public Optional<String> getExactAnswer() {
+        return Optional.ofNullable(exactAnswer);
     }
 
-    public void setCorrect(boolean isCorrect) {
-        this.isCorrect = isCorrect;
-    }
-
-    public String getExactAnswer() {
-        return exactAnswer;
-    }
-
-    public void setExactAnswer(String exactAnswer) {
-        this.exactAnswer = exactAnswer;
-    }
-
-    public Long getFirstAnsweredUser() {
-        return firstAnsweredUser;
-    }
-
-    public void setFirstAnsweredUser(Long firstAnsweredUser) {
-        this.firstAnsweredUser = firstAnsweredUser;
-    }
-
-    public OffsetDateTime getUsageTime() {
-        return usageTime;
-    }
-
-    public void setUsageTime(OffsetDateTime usageTime) {
-        this.usageTime = usageTime;
-    }
-
-    public Task getCurrentTask() {
-        return currentTask;
-    }
-
-    public void setCurrentTask(Task currentTask) {
-        this.currentTask = currentTask;
+    public Optional<Long> getFirstAnsweredUser() {
+        return Optional.ofNullable(firstAnsweredUser);
     }
 }
