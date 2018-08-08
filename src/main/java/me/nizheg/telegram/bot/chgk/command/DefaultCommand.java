@@ -20,13 +20,13 @@ import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
+import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswer;
 import me.nizheg.telegram.bot.chgk.domain.UserAnswerResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
-import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
@@ -110,7 +110,7 @@ public class DefaultCommand extends ChatCommand {
         UserAnswerResult userAnswerResult = chatGame.userAnswer(new UserAnswer(text, user));
         Task currentTask = userAnswerResult.getCurrentTask();
         if (currentTask == null) {
-            throw new NoTaskException(ctx.getChatId());
+            throw new NoTaskException();
         }
 
         if (userAnswerResult.isCorrect()) {

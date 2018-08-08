@@ -115,7 +115,7 @@ public class TourCommand extends ChatGameCommand {
                             chatId, ParseMode.HTML, true, null, buttonMarkup));
         } catch (IllegalIdException e) {
             logger.error("Illegal id of tournament for chat " + chatId, e);
-            throw new CommandException(new Message("<i>Неверный идентификатор турнира</i>", chatId, ParseMode.HTML));
+            throw new CommandException("Неверный идентификатор турнира");
         }
     }
 

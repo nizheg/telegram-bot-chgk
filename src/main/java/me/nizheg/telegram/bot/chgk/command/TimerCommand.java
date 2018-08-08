@@ -66,9 +66,7 @@ public class TimerCommand extends ChatCommand {
                 isValueCorrect = false;
             }
             if (!isValueCorrect || timeoutMinutes < 0 || timeoutMinutes > MAX_TIMEOUT_MINUTES) {
-                throw new CommandException(new Message(
-                        "<i>Введите в качестве значения целое число не больше " + MAX_TIMEOUT_MINUTES + " </i>",
-                        ctx.getChatId(), ParseMode.HTML));
+                throw new CommandException("Введите в качестве значения целое число не больше " + MAX_TIMEOUT_MINUTES);
             }
         }
         chatGameService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);

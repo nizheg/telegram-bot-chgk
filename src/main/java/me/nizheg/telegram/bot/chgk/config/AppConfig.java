@@ -44,6 +44,7 @@ import me.nizheg.telegram.bot.chgk.command.StopCommand;
 import me.nizheg.telegram.bot.chgk.command.TimerCommand;
 import me.nizheg.telegram.bot.chgk.command.TourCommand;
 import me.nizheg.telegram.bot.chgk.command.TournamentCommand;
+import me.nizheg.telegram.bot.chgk.command.exception.ChgkCommandExceptionHandler;
 import me.nizheg.telegram.bot.chgk.domain.AnswerOperation;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
@@ -74,6 +75,7 @@ import me.nizheg.telegram.bot.command.HelpCommand;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.service.CallbackQueryParser;
+import me.nizheg.telegram.bot.service.CommandExceptionHandler;
 import me.nizheg.telegram.bot.service.CommandExecutor;
 import me.nizheg.telegram.bot.service.CommandsHolder;
 import me.nizheg.telegram.bot.service.MessageParser;
@@ -198,7 +200,12 @@ public class AppConfig {
                     List<ChatEventListener> eventListeners,
             @Autowired(required = false)
                     List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
-        return new CommandExecutorImpl(telegramApiClient(), eventListeners, nonCommandMessageProcessors);
+        return new CommandExecutorImpl(commandExceptionHandler(), eventListeners, nonCommandMessageProcessors);
+    }
+
+    @Bean
+    public CommandExceptionHandler commandExceptionHandler() {
+        return new ChgkCommandExceptionHandler(telegramApiClient());
     }
 
     @Bean

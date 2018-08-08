@@ -7,12 +7,12 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.TelegramApiException;
 import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.HintResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
-import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
@@ -66,7 +66,7 @@ public class HintCommand extends ChatGameCommand {
         Long taskId = parseTaskId(ctx);
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
-            Task hintForTaskTask = hintForTask.getTask().orElseThrow(() -> new NoTaskException(chatId));
+            Task hintForTaskTask = hintForTask.getTask().orElseThrow(NoTaskException::new);
             sendAnswerToUser(ctx, hintForTaskTask);
         } catch (GameException e) {
             getTelegramApiClient().sendMessage(new Message("<i>" + e.getMessage() + "</i>", chatId, ParseMode.HTML));

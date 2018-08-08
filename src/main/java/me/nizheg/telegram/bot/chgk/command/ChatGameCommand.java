@@ -4,9 +4,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
-import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.param.Message;
+import me.nizheg.telegram.bot.chgk.command.exception.BotIsNotStartedException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
@@ -43,9 +42,7 @@ public abstract class ChatGameCommand extends ChatCommand {
             chatGame = getChatGameService().getGame(new Chat(ctx.getChat()));
         }
         if (chatGame == null) {
-            throw new CommandException(
-                    new Message("<i>Необходимо активировать бота с помощью команды</i> /start", chatId,
-                            ParseMode.HTML));
+            throw new BotIsNotStartedException();
         }
         executeChatGame(ctx, chatGame);
     }

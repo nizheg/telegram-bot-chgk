@@ -9,11 +9,11 @@ import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
-import me.nizheg.telegram.bot.chgk.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
@@ -105,7 +105,7 @@ public class RepeatCommand extends ChatGameCommand {
                 }
             }
         } else {
-            throw new NoTaskException(chatId);
+            throw new NoTaskException();
         }
     }
 

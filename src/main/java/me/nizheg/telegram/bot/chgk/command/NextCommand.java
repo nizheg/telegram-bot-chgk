@@ -3,10 +3,7 @@ package me.nizheg.telegram.bot.chgk.command;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
-import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
-import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
@@ -72,26 +69,10 @@ public class NextCommand extends ChatGameCommand {
         try {
             nextTaskSender.sendNextTask(chatGame, currentTaskId);
         } catch (CurrentTaskIsOtherException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Current task is other from " + currentTaskId);
-            }
-            ctx.setAttribute(ATTRIBUTE_ILLEGAL_TASK_ID, true);
+            throw new CommandException("Данная кнопка устарела. Воспользуйтесь актуальной или командой /next", e);
         } catch (GameException e) {
-            throw new CommandException(new Message("<i>" + e.getMessage() + "</i>", ctx.getChatId(), ParseMode.HTML),
-                    e);
+            throw new CommandException(e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void sendCallbackResponse(CommandContext ctx) {
-        AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
-        answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
-        Boolean isTaskIdIllegal = (Boolean) ctx.getAttribute(ATTRIBUTE_ILLEGAL_TASK_ID);
-        if (isTaskIdIllegal != null && isTaskIdIllegal) {
-            answerCallbackRequest.setText("Данная кнопка устарела. Воспользуйтесь актуальной или командой /next");
-            answerCallbackRequest.setShowAlert(true);
-        }
-        getTelegramApiClient().answerCallbackQuery(answerCallbackRequest);
     }
 
     @Override
