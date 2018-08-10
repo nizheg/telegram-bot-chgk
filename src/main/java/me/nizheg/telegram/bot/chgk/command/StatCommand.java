@@ -13,7 +13,6 @@ import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.TelegramApiException;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.EditedMessage;
 import me.nizheg.telegram.bot.api.service.param.Message;
@@ -99,11 +98,7 @@ public class StatCommand extends ChatCommand {
                 editedMessage.setMessageId(ctx.getReplyToBotMessage().getMessageId());
                 editedMessage.setParseMode(ParseMode.HTML);
                 editedMessage.setReplyMarkup(markup);
-                try {
-                    getTelegramApiClient().editMessageText(editedMessage);
-                } catch (TelegramApiException ex) {
-                    logger.error("Unable to handle callback " + ctx.getCallbackQueryId(), ex);
-                }
+                getTelegramApiClient().editMessageText(editedMessage);
             } else {
                 Message message = new Message(createTop10Message(statForChat), ctx.getChatId(), ParseMode.HTML, true);
                 message.setDisableNotification(true);
@@ -146,11 +141,7 @@ public class StatCommand extends ChatCommand {
             editedMessage.setMessageId(ctx.getReplyToBotMessage().getMessageId());
             editedMessage.setParseMode(ParseMode.HTML);
             editedMessage.setReplyMarkup(markup);
-            try {
-                getTelegramApiClient().editMessageText(editedMessage);
-            } catch (TelegramApiException ex) {
-                logger.error("Unable to handle callback " + ctx.getCallbackQueryId(), ex);
-            }
+            getTelegramApiClient().editMessageText(editedMessage);
         } else {
             Message message = new Message(createScoreMessage(statForChat), ctx.getChatId(), ParseMode.HTML, true);
             message.setDisableNotification(true);

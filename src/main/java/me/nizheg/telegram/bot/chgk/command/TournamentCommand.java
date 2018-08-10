@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.TelegramApiException;
 import me.nizheg.telegram.bot.api.service.param.EditedMessage;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -70,12 +69,8 @@ public class TournamentCommand extends ChatCommand {
         } else {
             Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), page);
             if (ctx.getReplyToBotMessage() != null) {
-                try {
-                    getTelegramApiClient().editMessageText(
-                            new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
-                } catch (TelegramApiException ex) {
-                    logger.warn("Unable to edit message of tournaments", ex);
-                }
+                getTelegramApiClient().editMessageText(
+                        new EditedMessage(tournamentsList, ctx.getReplyToBotMessage().getMessageId()));
             } else {
                 getTelegramApiClient().sendMessage(tournamentsList);
             }

@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.TelegramApiException;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;

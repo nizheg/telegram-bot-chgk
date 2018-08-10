@@ -3,6 +3,7 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -166,7 +167,8 @@ public class MessageServiceImpl implements MessageService {
         Message telegramMessage = convertMessage(message);
         doBroadcast(message::getText, chatIds, chatId -> {
             telegramMessage.setChatId(chatId);
-            telegramApiClient.sendMessage(telegramMessage);
+            telegramApiClient.sendMessage(telegramMessage,
+                    (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
         });
     }
 
@@ -183,8 +185,21 @@ public class MessageServiceImpl implements MessageService {
 
         doBroadcast(() -> text, receivers, chatId -> {
             telegramForwardedMessage.setChatId(chatId);
-            telegramApiClient.forwardMessage(telegramForwardedMessage);
+            telegramApiClient.forwardMessage(telegramForwardedMessage,
+                    (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
         });
+    }
+
+    private void handleError(HttpStatus httpStatus, long chatId) {
+        switch (httpStatus) {
+            case FORBIDDEN:
+            case BAD_REQUEST:
+                chatService.deactivateChat(chatId);
+                break;
+            default:
+                logger.error("Api exception. Skip chat " + chatId);
+        }
+
     }
 
     private void doBroadcast(
@@ -192,6 +207,6 @@ public class MessageServiceImpl implements MessageService {
         this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
         broadcastStatus.setTotalCount(receivers.size());
         broadcastStatus.setMessage(messageTextSupplier.get());
-        executorService.submit(new SendingTask(receivers, broadcastStatus, messageSender, chatService::deactivateChat));
+        executorService.submit(new SendingTask(receivers, broadcastStatus, messageSender));
     }
 }
