@@ -1,7 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +7,7 @@ import java.util.List;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.ErrorCallback;
 import me.nizheg.telegram.bot.chgk.domain.AnswerOperation;
 import me.nizheg.telegram.bot.chgk.dto.Answer;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
@@ -16,7 +15,6 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 /**
  * @author Nikolay Zhegalin
  */
-@Component
 public class AnswerSender implements AnswerOperation {
 
     private final TaskSender taskSender;
@@ -32,7 +30,7 @@ public class AnswerSender implements AnswerOperation {
         sendAnswer(task, true, chatId);
     }
 
-    public void sendAnswer(Task task, boolean isWithButtons, Long chatId) {
+    public void sendAnswer(Task task, boolean isWithButtons, Long chatId, ErrorCallback... errorCallbacks) {
         InlineKeyboardMarkup replyMarkup = null;
         if (isWithButtons) {
             replyMarkup = new InlineKeyboardMarkup();
@@ -46,10 +44,15 @@ public class AnswerSender implements AnswerOperation {
             replyMarkup.setInlineKeyboard(buttonGroup);
         }
         StringBuilder messageBuilder = new StringBuilder("<b>Ответ:</b>\n");
-        sendAnswerOfTask(messageBuilder, task, chatId, replyMarkup);
+        sendAnswerOfTask(messageBuilder, task, chatId, replyMarkup, errorCallbacks);
     }
 
-    public void sendAnswerOfTask(StringBuilder resultBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
+    public void sendAnswerOfTask(
+            StringBuilder resultBuilder,
+            Task task,
+            Long chatId,
+            ReplyMarkup replyMarkup,
+            ErrorCallback... errorCallbacks) {
         if (task == null) {
             return;
         }
@@ -62,7 +65,7 @@ public class AnswerSender implements AnswerOperation {
         if (resultBuilder.length() > 0) {
             resultBuilder.deleteCharAt(resultBuilder.length() - 1);
         }
-        taskSender.sendTaskComment(resultBuilder, task, chatId, replyMarkup);
+        taskSender.sendTaskComment(resultBuilder, task, chatId, replyMarkup, errorCallbacks);
     }
 
 }

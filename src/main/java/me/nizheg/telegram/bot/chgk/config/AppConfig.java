@@ -45,11 +45,9 @@ import me.nizheg.telegram.bot.chgk.command.TimerCommand;
 import me.nizheg.telegram.bot.chgk.command.TourCommand;
 import me.nizheg.telegram.bot.chgk.command.TournamentCommand;
 import me.nizheg.telegram.bot.chgk.command.exception.ChgkCommandExceptionHandler;
-import me.nizheg.telegram.bot.chgk.domain.AnswerOperation;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
-import me.nizheg.telegram.bot.chgk.domain.WarningOperation;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
@@ -58,12 +56,12 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Cipher;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
+import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
-import me.nizheg.telegram.bot.chgk.telegram.TelegramApiClientWrapper;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
@@ -103,13 +101,9 @@ public class AppConfig {
     @Autowired
     private PropertyService propertyService;
     @Autowired
-    private RatingHelper ratingHelper;
-    @Autowired
     private CategoryService categoryService;
     @Autowired
     private TaskService taskService;
-    @Autowired
-    private TourList tourList;
     @Autowired
     private TelegramUserService telegramUserService;
     @Autowired
@@ -125,25 +119,15 @@ public class AppConfig {
     @Autowired
     private ChatService chatService;
     @Autowired
-    private AnswerOperation nextTaskOperation;
-    @Autowired
-    private WarningOperation warningOperation;
-    @Autowired
     private ScheduledOperationService scheduledOperationService;
     @Autowired
-    private TaskSender taskSender;
-    @Autowired
-    private AnswerSender answerSender;
-    @Autowired
     private BotInfo botInfo;
-    @Autowired
-    private NextTaskSender nextTaskSender;
-    @Autowired
-    private WarningSender warningSender;
     @Autowired
     private ChatGameService chatGameService;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private PictureService pictureService;
     @Autowired
     private Cipher cipher;
 
@@ -171,8 +155,7 @@ public class AppConfig {
     @Bean
     public TelegramApiClient telegramApiClient() {
         String apiToken = propertyService.getValue("api.token");
-        TelegramApiClientImpl telegramApiClient = new TelegramApiClientImpl(apiToken);
-        return new TelegramApiClientWrapper(telegramApiClient, chatService);
+        return new TelegramApiClientImpl(apiToken);
     }
 
     @Bean
@@ -250,32 +233,30 @@ public class AppConfig {
     @Bean
     public CategoryCommand categoryCommand() {
         return new CategoryCommand(() -> asyncTelegramApiClient(telegramApiClient()), categoryService, chatService,
-                chatGameService, taskService, tourList);
+                chatGameService, taskService, tourList());
     }
 
     @Bean
     public RepeatCommand repeatCommand() {
         return new RepeatCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                taskSender,
-                warningSender);
+                taskSender(), warningSender());
     }
 
     @Bean
     public AnswerCommand answerCommand() {
         return new AnswerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                answerSender);
+                answerSender());
     }
 
     @Bean
     public HintCommand hintCommand() {
-        return new HintCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                answerSender);
+        return new HintCommand(telegramApiClient(), chatService, chatGameService, answerSender());
     }
 
     @Bean
     public NextCommand nextCommand() {
         return new NextCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                nextTaskSender);
+                nextTaskSender());
     }
 
     @Bean
@@ -291,12 +272,12 @@ public class AppConfig {
     @Bean
     public TourCommand tourCommand() {
         return new TourCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                tourList);
+                tourList());
     }
 
     @Bean
     public TournamentCommand tournamentCommand() {
-        return new TournamentCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, tourList);
+        return new TournamentCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, tourList());
     }
 
     @Bean
@@ -322,7 +303,7 @@ public class AppConfig {
     @Bean
     public DefaultCommand defaultCommand() {
         return new DefaultCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
-                taskSender, telegramUserService, ratingHelper, botInfo, clock());
+                taskSender(), telegramUserService, ratingHelper(), botInfo, clock());
     }
 
     @Bean
@@ -342,6 +323,37 @@ public class AppConfig {
     }
 
     @Bean
+    public TourList tourList() {
+        return new TourList(tourService);
+    }
+
+    @Bean
+    public RatingHelper ratingHelper() {
+        return new RatingHelper();
+    }
+
+    @Bean
+    public TaskSender taskSender() {
+        return new TaskSender(() -> asyncTelegramApiClient(telegramApiClient()), pictureService);
+    }
+
+    @Bean
+    public AnswerSender answerSender() {
+        return new AnswerSender(taskSender(), ratingHelper());
+    }
+
+    @Bean
+    public NextTaskSender nextTaskSender() {
+        return new NextTaskSender(() -> asyncTelegramApiClient(telegramApiClient()), taskSender(), answerSender(),
+                ratingHelper(), tourList(), botInfo);
+    }
+
+    @Bean
+    public WarningSender warningSender() {
+        return new WarningSender(() -> asyncTelegramApiClient(telegramApiClient()));
+    }
+
+    @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public ChatGame chatGame(Chat chat) {
         return new ChatGame(chat, propertyService, categoryService, tourService, taskService,
@@ -352,7 +364,7 @@ public class AppConfig {
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public AutoChatGame autoChatGame(Chat chat, int timeout) {
         return new AutoChatGame(chat, timeout, propertyService, categoryService, tourService, taskService,
-                answerLogService, botInfo, telegramUserService, taskScheduler(), nextTaskOperation, warningOperation,
+                answerLogService, botInfo, telegramUserService, taskScheduler(), answerSender(), warningSender(),
                 scheduledOperationService, clock());
     }
 

@@ -1,12 +1,10 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import java.util.function.Supplier;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
-import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.domain.WarningOperation;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.util.Emoji;
@@ -14,20 +12,22 @@ import me.nizheg.telegram.util.Emoji;
 /**
  * @author Nikolay Zhegalin
  */
-@Component
-@Scope(AppConfig.SCOPE_THREAD)
 public class WarningSender implements WarningOperation {
 
-    private final TelegramApiClient telegramApiClient;
+    private final Supplier<TelegramApiClient> telegramApiClientSupplier;
 
-    public WarningSender(TelegramApiClient asyncTelegramApiClient) {
-        this.telegramApiClient = asyncTelegramApiClient;
+    public WarningSender(Supplier<TelegramApiClient> telegramApiClientSupplier) {
+        this.telegramApiClientSupplier = telegramApiClientSupplier;
     }
 
     @Override
     public void sendTimeWarning(Chat chat, int seconds) {
-        telegramApiClient.sendMessage(
+        getTelegramApiClient().sendMessage(
                 new Message(Emoji.HOURGLASS + " <b>Осталось " + seconds + " с.</b>", chat.getId(), ParseMode.HTML,
                         false));
+    }
+
+    private TelegramApiClient getTelegramApiClient() {
+        return telegramApiClientSupplier.get();
     }
 }

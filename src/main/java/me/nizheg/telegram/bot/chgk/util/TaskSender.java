@@ -1,21 +1,21 @@
 package me.nizheg.telegram.bot.chgk.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
+import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.PhotoSize;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
+import me.nizheg.telegram.bot.api.service.ErrorCallback;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.InputFile;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.service.param.Photo;
-import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
@@ -24,18 +24,20 @@ import me.nizheg.telegram.bot.chgk.service.PictureService;
 /**
  * @author Nikolay Zhegalin
  */
-@Component
-@Scope(AppConfig.SCOPE_THREAD)
 public class TaskSender {
 
-    private final TelegramApiClient telegramApiClient;
+    private final Supplier<TelegramApiClient> telegramApiClientSupplier;
     private final PictureService pictureService;
 
     public TaskSender(
-            TelegramApiClient asyncTelegramApiClient,
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
             PictureService pictureService) {
-        this.telegramApiClient = asyncTelegramApiClient;
+        this.telegramApiClientSupplier = telegramApiClientSupplier;
         this.pictureService = pictureService;
+    }
+
+    public TelegramApiClient getTelegramApiClient() {
+        return telegramApiClientSupplier.get();
     }
 
     public void sendTaskText(StringBuilder textBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
@@ -54,7 +56,8 @@ public class TaskSender {
         sendAttachedPictures(chatId, attachedPictures.subList(0, i), null);
         List<AttachedPicture> attachedPicturesPart2 = attachedPictures.subList(i, attachedPicturesSize);
         ReplyMarkup messageReplyMarkup = attachedPicturesPart2.isEmpty() ? replyMarkup : null;
-        telegramApiClient.sendMessage(new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup));
+        getTelegramApiClient().sendMessage(
+                new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup));
         sendAttachedPictures(chatId, attachedPicturesPart2, replyMarkup);
     }
 
@@ -66,7 +69,9 @@ public class TaskSender {
         sendTaskText(new StringBuilder(), task, chatId, replyMarkup);
     }
 
-    public void sendTaskComment(StringBuilder messageBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
+    public void sendTaskComment(
+            StringBuilder messageBuilder, Task task, Long chatId, ReplyMarkup replyMarkup,
+            ErrorCallback... errorCallbacks) {
         if (task == null) {
             return;
         }
@@ -76,12 +81,12 @@ public class TaskSender {
         if (attachedPictures.isEmpty()) {
             sendingMessage.setReplyMarkup(replyMarkup);
         }
-        telegramApiClient.sendMessage(sendingMessage);
+        getTelegramApiClient().sendMessage(sendingMessage, errorCallbacks);
         sendAttachedPictures(chatId, attachedPictures, replyMarkup);
     }
 
     private void sendAttachedPictures(Long chatId, List<AttachedPicture> attachedPictures, ReplyMarkup replyMarkup) {
-        for (Iterator<AttachedPicture> iterator = attachedPictures.iterator(); iterator.hasNext();) {
+        for (Iterator<AttachedPicture> iterator = attachedPictures.iterator(); iterator.hasNext(); ) {
             AttachedPicture attachedPicture = iterator.next();
             InputFile photo;
             if (attachedPicture.getTelegramFileId() != null) {
@@ -93,7 +98,8 @@ public class TaskSender {
             if (!iterator.hasNext()) {
                 sendingPhoto.setReplyMarkup(replyMarkup);
             }
-            me.nizheg.telegram.bot.api.model.Message sentMessage = telegramApiClient.sendPhoto(sendingPhoto).getResult();
+            me.nizheg.telegram.bot.api.model.Message sentMessage = getTelegramApiClient().sendPhoto(sendingPhoto)
+                    .getResult();
 
             if (attachedPicture.getTelegramFileId() == null) {
                 List<PhotoSize> photos = sentMessage.getPhoto();

@@ -72,15 +72,15 @@ public class HintCommand extends ChatGameCommand {
     }
 
     private void sendAnswerToUser(CommandContext ctx, Task currentTask) {
-        try {
-            answerSender.sendAnswer(currentTask, false, ctx.getFrom().getId());
-        } catch (TelegramApiException ex) {
-            getTelegramApiClient()
-                    .sendMessage(new Message(
-                            "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас "
-                                    + "(необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
-                            ctx.getChatId(), ParseMode.HTML));
-        }
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        answerSender.sendAnswer(currentTask, false, ctx.getFrom().getId(),
+                (errorResponse, httpStatus) -> {
+                    telegramApiClient
+                            .sendMessage(new Message(
+                                    "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас "
+                                            + "(необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
+                                    ctx.getChatId(), ParseMode.HTML));
+                });
     }
 
     private Long parseTaskId(CommandContext ctx) {

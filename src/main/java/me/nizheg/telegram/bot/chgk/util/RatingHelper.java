@@ -6,9 +6,6 @@ import java.util.List;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.util.Emoji;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class RatingHelper {
 
     public List<InlineKeyboardButton> createRatingButtons(long taskId) {

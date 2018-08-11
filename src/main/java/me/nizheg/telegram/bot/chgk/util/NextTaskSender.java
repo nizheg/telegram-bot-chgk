@@ -1,11 +1,9 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +13,6 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
-import me.nizheg.telegram.bot.chgk.config.AppConfig;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.NextTaskResult;
@@ -31,11 +28,9 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 /**
  * @author Nikolay Zhegalin
  */
-@Component
-@Scope(AppConfig.SCOPE_THREAD)
 public class NextTaskSender {
 
-    private final TelegramApiClient telegramApiClient;
+    private final Supplier<TelegramApiClient> telegramApiClientSupplier;
     private final TaskSender taskSender;
     private final AnswerSender answerSender;
     private final RatingHelper ratingHelper;
@@ -43,18 +38,22 @@ public class NextTaskSender {
     private final BotInfo botInfo;
 
     public NextTaskSender(
-            TelegramApiClient asyncTelegramApiClient,
+            Supplier<TelegramApiClient> telegramApiClientSupplier,
             TaskSender taskSender,
             AnswerSender answerSender,
             RatingHelper ratingHelper,
             TourList tourList,
             BotInfo botInfo) {
-        this.telegramApiClient = asyncTelegramApiClient;
+        this.telegramApiClientSupplier = telegramApiClientSupplier;
         this.taskSender = taskSender;
         this.answerSender = answerSender;
         this.ratingHelper = ratingHelper;
         this.tourList = tourList;
         this.botInfo = botInfo;
+    }
+
+    private TelegramApiClient getTelegramApiClient() {
+        return telegramApiClientSupplier.get();
     }
 
     public void sendNextTask(ChatGame chatGame, @Nullable Long currentTaskId) throws GameException {
@@ -89,7 +88,7 @@ public class NextTaskSender {
                 }
                 Message message = new Message(messageText, chatId, ParseMode.HTML);
                 message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup("Выбрать категорию", "category"));
-                telegramApiClient.sendMessage(message);
+                getTelegramApiClient().sendMessage(message);
             } else {
                 ReplyMarkup replyMarkup;
                 Task nextTask = nextTaskOptional.get();
@@ -113,7 +112,7 @@ public class NextTaskSender {
             }
         } catch (TournamentIsNotSelectedException e) {
             Message message = tourList.getTournamentsListOfChat(chatId, 0);
-            telegramApiClient.sendMessage(message);
+            getTelegramApiClient().sendMessage(message);
         }
     }
 
