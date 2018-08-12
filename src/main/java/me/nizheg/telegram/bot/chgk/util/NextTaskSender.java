@@ -120,7 +120,8 @@ public class NextTaskSender {
         InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
         replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
         answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task,
-                chat.getId(), replyMarkup);
+                chat.getId(), replyMarkup, (errorResponse, httpStatus) -> {
+                });
     }
 
     private String createScoreMessage(List<StatEntry> statForChat) {

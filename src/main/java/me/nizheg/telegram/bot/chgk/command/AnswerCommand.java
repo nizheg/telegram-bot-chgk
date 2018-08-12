@@ -63,7 +63,9 @@ public class AnswerCommand extends ChatGameCommand {
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
             Task task = hintForTask.getTask().orElseThrow(NoTaskException::new);
-            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), ctx.getChatId());
+            answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), ctx.getChatId(),
+                    (errorResponse, httpStatus) -> {
+                    });
         } catch (GameException e) {
             throw new CommandException(e.getMessage(), e);
         }

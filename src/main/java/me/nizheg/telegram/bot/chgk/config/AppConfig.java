@@ -24,9 +24,9 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import me.nizheg.payments.service.PaymentService;
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.impl.NonBlockingTelegramApiClientImpl;
 import me.nizheg.telegram.bot.api.service.impl.TelegramApiClientImpl;
 import me.nizheg.telegram.bot.chgk.command.AnswerCommand;
 import me.nizheg.telegram.bot.chgk.command.CategoryCommand;
@@ -153,16 +153,10 @@ public class AppConfig {
     }
 
     @Bean
+    @Scope(SCOPE_THREAD)
     public TelegramApiClient telegramApiClient() {
         String apiToken = propertyService.getValue("api.token");
         return new TelegramApiClientImpl(apiToken);
-    }
-
-    @Bean
-    @Scope(SCOPE_THREAD)
-    @Autowired
-    public NonBlockingTelegramApiClientImpl asyncTelegramApiClient(TelegramApiClient telegramApiClient) {
-        return new NonBlockingTelegramApiClientImpl(telegramApiClient);
     }
 
     @Bean
@@ -198,8 +192,13 @@ public class AppConfig {
 
     @Bean
     public MessageParser messageParser() {
-        User botUser = telegramApiClient().getMe().getResult();
-        return new MessageParserImpl(botUser.getUsername(), commandsHolder());
+        AtomicResponse<User> userResponse = telegramApiClient().getMe().await();
+        if (userResponse.getOk()) {
+            User botUser = userResponse.getResult();
+            return new MessageParserImpl(botUser.getUsername(), commandsHolder());
+        } else {
+            throw new IllegalStateException(userResponse.getDescription().orElse("Unable to fetch user"));
+        }
     }
 
     @Bean
@@ -227,24 +226,24 @@ public class AppConfig {
 
     @Bean
     public StartCommand startCommand() {
-        return new StartCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService);
+        return new StartCommand(this::telegramApiClient, chatService);
     }
 
     @Bean
     public CategoryCommand categoryCommand() {
-        return new CategoryCommand(() -> asyncTelegramApiClient(telegramApiClient()), categoryService, chatService,
+        return new CategoryCommand(this::telegramApiClient, categoryService, chatService,
                 chatGameService, taskService, tourList());
     }
 
     @Bean
     public RepeatCommand repeatCommand() {
-        return new RepeatCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new RepeatCommand(this::telegramApiClient, chatService, chatGameService,
                 taskSender(), warningSender());
     }
 
     @Bean
     public AnswerCommand answerCommand() {
-        return new AnswerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new AnswerCommand(this::telegramApiClient, chatService, chatGameService,
                 answerSender());
     }
 
@@ -255,70 +254,70 @@ public class AppConfig {
 
     @Bean
     public NextCommand nextCommand() {
-        return new NextCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new NextCommand(this::telegramApiClient, chatService, chatGameService,
                 nextTaskSender());
     }
 
     @Bean
     public StopCommand stopCommand() {
-        return new StopCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService);
+        return new StopCommand(this::telegramApiClient, chatService, chatGameService);
     }
 
     @Bean
     public StatCommand statCommand() {
-        return new StatCommand(() -> asyncTelegramApiClient(telegramApiClient()), answerLogService, botInfo);
+        return new StatCommand(this::telegramApiClient, answerLogService, botInfo);
     }
 
     @Bean
     public TourCommand tourCommand() {
-        return new TourCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new TourCommand(this::telegramApiClient, chatService, chatGameService,
                 tourList());
     }
 
     @Bean
     public TournamentCommand tournamentCommand() {
-        return new TournamentCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, tourList());
+        return new TournamentCommand(this::telegramApiClient, chatService, tourList());
     }
 
     @Bean
     public TimerCommand timerCommand() {
-        return new TimerCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatGameService);
+        return new TimerCommand(this::telegramApiClient, chatGameService);
     }
 
     @Bean
     public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand() {
         ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand = new ClearCurrentTaskAndSendNextCommand(
-                () -> asyncTelegramApiClient(telegramApiClient()), chatGameService);
+                this::telegramApiClient, chatGameService);
         clearCurrentTaskAndSendNextCommand.setCommandsHolderSupplier(this::commandsHolder);
         return clearCurrentTaskAndSendNextCommand;
     }
 
     @Bean(initMethod = "init")
     public HelpCommand helpCommand() {
-        HelpCommand helpCommand = new HelpCommand(() -> asyncTelegramApiClient(telegramApiClient()));
+        HelpCommand helpCommand = new HelpCommand(this::telegramApiClient);
         helpCommand.setCommandsHolderSupplier(this::commandsHolder);
         return helpCommand;
     }
 
     @Bean
     public DefaultCommand defaultCommand() {
-        return new DefaultCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService,
                 taskSender(), telegramUserService, ratingHelper(), botInfo, clock());
     }
 
     @Bean
     public RatingCommand ratingCommand() {
-        return new RatingCommand(() -> asyncTelegramApiClient(telegramApiClient()), taskRatingService);
+        return new RatingCommand(this::telegramApiClient, taskRatingService);
     }
 
     @Bean
     public DonateCommand donateCommand() {
-        return new DonateCommand(() -> asyncTelegramApiClient(telegramApiClient()), paymentService, propertyService);
+        return new DonateCommand(this::telegramApiClient, paymentService, propertyService);
     }
 
     @Bean
     public MigrateCommand migrateCommand() {
-        return new MigrateCommand(() -> asyncTelegramApiClient(telegramApiClient()), chatService, chatGameService,
+        return new MigrateCommand(this::telegramApiClient, chatService, chatGameService,
                 cipher);
     }
 
@@ -334,7 +333,7 @@ public class AppConfig {
 
     @Bean
     public TaskSender taskSender() {
-        return new TaskSender(() -> asyncTelegramApiClient(telegramApiClient()), pictureService);
+        return new TaskSender(this::telegramApiClient, pictureService);
     }
 
     @Bean
@@ -344,13 +343,13 @@ public class AppConfig {
 
     @Bean
     public NextTaskSender nextTaskSender() {
-        return new NextTaskSender(() -> asyncTelegramApiClient(telegramApiClient()), taskSender(), answerSender(),
+        return new NextTaskSender(this::telegramApiClient, taskSender(), answerSender(),
                 ratingHelper(), tourList(), botInfo);
     }
 
     @Bean
     public WarningSender warningSender() {
-        return new WarningSender(() -> asyncTelegramApiClient(telegramApiClient()));
+        return new WarningSender(this::telegramApiClient);
     }
 
     @Bean

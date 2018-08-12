@@ -167,7 +167,7 @@ public class MessageServiceImpl implements MessageService {
         Message telegramMessage = convertMessage(message);
         doBroadcast(message::getText, chatIds, chatId -> {
             telegramMessage.setChatId(chatId);
-            telegramApiClient.sendMessage(telegramMessage,
+            telegramApiClient.sendMessage(telegramMessage).setCallback(
                     (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
         });
     }
@@ -185,7 +185,7 @@ public class MessageServiceImpl implements MessageService {
 
         doBroadcast(() -> text, receivers, chatId -> {
             telegramForwardedMessage.setChatId(chatId);
-            telegramApiClient.forwardMessage(telegramForwardedMessage,
+            telegramApiClient.forwardMessage(telegramForwardedMessage).setCallback(
                     (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
         });
     }

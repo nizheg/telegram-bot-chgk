@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
@@ -28,8 +29,14 @@ public class BotInfo {
 
     @PostConstruct
     public void init() {
-        botUser = telegramApiClient.getMe().getResult();
-        telegramUserService.createOrUpdate(new TelegramUser(botUser));
+        AtomicResponse<User> userResponse = telegramApiClient.getMe().await();
+        if (userResponse.getOk()) {
+            botUser = userResponse.getResult();
+            telegramUserService.createOrUpdate(new TelegramUser(botUser));
+        } else {
+            throw new IllegalStateException(userResponse.getDescription().orElse("Unable to fetch user"));
+        }
+
     }
 
     public User getBotUser() {

@@ -173,7 +173,9 @@ public class DefaultCommand extends ChatCommand {
             nextButton.setCallbackData("next " + currentTask.getId());
             buttonGroup.add(Collections.singletonList(nextButton));
             replyMarkup.setInlineKeyboard(buttonGroup);
-            taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup);
+            taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup,
+                    (errorResponse, httpStatus) -> {
+                    });
         } else {
             getTelegramApiClient().sendMessage(new Message(
                     "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.", chatId, ParseMode.HTML));

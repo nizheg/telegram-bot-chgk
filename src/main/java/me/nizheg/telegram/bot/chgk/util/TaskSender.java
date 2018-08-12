@@ -1,16 +1,21 @@
 package me.nizheg.telegram.bot.chgk.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
+import me.nizheg.telegram.bot.api.model.Callback;
+import me.nizheg.telegram.bot.api.model.ErrorResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.PhotoSize;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
-import me.nizheg.telegram.bot.api.service.ErrorCallback;
+import me.nizheg.telegram.bot.api.model.Response;
+import me.nizheg.telegram.bot.api.model.SuccessCallback;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.InputFile;
@@ -53,39 +58,68 @@ public class TaskSender {
         while (i < attachedPicturesSize && attachedPictures.get(i).getPosition() <= halfOfTaskLength) {
             ++i;
         }
-        sendAttachedPictures(chatId, attachedPictures.subList(0, i), null);
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        sendAttachedPictures(telegramApiClient, chatId, attachedPictures.subList(0, i), null);
         List<AttachedPicture> attachedPicturesPart2 = attachedPictures.subList(i, attachedPicturesSize);
         ReplyMarkup messageReplyMarkup = attachedPicturesPart2.isEmpty() ? replyMarkup : null;
         getTelegramApiClient().sendMessage(
                 new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup));
-        sendAttachedPictures(chatId, attachedPicturesPart2, replyMarkup);
+        sendAttachedPictures(telegramApiClient, chatId, attachedPicturesPart2, replyMarkup);
     }
+
 
     public void sendTaskText(Task task, Long chatId) {
         sendTaskText(new StringBuilder(), task, chatId, null);
     }
 
-    public void sendTaskText(Task task, Long chatId, ReplyMarkup replyMarkup) {
-        sendTaskText(new StringBuilder(), task, chatId, replyMarkup);
-    }
-
     public void sendTaskComment(
-            StringBuilder messageBuilder, Task task, Long chatId, ReplyMarkup replyMarkup,
-            ErrorCallback... errorCallbacks) {
+            StringBuilder messageBuilder,
+            Task task,
+            Long chatId,
+            ReplyMarkup replyMarkup,
+            @NonNull Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> callback) {
         if (task == null) {
             return;
         }
-        messageBuilder.append("\n\n<b>Комментарий:</b>\n" + getComment(task));
+        messageBuilder.append("\n\n<b>Комментарий:</b>\n").append(getComment(task));
         List<AttachedPicture> attachedPictures = task.getCommentPictures();
         Message sendingMessage = new Message(messageBuilder.toString(), chatId, ParseMode.HTML, true);
         if (attachedPictures.isEmpty()) {
             sendingMessage.setReplyMarkup(replyMarkup);
         }
-        getTelegramApiClient().sendMessage(sendingMessage, errorCallbacks);
-        sendAttachedPictures(chatId, attachedPictures, replyMarkup);
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        telegramApiClient.sendMessage(sendingMessage).setCallback(
+                new Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>>() {
+                    @Override
+                    public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
+                        callback.onFailure(errorResponse, httpStatus);
+                    }
+
+                    @Override
+                    public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
+                        sendAttachedPictures(telegramApiClient, chatId, attachedPictures, replyMarkup);
+                    }
+                });
+
     }
 
-    private void sendAttachedPictures(Long chatId, List<AttachedPicture> attachedPictures, ReplyMarkup replyMarkup) {
+    private void sendAttachedPictures(
+            TelegramApiClient telegramApiClient,
+            Long chatId,
+            List<AttachedPicture> attachedPictures,
+            ReplyMarkup replyMarkup) {
+        sendAttachedPictures(telegramApiClient, chatId, attachedPictures, replyMarkup, (errorResponse, httpStatus) ->
+                telegramApiClient.sendMessage(new Message("Произошла непредвиденая ошибка при отправке изображения",
+                        chatId)));
+
+    }
+
+    private void sendAttachedPictures(
+            TelegramApiClient telegramApiClient,
+            Long chatId,
+            List<AttachedPicture> attachedPictures,
+            ReplyMarkup replyMarkup,
+            Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> callback) {
         for (Iterator<AttachedPicture> iterator = attachedPictures.iterator(); iterator.hasNext(); ) {
             AttachedPicture attachedPicture = iterator.next();
             InputFile photo;
@@ -98,16 +132,26 @@ public class TaskSender {
             if (!iterator.hasNext()) {
                 sendingPhoto.setReplyMarkup(replyMarkup);
             }
-            me.nizheg.telegram.bot.api.model.Message sentMessage = getTelegramApiClient().sendPhoto(sendingPhoto)
-                    .getResult();
+            telegramApiClient.sendPhoto(sendingPhoto).setCallback(
+                    new Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>>() {
+                        @Override
+                        public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
+                            callback.onFailure(errorResponse, httpStatus);
+                        }
 
-            if (attachedPicture.getTelegramFileId() == null) {
-                List<PhotoSize> photos = sentMessage.getPhoto();
-                if (photos != null && !photos.isEmpty()) {
-                    attachedPicture.setTelegramFileId(photos.get(0).getFileId());
-                    pictureService.update(attachedPicture);
-                }
-            }
+                        @Override
+                        public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
+                            if (attachedPicture.getTelegramFileId() == null) {
+                                List<PhotoSize> photos = result.getResult().getPhoto();
+                                if (photos != null && !photos.isEmpty()) {
+                                    attachedPicture.setTelegramFileId(photos.get(0).getFileId());
+                                    pictureService.update(attachedPicture);
+                                }
+                            }
+                            callback.onSuccessResult(result);
+                        }
+                    });
+
         }
     }
 
@@ -117,6 +161,19 @@ public class TaskSender {
             comment = task.getComment();
         }
         return comment;
+    }
+
+    private static <T extends Response> Callback<T> onSuccess(SuccessCallback<T> successCallback) {
+        return new Callback<T>() {
+            @Override
+            public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
+            }
+
+            @Override
+            public void onSuccessResult(T result) {
+                successCallback.onSuccessResult(result);
+            }
+        };
     }
 
 }
