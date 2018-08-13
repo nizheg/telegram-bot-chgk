@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
+import me.nizheg.telegram.bot.api.model.Callback;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
@@ -56,7 +58,10 @@ public class NextTaskSender {
         return telegramApiClientSupplier.get();
     }
 
-    public void sendNextTask(ChatGame chatGame, @Nullable Long currentTaskId) throws GameException {
+    public void sendNextTask(
+            ChatGame chatGame,
+            @Nullable Long currentTaskId,
+            Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> callback) throws GameException {
         Long chatId = chatGame.getChatId();
         try {
             NextTaskResult nextTaskResult;
@@ -88,7 +93,7 @@ public class NextTaskSender {
                 }
                 Message message = new Message(messageText, chatId, ParseMode.HTML);
                 message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup("Выбрать категорию", "category"));
-                getTelegramApiClient().sendMessage(message);
+                getTelegramApiClient().sendMessage(message).setCallback(callback);
             } else {
                 ReplyMarkup replyMarkup;
                 Task nextTask = nextTaskOptional.get();
@@ -108,11 +113,11 @@ public class NextTaskSender {
                             .append("</b>");
                 }
                 messageBuilder.append("\n");
-                taskSender.sendTaskText(messageBuilder, nextTask, chatId, replyMarkup);
+                taskSender.sendTaskText(messageBuilder, nextTask, chatId, replyMarkup, callback);
             }
         } catch (TournamentIsNotSelectedException e) {
             Message message = tourList.getTournamentsListOfChat(chatId, 0);
-            getTelegramApiClient().sendMessage(message);
+            getTelegramApiClient().sendMessage(message).setCallback(callback);
         }
     }
 

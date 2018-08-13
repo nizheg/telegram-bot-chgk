@@ -45,7 +45,9 @@ public class TaskSender {
         return telegramApiClientSupplier.get();
     }
 
-    public void sendTaskText(StringBuilder textBuilder, Task task, Long chatId, ReplyMarkup replyMarkup) {
+    public void sendTaskText(
+            StringBuilder textBuilder, Task task, Long chatId, ReplyMarkup replyMarkup,
+            @NonNull Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> callback) {
         if (task == null) {
             return;
         }
@@ -63,13 +65,15 @@ public class TaskSender {
         List<AttachedPicture> attachedPicturesPart2 = attachedPictures.subList(i, attachedPicturesSize);
         ReplyMarkup messageReplyMarkup = attachedPicturesPart2.isEmpty() ? replyMarkup : null;
         telegramApiClient.sendMessage(
-                new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup));
+                new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup))
+        .setCallback(callback);
         sendAttachedPictures(telegramApiClient, chatId, attachedPicturesPart2, replyMarkup);
     }
 
 
     public void sendTaskText(Task task, Long chatId) {
-        sendTaskText(new StringBuilder(), task, chatId, null);
+        sendTaskText(new StringBuilder(), task, chatId, null, (errorResponse, httpStatus) -> {
+        });
     }
 
     public void sendTaskComment(

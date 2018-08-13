@@ -67,12 +67,18 @@ public class NextCommand extends ChatGameCommand {
             }
         }
         try {
-            nextTaskSender.sendNextTask(chatGame, currentTaskId);
+            TelegramApiClient telegramApiClient = getTelegramApiClient();
+            nextTaskSender.sendNextTask(chatGame, currentTaskId, new CallbackRequestDefaultCallback<>(ctx,
+                    telegramApiClient));
         } catch (CurrentTaskIsOtherException e) {
             throw new CommandException("Данная кнопка устарела. Воспользуйтесь актуальной или командой /next", e);
         } catch (GameException e) {
             throw new CommandException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void sendCallbackResponse(CommandContext ctx) {
     }
 
     @Override

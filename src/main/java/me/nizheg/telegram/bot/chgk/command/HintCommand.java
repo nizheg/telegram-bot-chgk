@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.AbstractCallback;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
-import me.nizheg.telegram.bot.api.model.Callback;
 import me.nizheg.telegram.bot.api.model.ErrorResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -79,33 +79,7 @@ public class HintCommand extends ChatGameCommand {
 
     private void sendAnswerToUser(CommandContext ctx, Task currentTask) {
         TelegramApiClient telegramApiClient = getTelegramApiClient();
-        answerSender.sendAnswer(currentTask, false, ctx.getFrom().getId(),
-                new Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>>() {
-                    @Override
-                    public void onFailure(
-                            ErrorResponse errorResponse, HttpStatus httpStatus) {
-                        if (ctx.getCallbackQueryId() != null) {
-                            AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
-                            answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
-                            answerCallbackRequest.setShowAlert(true);
-                            answerCallbackRequest.setText("Не удалось отправить подсказку. Проверьте, что бот знает вас "
-                                    + "(необходимо выполнить /start в личке с ним) и он не заблокирован.");
-                            telegramApiClient.answerCallbackQuery(answerCallbackRequest);
-
-                        } else {
-                            telegramApiClient
-                                    .sendMessage(new Message(
-                                            "<i>Не удалось отправить подсказку. Проверьте, что бот знает вас "
-                                                    + "(необходимо выполнить</i> /start <i>в личке с ним) и он не заблокирован.</i>",
-                                            ctx.getChatId(), ParseMode.HTML));
-                        }
-                    }
-
-                    @Override
-                    public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
-                        HintCommand.super.sendCallbackResponse(ctx);
-                    }
-                });
+        answerSender.sendAnswer(currentTask, false, ctx.getFrom().getId(), new Callback(ctx, telegramApiClient));
     }
 
     @Override
@@ -132,5 +106,60 @@ public class HintCommand extends ChatGameCommand {
     @Override
     public String getDescription() {
         return "/hint - получить ответ на текущий вопрос в личку";
+    }
+
+    private class Callback extends AbstractCallback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> {
+
+        private static final String BOT_BLOCKED_ERROR = "Не удалось отправить подсказку. Проверьте, что бот знает вас "
+                + "(необходимо выполнить /start в личке с ним)";
+        private static final String NEW_USER_ERROR = "Не удалось отправить подсказку. Активируйте бота с помощью "
+                + "команды /start в личке с ним";
+        private static final String UNEXPECTED_ERROR = "По какой-то причине не удалось отправить подсказку. Свяжитесь с администратором";
+        private final CommandContext ctx;
+        private final TelegramApiClient telegramApiClient;
+
+        public Callback(CommandContext ctx, TelegramApiClient telegramApiClient) {
+            this.ctx = ctx;
+            this.telegramApiClient = telegramApiClient;
+        }
+
+        @Override
+        public void onFailure(
+                ErrorResponse errorResponse, HttpStatus httpStatus) {
+            if (ctx.getCallbackQueryId() != null) {
+                AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
+                answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
+                answerCallbackRequest.setShowAlert(true);
+                if (isBotBlocked(errorResponse, httpStatus)) {
+                    answerCallbackRequest.setText(BOT_BLOCKED_ERROR);
+                } else if (isNewUser(errorResponse, httpStatus)) {
+                    answerCallbackRequest.setText(NEW_USER_ERROR);
+                } else {
+                    answerCallbackRequest.setText(UNEXPECTED_ERROR);
+                }
+                telegramApiClient.answerCallbackQuery(answerCallbackRequest);
+
+            } else {
+                if (isBotBlocked(errorResponse, httpStatus)) {
+                    telegramApiClient.sendMessage(new Message("<i>" + BOT_BLOCKED_ERROR + "</i>",
+                            ctx.getChatId(), ParseMode.HTML));
+                } else if (isNewUser(errorResponse, httpStatus)) {
+                    telegramApiClient.sendMessage(
+                            new Message("<i>" + NEW_USER_ERROR + "</i>", ctx.getChatId(), ParseMode.HTML));
+                } else {
+                    telegramApiClient.sendMessage(
+                            new Message("<i>" + UNEXPECTED_ERROR + "</i>", ctx.getChatId(), ParseMode.HTML));
+                }
+            }
+        }
+
+        @Override
+        public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
+            if (ctx.getCallbackQueryId() != null) {
+                AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
+                answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
+                telegramApiClient.answerCallbackQuery(answerCallbackRequest);
+            }
+        }
     }
 }

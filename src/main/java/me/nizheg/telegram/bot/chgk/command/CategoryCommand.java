@@ -88,7 +88,6 @@ public class CategoryCommand extends ChatGameCommand {
 
     @Override
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) {
-        Long chatId = ctx.getChatId();
         String options = StringUtils.defaultString(ctx.getText());
         Matcher matcher = OPTION_PATTERN.matcher(options);
         String categoryId;
@@ -100,18 +99,22 @@ public class CategoryCommand extends ChatGameCommand {
         if (categoryId != null) {
             if (categoryId.equals(Category.CURRENT)) {
                 Category currentCategory = chatGame.getCategory();
-                sendCurrentCategory(chatGame, currentCategory);
+                sendCurrentCategory(ctx, chatGame, currentCategory);
             } else if (categoryService.isExists(categoryId)) {
                 Category category = chatGame.setCategory(categoryId);
-                sendCategorySelectedMessage(chatId, category);
+                sendCategorySelectedMessage(ctx, category);
                 if (isTourCategory(category)) {
-                    sendTournamentsList(chatId);
+                    sendTournamentsList(ctx);
                 }
             }
         } else {
             this.categories = categoryService.getCollection();
-            sendCategories(chatId, this.categories);
+            sendCategories(ctx, this.categories);
         }
+    }
+
+    @Override
+    public void sendCallbackResponse(CommandContext ctx) {
     }
 
     private String resolveCategoryId(String text) {
@@ -126,12 +129,14 @@ public class CategoryCommand extends ChatGameCommand {
         return null;
     }
 
-    private void sendTournamentsList(Long chatId) {
-        Message tournamentsList = tourList.getTournamentsListOfChat(chatId, 0);
-        getTelegramApiClient().sendMessage(tournamentsList);
+    private void sendTournamentsList(CommandContext ctx) {
+        Message tournamentsList = tourList.getTournamentsListOfChat(ctx.getChatId(), 0);
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        telegramApiClient.sendMessage(tournamentsList)
+                .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
-    private void sendCategories(Long chatId, List<Category> categories) {
+    private void sendCategories(CommandContext ctx, List<Category> categories) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setOneTimeKeyboard(true);
         replyKeyboardMarkup.setSelective(false);
@@ -141,12 +146,13 @@ public class CategoryCommand extends ChatGameCommand {
             keyboard.add(Collections.singletonList(new KeyboardButton(SHORT_COMMAND_NAME + " " + category.getName())));
         }
         replyKeyboardMarkup.setKeyboard(keyboard);
-        getTelegramApiClient().sendMessage(
-                new Message("<i>Выберите категорию вопросов</i>", chatId, ParseMode.HTML, false, null,
-                        replyKeyboardMarkup));
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        telegramApiClient.sendMessage(
+                new Message("<i>Выберите категорию вопросов</i>", ctx.getChatId(), ParseMode.HTML, false, null,
+                        replyKeyboardMarkup)).setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
-    private void sendCurrentCategory(ChatGame chatGame, Category currentCategory) {
+    private void sendCurrentCategory(CommandContext ctx, ChatGame chatGame, Category currentCategory) {
         String categoryName;
         UsageStat stat = null;
         long chatId = chatGame.getChatId();
@@ -177,22 +183,25 @@ public class CategoryCommand extends ChatGameCommand {
                     .append(stat.getCount())
                     .append("</b>");
         }
-        getTelegramApiClient().sendMessage(
-                new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove));
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        telegramApiClient.sendMessage(
+                new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove))
+        .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
     private boolean isTourCategory(Category currentCategory) {
         return Category.TOUR.equals(currentCategory.getId());
     }
 
-    private void sendCategorySelectedMessage(Long chatId, Category category) {
+    private void sendCategorySelectedMessage(CommandContext ctx, Category category) {
         ReplyKeyboardRemove replyKeyboardRemove = new ReplyKeyboardRemove();
         replyKeyboardRemove.setSelective(false);
         replyKeyboardRemove.setRemoveKeyboard(true);
-        getTelegramApiClient().sendMessage(
-                new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", chatId, ParseMode.HTML,
-                        null, null,
-                        replyKeyboardRemove));
+        TelegramApiClient telegramApiClient = getTelegramApiClient();
+        telegramApiClient.sendMessage(
+                new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", ctx.getChatId(),
+                        ParseMode.HTML, null, null, replyKeyboardRemove))
+        .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
     @Override

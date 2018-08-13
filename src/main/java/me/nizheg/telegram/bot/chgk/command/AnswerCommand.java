@@ -63,12 +63,16 @@ public class AnswerCommand extends ChatGameCommand {
         try {
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getChat()), taskId);
             Task task = hintForTask.getTask().orElseThrow(NoTaskException::new);
+            TelegramApiClient telegramApiClient = getTelegramApiClient();
             answerSender.sendAnswer(task, hintForTask.isTaskCurrent(), ctx.getChatId(),
-                    (errorResponse, httpStatus) -> {
-                    });
+                    new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
         } catch (GameException e) {
             throw new CommandException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void sendCallbackResponse(CommandContext ctx) {
     }
 
     private Long parseTaskId(CommandContext ctx) {

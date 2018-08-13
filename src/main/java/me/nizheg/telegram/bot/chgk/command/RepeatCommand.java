@@ -97,7 +97,9 @@ public class RepeatCommand extends ChatGameCommand {
             }
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Повторяю вопрос</b>\n");
-            taskSender.sendTaskText(messageBuilder, currentTask, chatId, replyMarkup);
+            TelegramApiClient telegramApiClient = getTelegramApiClient();
+            taskSender.sendTaskText(messageBuilder, currentTask, chatId, replyMarkup,
+                    new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
             if (chatGame instanceof AutoChatGame) {
                 int timeLeft = ((AutoChatGame) chatGame).getTimeLeft();
                 if (timeLeft > 0) {
@@ -107,6 +109,10 @@ public class RepeatCommand extends ChatGameCommand {
         } else {
             throw new NoTaskException();
         }
+    }
+
+    @Override
+    public void sendCallbackResponse(CommandContext ctx) {
     }
 
     @Override
