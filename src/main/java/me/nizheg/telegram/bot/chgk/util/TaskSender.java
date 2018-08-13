@@ -62,7 +62,7 @@ public class TaskSender {
         sendAttachedPictures(telegramApiClient, chatId, attachedPictures.subList(0, i), null);
         List<AttachedPicture> attachedPicturesPart2 = attachedPictures.subList(i, attachedPicturesSize);
         ReplyMarkup messageReplyMarkup = attachedPicturesPart2.isEmpty() ? replyMarkup : null;
-        getTelegramApiClient().sendMessage(
+        telegramApiClient.sendMessage(
                 new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup));
         sendAttachedPictures(telegramApiClient, chatId, attachedPicturesPart2, replyMarkup);
     }
@@ -98,6 +98,7 @@ public class TaskSender {
                     @Override
                     public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
                         sendAttachedPictures(telegramApiClient, chatId, attachedPictures, replyMarkup);
+                        callback.onSuccessResult(result);
                     }
                 });
 
@@ -109,8 +110,8 @@ public class TaskSender {
             List<AttachedPicture> attachedPictures,
             ReplyMarkup replyMarkup) {
         sendAttachedPictures(telegramApiClient, chatId, attachedPictures, replyMarkup, (errorResponse, httpStatus) ->
-                telegramApiClient.sendMessage(new Message("Произошла непредвиденая ошибка при отправке изображения",
-                        chatId)));
+                telegramApiClient.sendMessage(new Message("<i>Произошла непредвиденая ошибка при отправке "
+                        + "изображения</i>", chatId, ParseMode.HTML)));
 
     }
 
