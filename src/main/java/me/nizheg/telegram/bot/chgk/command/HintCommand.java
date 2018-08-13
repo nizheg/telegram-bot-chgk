@@ -1,13 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import org.springframework.http.HttpStatus;
-
 import java.util.function.Supplier;
 
 import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.AbstractCallback;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
-import me.nizheg.telegram.bot.api.model.ErrorResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
@@ -110,11 +107,10 @@ public class HintCommand extends ChatGameCommand {
 
     private class Callback extends AbstractCallback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> {
 
-        private static final String BOT_BLOCKED_ERROR = "Не удалось отправить подсказку. Проверьте, что бот знает вас "
-                + "(необходимо выполнить /start в личке с ним)";
-        private static final String NEW_USER_ERROR = "Не удалось отправить подсказку. Активируйте бота с помощью "
+        private static final String BOT_BLOCKED_ERROR = "Не удалось отправить подсказку. "
+                + "Вы заблокировали бота средствами Telegram. Сделайте Unblock bot в настройках.";
+        private static final String UNKNOWN_USER_ERROR = "Не удалось отправить подсказку. Активируйте бота с помощью "
                 + "команды /start в личке с ним";
-        private static final String UNEXPECTED_ERROR = "По какой-то причине не удалось отправить подсказку. Свяжитесь с администратором";
         private final CommandContext ctx;
         private final TelegramApiClient telegramApiClient;
 
@@ -124,33 +120,33 @@ public class HintCommand extends ChatGameCommand {
         }
 
         @Override
-        public void onFailure(
-                ErrorResponse errorResponse, HttpStatus httpStatus) {
+        protected void handleBotBlocked() {
             if (ctx.getCallbackQueryId() != null) {
-                AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
-                answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
-                answerCallbackRequest.setShowAlert(true);
-                if (isBotBlocked(errorResponse, httpStatus)) {
-                    answerCallbackRequest.setText(BOT_BLOCKED_ERROR);
-                } else if (isNewUser(errorResponse, httpStatus)) {
-                    answerCallbackRequest.setText(NEW_USER_ERROR);
-                } else {
-                    answerCallbackRequest.setText(UNEXPECTED_ERROR);
-                }
-                telegramApiClient.answerCallbackQuery(answerCallbackRequest);
-
+                sendCallbackQueryResponse(BOT_BLOCKED_ERROR);
             } else {
-                if (isBotBlocked(errorResponse, httpStatus)) {
-                    telegramApiClient.sendMessage(new Message("<i>" + BOT_BLOCKED_ERROR + "</i>",
-                            ctx.getChatId(), ParseMode.HTML));
-                } else if (isNewUser(errorResponse, httpStatus)) {
-                    telegramApiClient.sendMessage(
-                            new Message("<i>" + NEW_USER_ERROR + "</i>", ctx.getChatId(), ParseMode.HTML));
-                } else {
-                    telegramApiClient.sendMessage(
-                            new Message("<i>" + UNEXPECTED_ERROR + "</i>", ctx.getChatId(), ParseMode.HTML));
-                }
+                sendErrorMessage(BOT_BLOCKED_ERROR);
             }
+        }
+
+        @Override
+        protected void handleUnknownUser() {
+            if (ctx.getCallbackQueryId() != null) {
+                sendCallbackQueryResponse(UNKNOWN_USER_ERROR);
+            } else {
+                sendErrorMessage(UNKNOWN_USER_ERROR);
+            }
+        }
+
+        private void sendCallbackQueryResponse(String message) {
+            AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
+            answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
+            answerCallbackRequest.setShowAlert(true);
+            answerCallbackRequest.setText(message);
+            telegramApiClient.answerCallbackQuery(answerCallbackRequest);
+        }
+
+        private void sendErrorMessage(String message) {
+            telegramApiClient.sendMessage(new Message("<i>" + message + "</i>", ctx.getChatId(), ParseMode.HTML));
         }
 
         @Override
