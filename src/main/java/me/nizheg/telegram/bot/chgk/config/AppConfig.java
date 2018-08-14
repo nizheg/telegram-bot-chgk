@@ -62,6 +62,7 @@ import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
+import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
@@ -83,6 +84,7 @@ import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.bot.service.UpdateHandler;
 import me.nizheg.telegram.bot.service.impl.CallbackQueryParserImpl;
 import me.nizheg.telegram.bot.service.impl.CommandExecutorImpl;
+import me.nizheg.telegram.bot.service.impl.CommandExecutorWithPrecondition;
 import me.nizheg.telegram.bot.service.impl.CommandsHolderImpl;
 import me.nizheg.telegram.bot.service.impl.EventsProcessorImpl;
 import me.nizheg.telegram.bot.service.impl.MessageParserImpl;
@@ -178,7 +180,14 @@ public class AppConfig {
 
     @Bean
     public CommandExecutor commandExecutor() {
-        return new CommandExecutorImpl(exceptionHandler());
+        ExceptionHandler exceptionHandler = exceptionHandler();
+        CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
+        String channelName = propertyService.getValue("bot.channel");
+        if (channelName != null) {
+            CheckUserInChannel checkUserInChannel = new CheckUserInChannel(channelName, this::telegramApiClient);
+            return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkUserInChannel);
+        }
+        return commandExecutor;
     }
 
     @Bean
@@ -195,7 +204,7 @@ public class AppConfig {
 
     @Bean
     public ExceptionHandler exceptionHandler() {
-        return new ChgkCommandExceptionHandler(telegramApiClient());
+        return new ChgkCommandExceptionHandler(this::telegramApiClient);
     }
 
     @Bean
@@ -262,7 +271,7 @@ public class AppConfig {
 
     @Bean
     public HintCommand hintCommand() {
-        return new HintCommand(telegramApiClient(), chatService, chatGameService, answerSender());
+        return new HintCommand(this::telegramApiClient, chatService, chatGameService, answerSender());
     }
 
     @Bean
