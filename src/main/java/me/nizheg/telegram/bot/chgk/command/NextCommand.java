@@ -59,7 +59,7 @@ public class NextCommand extends ChatGameCommand {
     @Override
     protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
         Long currentTaskId = null;
-        if (ctx.getCallbackQueryId() != null) {
+        if (ctx.isCallbackQuery()) {
             try {
                 currentTaskId = Long.valueOf(ctx.getText());
             } catch (NumberFormatException ex) {

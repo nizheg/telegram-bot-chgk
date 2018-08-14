@@ -90,7 +90,7 @@ public class StatCommand extends ChatCommand {
             scoreButton.setCallbackData("stat " + Mode.SCORE.name());
             scoreButton.setText("Cчёт Знатоки против Бота");
             markup.setInlineKeyboard(Collections.singletonList((Collections.singletonList(scoreButton))));
-            if (ctx.getCallbackQueryId() != null && ctx.getReplyToBotMessage() != null) {
+            if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
                 EditedMessage editedMessage = new EditedMessage();
                 editedMessage.setChatId(new ChatId(ctx.getChatId()));
                 editedMessage.setText(createTop10Message(statForChat));
@@ -133,7 +133,7 @@ public class StatCommand extends ChatCommand {
         testButton.setCallbackData("stat " + Mode.TOP10.name());
         testButton.setText("Топ-10 чата");
         markup.setInlineKeyboard(Collections.singletonList(Collections.singletonList(testButton)));
-        if (ctx.getCallbackQueryId() != null && ctx.getReplyToBotMessage() != null) {
+        if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
             EditedMessage editedMessage = new EditedMessage();
             editedMessage.setChatId(new ChatId(ctx.getChatId()));
             editedMessage.setText(createScoreMessage(statForChat));

@@ -121,7 +121,7 @@ public class HintCommand extends ChatGameCommand {
 
         @Override
         protected void handleBotBlocked() {
-            if (ctx.getCallbackQueryId() != null) {
+            if (ctx.isCallbackQuery()) {
                 sendCallbackQueryResponse(BOT_BLOCKED_ERROR);
             } else {
                 sendErrorMessage(BOT_BLOCKED_ERROR);
@@ -130,7 +130,7 @@ public class HintCommand extends ChatGameCommand {
 
         @Override
         protected void handleUnknownUser() {
-            if (ctx.getCallbackQueryId() != null) {
+            if (ctx.isCallbackQuery()) {
                 sendCallbackQueryResponse(UNKNOWN_USER_ERROR);
             } else {
                 sendErrorMessage(UNKNOWN_USER_ERROR);
@@ -151,7 +151,7 @@ public class HintCommand extends ChatGameCommand {
 
         @Override
         public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
-            if (ctx.getCallbackQueryId() != null) {
+            if (ctx.isCallbackQuery()) {
                 AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
                 answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
                 telegramApiClient.answerCallbackQuery(answerCallbackRequest);

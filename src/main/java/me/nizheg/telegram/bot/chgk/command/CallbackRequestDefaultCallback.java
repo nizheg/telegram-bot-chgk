@@ -18,7 +18,7 @@ public class CallbackRequestDefaultCallback<T extends Response> extends Abstract
 
     @Override
     public void onSuccessResult(T result) {
-        if (ctx.getCallbackQueryId() != null) {
+        if (ctx.isCallbackQuery()) {
             AnswerCallbackRequest answerCallbackRequest = new AnswerCallbackRequest();
             answerCallbackRequest.setCallBackQueryId(ctx.getCallbackQueryId());
             telegramApiClient.answerCallbackQuery(answerCallbackRequest);
@@ -27,14 +27,14 @@ public class CallbackRequestDefaultCallback<T extends Response> extends Abstract
 
     @Override
     protected void handleBotBlocked() {
-        if (ctx.getCallbackQueryId() != null && ctx.isPrivateChat()) {
+        if (ctx.isCallbackQuery() && ctx.isPrivateChat()) {
             sendCallbackQueryResponse("Вы заблокировали бота средствами Telegram. Сделайте Unblock bot в настройках");
         }
     }
 
     @Override
     protected void handleUnknownUser() {
-        if (ctx.getCallbackQueryId() != null && ctx.isPrivateChat()) {
+        if (ctx.isCallbackQuery() && ctx.isPrivateChat()) {
             sendCallbackQueryResponse("Активируйте бота с помощью команды /start");
         }
     }

@@ -11,10 +11,10 @@ import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.bot.service.CommandExceptionHandler;
+import me.nizheg.telegram.bot.service.ExceptionHandler;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
-public class ChgkCommandExceptionHandler implements CommandExceptionHandler {
+public class ChgkCommandExceptionHandler implements ExceptionHandler {
 
     private static final String NO_TASK_MESSAGE = "Активных вопросов не обнаружено.";
     private final TelegramApiClient telegramApiClient;

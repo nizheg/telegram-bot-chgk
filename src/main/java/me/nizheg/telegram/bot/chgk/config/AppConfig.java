@@ -73,17 +73,21 @@ import me.nizheg.telegram.bot.command.HelpCommand;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 import me.nizheg.telegram.bot.event.ChatEventListener;
 import me.nizheg.telegram.bot.service.CallbackQueryParser;
-import me.nizheg.telegram.bot.service.CommandExceptionHandler;
 import me.nizheg.telegram.bot.service.CommandExecutor;
 import me.nizheg.telegram.bot.service.CommandsHolder;
+import me.nizheg.telegram.bot.service.EventsProcessor;
+import me.nizheg.telegram.bot.service.ExceptionHandler;
 import me.nizheg.telegram.bot.service.MessageParser;
+import me.nizheg.telegram.bot.service.NonCommandExecutor;
 import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.bot.service.UpdateHandler;
 import me.nizheg.telegram.bot.service.impl.CallbackQueryParserImpl;
 import me.nizheg.telegram.bot.service.impl.CommandExecutorImpl;
 import me.nizheg.telegram.bot.service.impl.CommandsHolderImpl;
+import me.nizheg.telegram.bot.service.impl.EventsProcessorImpl;
 import me.nizheg.telegram.bot.service.impl.MessageParserImpl;
 import me.nizheg.telegram.bot.service.impl.MessageReceiver;
+import me.nizheg.telegram.bot.service.impl.NonCommandExecutorImpl;
 import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 
 /**
@@ -167,21 +171,30 @@ public class AppConfig {
 
     @Bean
     @Autowired
-    public UpdateHandler updateHandler(CommandExecutor commandExecutor) {
-        return new UpdateHandlerImpl(messageParser(), callbackQueryParser(), commandsHolder(), commandExecutor);
+    public UpdateHandler updateHandler(EventsProcessor eventsProcessor, NonCommandExecutor nonCommandExecutor) {
+        return new UpdateHandlerImpl(messageParser(), callbackQueryParser(), commandsHolder(), commandExecutor(),
+                eventsProcessor, nonCommandExecutor);
     }
 
     @Bean
-    public CommandExecutor commandsExecutor(
-            @Autowired(required = false)
-                    List<ChatEventListener> eventListeners,
+    public CommandExecutor commandExecutor() {
+        return new CommandExecutorImpl(exceptionHandler());
+    }
+
+    @Bean
+    public NonCommandExecutor nonCommandExecutor(
             @Autowired(required = false)
                     List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
-        return new CommandExecutorImpl(commandExceptionHandler(), eventListeners, nonCommandMessageProcessors);
+        return new NonCommandExecutorImpl(exceptionHandler(), nonCommandMessageProcessors);
     }
 
     @Bean
-    public CommandExceptionHandler commandExceptionHandler() {
+    public EventsProcessor eventsProcessor(@Autowired(required = false) List<ChatEventListener> eventListeners) {
+        return new EventsProcessorImpl(exceptionHandler(), eventListeners);
+    }
+
+    @Bean
+    public ExceptionHandler exceptionHandler() {
         return new ChgkCommandExceptionHandler(telegramApiClient());
     }
 
