@@ -245,7 +245,7 @@ public class AppConfig {
     @Bean
     public MessageParser messageParser() {
         AtomicResponse<User> userResponse = telegramApiClient().getMe().await();
-        if (userResponse.getOk()) {
+        if (userResponse.isOk()) {
             User botUser = userResponse.getResult();
             return new MessageParserImpl(botUser.getUsername(), commandsHolder());
         } else {

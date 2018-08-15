@@ -50,12 +50,12 @@ public class CheckUserInChannel extends PreconditionChainStep {
         TelegramApiClient telegramApiClient = telegramApiClientSupplier.get();
         ChatId channelChatId = new ChatId(channelName);
         AtomicResponse<Chat> chatResponse = telegramApiClient.getChat(channelChatId).await();
-        if (!chatResponse.getOk() || CHANNEL != chatResponse.getResult().getType()) {
+        if (!chatResponse.isOk() || CHANNEL != chatResponse.getResult().getType()) {
             throw new IllegalArgumentException("Illegal channelName: " + channelName);
         }
         AtomicResponse<ChatMember> memberResponse = telegramApiClient.getChatMember(channelChatId,
                 botInfo.getBotUser().getId()).await();
-        if (!memberResponse.getOk() || ChatMemberStatus.ADMINISTRATOR != memberResponse.getResult().getStatus()) {
+        if (!memberResponse.isOk() || ChatMemberStatus.ADMINISTRATOR != memberResponse.getResult().getStatus()) {
             throw new IllegalArgumentException("Bot should be administrator in channel " + channelName);
         }
     }
@@ -69,7 +69,7 @@ public class CheckUserInChannel extends PreconditionChainStep {
             if (isUserAuthorizedCachedValue == null || !isUserAuthorizedCachedValue) {
                 AtomicResponse<ChatMember> chatMemberResponse = getTelegramApiClient()
                         .getChatMember(new ChatId(channelName), user.getId()).await();
-                isUserAuthorized = chatMemberResponse.getOk()
+                isUserAuthorized = chatMemberResponse.isOk()
                         && channelStatuses.contains(chatMemberResponse.getResult().getStatus());
                 cache.put(user.getId(), isUserAuthorized);
             }

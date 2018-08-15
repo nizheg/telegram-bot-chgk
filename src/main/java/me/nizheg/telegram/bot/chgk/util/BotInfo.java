@@ -30,7 +30,7 @@ public class BotInfo {
     @PostConstruct
     public void init() {
         AtomicResponse<User> userResponse = telegramApiClient.getMe().await();
-        if (userResponse.getOk()) {
+        if (userResponse.isOk()) {
             botUser = userResponse.getResult();
             telegramUserService.createOrUpdate(new TelegramUser(botUser));
         } else {
