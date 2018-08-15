@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.ehcache.Cache;
+
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -32,11 +34,14 @@ public class CheckUserInChannel extends PreconditionChainStep {
             EnumSet.of(ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR, ChatMemberStatus.MEMBER);
     private final String channelName;
     private final Supplier<TelegramApiClient> telegramApiClientSupplier;
+    private final Cache<Long, Boolean> cache;
 
     public CheckUserInChannel(
             @NonNull BotInfo botInfo,
             @NonNull String channelName,
-            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @NonNull Cache<Long, Boolean> cache) {
+        this.cache = cache;
         if (!channelName.startsWith("@")) {
             channelName = "@" + channelName;
         }
@@ -59,14 +64,23 @@ public class CheckUserInChannel extends PreconditionChainStep {
     protected PreconditionResult doCheck(ChatCommand commandHandler, CommandContext context) throws CommandException {
         if (commandHandler != null && commandHandler.getClass().getAnnotation(UserInChannel.class) != null) {
             User user = context.getFrom();
-            AtomicResponse<ChatMember> chatMemberResponse = telegramApiClientSupplier.get()
-                    .getChatMember(new ChatId(channelName), user.getId()).await();
-            boolean isUserAuthorized =
-                    chatMemberResponse.getOk() && channelStatuses.contains(chatMemberResponse.getResult().getStatus());
+            Boolean isUserAuthorizedCachedValue = cache.get(user.getId());
+            boolean isUserAuthorized = true;
+            if (isUserAuthorizedCachedValue == null || !isUserAuthorizedCachedValue) {
+                AtomicResponse<ChatMember> chatMemberResponse = getTelegramApiClient()
+                        .getChatMember(new ChatId(channelName), user.getId()).await();
+                isUserAuthorized = chatMemberResponse.getOk()
+                        && channelStatuses.contains(chatMemberResponse.getResult().getStatus());
+                cache.put(user.getId(), isUserAuthorized);
+            }
             if (!isUserAuthorized) {
                 throw new UserIsNotInChannelException(user, channelName);
             }
         }
         return new PreconditionResult(true, null);
+    }
+
+    private TelegramApiClient getTelegramApiClient() {
+        return telegramApiClientSupplier.get();
     }
 }

@@ -1,5 +1,11 @@
 package me.nizheg.telegram.bot.chgk.config;
 
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -17,6 +23,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -185,10 +192,32 @@ public class AppConfig {
         String channelName = propertyService.getValue("bot.channel");
         if (channelName != null) {
             CheckUserInChannel checkUserInChannel = new CheckUserInChannel(botInfo, channelName,
-                    this::telegramApiClient);
+                    this::telegramApiClient, usersInChannelCache());
             return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkUserInChannel);
         }
         return commandExecutor;
+    }
+
+    @Bean(destroyMethod = "close")
+    public CacheManager cacheManager() {
+        return CacheManagerBuilder.newCacheManagerBuilder().build(true);
+    }
+
+    @Bean
+    public Cache<Long, Boolean> usersInChannelCache() {
+        Long lifeTimeInSeconds = propertyService.getLongValue("bot.channel.users.cache.live.seconds");
+        if (lifeTimeInSeconds == null) {
+            lifeTimeInSeconds = 300L;
+        }
+        Long cacheCapacity = propertyService.getLongValue("bot.channel.users.cache.capacity");
+        if (cacheCapacity == null) {
+            cacheCapacity = 100L;
+        }
+        CacheConfigurationBuilder<Long, Boolean> cacheConfiguration =
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, Boolean.class,
+                        ResourcePoolsBuilder.heap(cacheCapacity))
+                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(lifeTimeInSeconds)));
+        return cacheManager().createCache("usersInChannelCache", cacheConfiguration);
     }
 
     @Bean
