@@ -19,6 +19,7 @@ import me.nizheg.telegram.util.Emoji;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
 public class TimerCommand extends ChatCommand {
 
     private final static String COMMAND_NAME_TIMER_SET = "timer";

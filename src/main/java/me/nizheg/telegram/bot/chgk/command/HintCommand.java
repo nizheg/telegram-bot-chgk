@@ -24,6 +24,7 @@ import me.nizheg.telegram.bot.command.CommandException;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
 public class HintCommand extends ChatGameCommand {
 
     private final ChatService chatService;

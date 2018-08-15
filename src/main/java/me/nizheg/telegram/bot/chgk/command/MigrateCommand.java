@@ -21,6 +21,7 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
+@UserInChannel
 public class MigrateCommand extends ChatCommand {
 
     private final ChatService chatService;

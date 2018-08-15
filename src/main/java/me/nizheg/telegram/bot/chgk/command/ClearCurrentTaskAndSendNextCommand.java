@@ -17,6 +17,7 @@ import me.nizheg.telegram.bot.command.CommandException;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
 public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
 
     private final ChatGameService chatGameService;

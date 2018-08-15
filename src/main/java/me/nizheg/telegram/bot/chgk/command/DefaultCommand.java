@@ -43,6 +43,8 @@ import me.nizheg.telegram.util.Emoji;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
+@MessageWithText
 public class DefaultCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -94,9 +96,6 @@ public class DefaultCommand extends ChatCommand {
     @Override
     public void execute(CommandContext ctx) throws CommandException {
         String text = ctx.getText();
-        if (StringUtils.isBlank(text)) {
-            return;
-        }
         Long chatId = ctx.getChatId();
         boolean isChatActive = chatService.isChatActive(chatId);
         ChatGame chatGame = null;

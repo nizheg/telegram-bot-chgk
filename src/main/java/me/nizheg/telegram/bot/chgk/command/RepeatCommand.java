@@ -26,6 +26,7 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
 public class RepeatCommand extends ChatGameCommand {
 
     private final ChatService chatService;

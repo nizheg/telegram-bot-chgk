@@ -16,6 +16,7 @@ import me.nizheg.telegram.bot.command.CommandException;
 /**
  * @author Nikolay Zhegalin
  */
+@UserInChannel
 public class NextCommand extends ChatGameCommand {
 
     private static final String ATTRIBUTE_ILLEGAL_TASK_ID = "TASK_ID_IS_ILLEGAL";
