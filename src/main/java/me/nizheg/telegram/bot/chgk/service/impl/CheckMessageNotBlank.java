@@ -16,7 +16,7 @@ public class CheckMessageNotBlank extends PreconditionChainStep {
 
     @Override
     protected PreconditionResult doCheck(ChatCommand commandHandler, CommandContext context) throws CommandException {
-        boolean isSuccess = false;
+        boolean isSuccess = true;
         if (commandHandler != null && commandHandler.getClass().getAnnotation(MessageWithText.class) != null) {
             isSuccess = StringUtils.isNotBlank(context.getText());
         }
