@@ -184,7 +184,8 @@ public class AppConfig {
         CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
         String channelName = propertyService.getValue("bot.channel");
         if (channelName != null) {
-            CheckUserInChannel checkUserInChannel = new CheckUserInChannel(channelName, this::telegramApiClient);
+            CheckUserInChannel checkUserInChannel = new CheckUserInChannel(botInfo, channelName,
+                    this::telegramApiClient);
             return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkUserInChannel);
         }
         return commandExecutor;

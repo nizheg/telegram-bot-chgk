@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
 import me.nizheg.telegram.bot.api.service.param.Message;
@@ -26,22 +27,32 @@ public class ChgkCommandExceptionHandler implements ExceptionHandler {
     }
 
     @Override
-    public void handleMessageException(Exception commandException, CommandContext context) {
+    public void handleMessageException(Exception exception, CommandContext context) {
         TelegramApiClient telegramApiClient = getTelegramApiClient();
-        if (commandException instanceof NoTaskException) {
-            handleMessageException((NoTaskException) commandException, context);
-        } else if (commandException instanceof BotIsNotStartedException) {
-            handleMessageException((BotIsNotStartedException) commandException, context);
-        } else if (commandException instanceof CommandException) {
+        if (exception instanceof NoTaskException) {
+            handleMessageException((NoTaskException) exception, context);
+        } else if (exception instanceof BotIsNotStartedException) {
+            handleMessageException((BotIsNotStartedException) exception, context);
+        } else if (exception instanceof UserIsNotInChannelException) {
+            handleMessageException((UserIsNotInChannelException) exception, context);
+        } else if (exception instanceof CommandException) {
             telegramApiClient.sendMessage(
                     new Message("<i>" +
-                            TelegramHtmlUtil.escape(commandException.getMessage()) +
+                            TelegramHtmlUtil.escape(exception.getMessage()) +
                             "</i>", context.getChatId(),
                             ParseMode.HTML));
         } else {
             telegramApiClient.sendMessage(
                     new Message("<i>" + getErrorDefaultMessage() + "</i>", context.getChatId(), ParseMode.HTML));
         }
+    }
+
+    private void handleMessageException(UserIsNotInChannelException exception, CommandContext context) {
+        User user = exception.getUser();
+        String mention = TelegramApiUtil.createUserMention(user);
+        getTelegramApiClient().sendMessage(
+                new Message(mention + ", <i>для того, чтобы пользоваться ботом, вы должны состоять в канале</i> " +
+                        exception.getChannelName(), context.getChatId(), ParseMode.HTML));
     }
 
     private void handleMessageException(NoTaskException commandException, CommandContext context) {
@@ -63,6 +74,9 @@ public class ChgkCommandExceptionHandler implements ExceptionHandler {
             sendCallbackAnswer(NO_TASK_MESSAGE, context);
         } else if (commandException instanceof BotIsNotStartedException) {
             sendCallbackAnswer("Необходимо активировать бота с помощью команды /start", context);
+        } else if (commandException instanceof UserIsNotInChannelException) {
+            sendCallbackAnswer("Для того, чтобы пользоваться ботом, вы должны состоять в канале " +
+                    ((UserIsNotInChannelException) commandException).getChannelName(), context);
         } else if (commandException instanceof CommandException) {
             sendCallbackAnswer(commandException.getMessage(), context);
         } else {

@@ -9,11 +9,15 @@ import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.Chat;
 import me.nizheg.telegram.bot.api.model.ChatMember;
 import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
+import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.chgk.command.UserInChannel;
+import me.nizheg.telegram.bot.chgk.command.exception.UserIsNotInChannelException;
+import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.impl.PreconditionChainStep;
 import me.nizheg.telegram.bot.service.impl.PreconditionResult;
 
@@ -28,9 +32,9 @@ public class CheckUserInChannel extends PreconditionChainStep {
             EnumSet.of(ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR, ChatMemberStatus.MEMBER);
     private final String channelName;
     private final Supplier<TelegramApiClient> telegramApiClientSupplier;
-    private final String errorMessage;
 
     public CheckUserInChannel(
+            @NonNull BotInfo botInfo,
             @NonNull String channelName,
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier) {
         if (!channelName.startsWith("@")) {
@@ -38,22 +42,29 @@ public class CheckUserInChannel extends PreconditionChainStep {
         }
         this.channelName = channelName;
         this.telegramApiClientSupplier = telegramApiClientSupplier;
-        AtomicResponse<Chat> chatResponse = telegramApiClientSupplier.get().getChat(new ChatId(channelName)).await();
+        TelegramApiClient telegramApiClient = telegramApiClientSupplier.get();
+        ChatId channelChatId = new ChatId(channelName);
+        AtomicResponse<Chat> chatResponse = telegramApiClient.getChat(channelChatId).await();
         if (!chatResponse.getOk() || CHANNEL != chatResponse.getResult().getType()) {
             throw new IllegalArgumentException("Illegal channelName: " + channelName);
         }
-        this.errorMessage = "Для того, чтобы пользоваться ботом, вы должны состоять в канале " + channelName;
+        AtomicResponse<ChatMember> memberResponse = telegramApiClient.getChatMember(channelChatId,
+                botInfo.getBotUser().getId()).await();
+        if (!memberResponse.getOk() || ChatMemberStatus.ADMINISTRATOR != memberResponse.getResult().getStatus()) {
+            throw new IllegalArgumentException("Bot should be administrator in channel " + channelName);
+        }
     }
 
     @Override
-    protected PreconditionResult doCheck(ChatCommand commandHandler, CommandContext context) {
+    protected PreconditionResult doCheck(ChatCommand commandHandler, CommandContext context) throws CommandException {
         if (commandHandler != null && commandHandler.getClass().getAnnotation(UserInChannel.class) != null) {
+            User user = context.getFrom();
             AtomicResponse<ChatMember> chatMemberResponse = telegramApiClientSupplier.get()
-                    .getChatMember(new ChatId(channelName), context.getFrom().getId()).await();
+                    .getChatMember(new ChatId(channelName), user.getId()).await();
             boolean isUserAuthorized =
                     chatMemberResponse.getOk() && channelStatuses.contains(chatMemberResponse.getResult().getStatus());
             if (!isUserAuthorized) {
-                return new PreconditionResult(false, errorMessage);
+                throw new UserIsNotInChannelException(user, channelName);
             }
         }
         return new PreconditionResult(true, null);
