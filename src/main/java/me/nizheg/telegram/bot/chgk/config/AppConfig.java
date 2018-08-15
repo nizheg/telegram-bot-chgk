@@ -69,6 +69,7 @@ import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
+import me.nizheg.telegram.bot.chgk.service.impl.CheckMessageNotBlank;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
@@ -189,18 +190,18 @@ public class AppConfig {
     public CommandExecutor commandExecutor() {
         ExceptionHandler exceptionHandler = exceptionHandler();
         CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
+        CheckMessageNotBlank checkMessageNotBlank = new CheckMessageNotBlank();
         String channelName = propertyService.getValue("bot.channel");
         if (channelName != null) {
-            CheckUserInChannel checkUserInChannel = new CheckUserInChannel(botInfo, channelName,
-                    this::telegramApiClient, usersInChannelCache());
-            return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkUserInChannel);
+            checkMessageNotBlank.setSuccessor(new CheckUserInChannel(botInfo, channelName,
+                    this::telegramApiClient, usersInChannelCache()));
         }
-        return commandExecutor;
+        return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkMessageNotBlank);
     }
 
-    @Bean(destroyMethod = "close")
+    @Bean(initMethod = "init", destroyMethod = "close")
     public CacheManager cacheManager() {
-        return CacheManagerBuilder.newCacheManagerBuilder().build(true);
+        return CacheManagerBuilder.newCacheManagerBuilder().build();
     }
 
     @Bean
@@ -216,7 +217,7 @@ public class AppConfig {
         CacheConfigurationBuilder<Long, Boolean> cacheConfiguration =
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, Boolean.class,
                         ResourcePoolsBuilder.heap(cacheCapacity))
-                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(lifeTimeInSeconds)));
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(lifeTimeInSeconds)));
         return cacheManager().createCache("usersInChannelCache", cacheConfiguration);
     }
 
