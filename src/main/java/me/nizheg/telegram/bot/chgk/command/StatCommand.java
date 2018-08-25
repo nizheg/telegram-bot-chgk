@@ -91,11 +91,10 @@ public class StatCommand extends ChatCommand {
             scoreButton.setText("Cчёт Знатоки против Бота");
             markup.setInlineKeyboard(Collections.singletonList((Collections.singletonList(scoreButton))));
             if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
-                EditedMessage editedMessage = new EditedMessage();
-                editedMessage.setChatId(new ChatId(ctx.getChatId()));
-                editedMessage.setText(createTop10Message(statForChat));
+                EditedMessage editedMessage = new EditedMessage(new ChatId(ctx.getChatId()),
+                        ctx.getReplyToBotMessage().getMessageId(),
+                        createTop10Message(statForChat));
                 editedMessage.setDisableWebPagePreview(true);
-                editedMessage.setMessageId(ctx.getReplyToBotMessage().getMessageId());
                 editedMessage.setParseMode(ParseMode.HTML);
                 editedMessage.setReplyMarkup(markup);
                 getTelegramApiClient().editMessageText(editedMessage);
@@ -134,11 +133,10 @@ public class StatCommand extends ChatCommand {
         testButton.setText("Топ-10 чата");
         markup.setInlineKeyboard(Collections.singletonList(Collections.singletonList(testButton)));
         if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
-            EditedMessage editedMessage = new EditedMessage();
-            editedMessage.setChatId(new ChatId(ctx.getChatId()));
-            editedMessage.setText(createScoreMessage(statForChat));
+            EditedMessage editedMessage = new EditedMessage(new ChatId(ctx.getChatId()),
+                    ctx.getReplyToBotMessage().getMessageId(),
+                    createScoreMessage(statForChat) );
             editedMessage.setDisableWebPagePreview(true);
-            editedMessage.setMessageId(ctx.getReplyToBotMessage().getMessageId());
             editedMessage.setParseMode(ParseMode.HTML);
             editedMessage.setReplyMarkup(markup);
             getTelegramApiClient().editMessageText(editedMessage);
