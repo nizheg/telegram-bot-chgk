@@ -8,7 +8,6 @@ import lombok.Setter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 @Getter
 @Setter
 public class SendMessageData {

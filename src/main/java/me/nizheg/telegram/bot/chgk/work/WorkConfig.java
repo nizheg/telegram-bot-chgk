@@ -2,6 +2,8 @@ package me.nizheg.telegram.bot.chgk.work;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import javax.sql.DataSource;
@@ -15,7 +17,8 @@ public class WorkConfig {
 
     private final DataSource dataSource;
     private final ChatService chatService;
-    private final TelegramApiClient telegramApiClient;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Bean(destroyMethod = "shutdown")
     public WorkManager workManager() {
@@ -42,11 +45,11 @@ public class WorkConfig {
 
     @Bean
     public SendMessageWorker sendMessageWorker() {
-        return new SendMessageWorker(chatService, telegramApiClient);
+        return new SendMessageWorker(chatService, () -> applicationContext.getBean(TelegramApiClient.class));
     }
 
     @Bean
     public ForwardMessageWorker forwardMessageWorker() {
-        return new ForwardMessageWorker(chatService, telegramApiClient);
+        return new ForwardMessageWorker(chatService, () -> applicationContext.getBean(TelegramApiClient.class));
     }
 }

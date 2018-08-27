@@ -2,6 +2,8 @@ package me.nizheg.telegram.bot.chgk.work;
 
 import org.springframework.http.HttpStatus;
 
+import java.util.function.Supplier;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
@@ -16,7 +18,7 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 public class ForwardMessageWorker implements Worker {
 
     private final ChatService chatService;
-    private final TelegramApiClient telegramApiClient;
+    private final Supplier<TelegramApiClient> telegramApiClientSupplier;
 
     @Override
     public boolean canDo(WorkDescription workDescription) {
@@ -36,7 +38,8 @@ public class ForwardMessageWorker implements Worker {
         long chatId = forwardMessageWork.getChatId();
         forwardingMessage.setChatId(new ChatId(chatId));
         forwardingMessage.setDisableNotification(forwardMessageWork.getDisableNotification());
-        TelegramApiCall<AtomicResponse<Message>> messageResponse = telegramApiClient.forwardMessage(forwardingMessage);
+        TelegramApiCall<AtomicResponse<Message>> messageResponse = telegramApiClientSupplier.get()
+                .forwardMessage(forwardingMessage);
         messageResponse.setCallback((errorResponse, httpStatus) -> this.handleError(httpStatus, chatId));
         messageResponse.await();
         if (log.isInfoEnabled()) {

@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
@@ -19,7 +20,7 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 public class SendMessageWorker implements Worker {
 
     private final ChatService chatService;
-    private final TelegramApiClient telegramApiClient;
+    private final Supplier<TelegramApiClient> telegramApiClientSupplier;
 
     @Override
     public boolean canDo(WorkDescription workDescription) {
@@ -46,7 +47,7 @@ public class SendMessageWorker implements Worker {
 
 
         TelegramApiCall<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> messageResponse =
-                telegramApiClient.sendMessage(telegramMessage);
+                telegramApiClientSupplier.get().sendMessage(telegramMessage);
         messageResponse.setCallback((errorResponse, httpStatus) -> this.handleError(httpStatus, chatId));
         messageResponse.await();
         if (log.isInfoEnabled()) {
