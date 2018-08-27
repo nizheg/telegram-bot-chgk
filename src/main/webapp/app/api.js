@@ -132,15 +132,15 @@
                 });
             },
             sendMessage: function (text, disableWebPagePreview, parseMode) {
-                return $http.post('api/message', {"receiver": "all", "text": text, "disableWebPagePreview":
-                disableWebPagePreview, "parseMode": parseMode})
+                return $http.post('api/message', {"receiver": "all", "sendMessageData": {"text": text,
+                "disableWebPagePreview": disableWebPagePreview, "parseMode": parseMode}})
                 .then(function (response) {
                     return response.data
                 });
             },
             sendMessageToMe: function (text, disableWebPagePreview, parseMode) {
-                return $http.post('api/message', {"receiver": "me", "text": text, "disableWebPagePreview":
-                disableWebPagePreview, "parseMode": parseMode})
+                return $http.post('api/message', {"receiver": "me", "sendMessageData": {"text": text,
+                "disableWebPagePreview": disableWebPagePreview, "parseMode": parseMode}})
                 .then(function (response) {
                     return response.data
                 });
