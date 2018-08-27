@@ -55,18 +55,30 @@ public class WorkManager {
 
     private void processWork() {
         log.debug("Start works processing");
-        List<WorkDescription> works = getWork(batchSize);
+        List<WorkDescription> works;
+        try {
+            works = getWorks(batchSize);
+        } catch (RuntimeException ex) {
+            log.error("Failed to retrieve works", ex);
+            return;
+        }
         if (log.isDebugEnabled()) {
             log.debug("There is founded " + works.size() + " works");
         }
         for (WorkDescription work : works) {
-            doWork(work);
+            try {
+                doWork(work);
+            } catch (RuntimeException e) {
+                if (log.isErrorEnabled()) {
+                    log.error("Error during execution of " + work, e);
+                }
+            }
         }
         log.debug(("Works processing is finished"));
     }
 
-    private List<WorkDescription> getWork(int count) {
-        return workService.getWorks(count, WorkStatus.CREATED);
+    private List<WorkDescription> getWorks(int count) {
+        return workService.getWorks(count, WorkStatus.READY);
     }
 
 
@@ -76,13 +88,20 @@ public class WorkManager {
         }
         for (Worker worker : workers) {
             if (worker.canDo(workDescription)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Worker found: " + worker);
+                try {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Worker found: " + worker);
+                    }
+                    workService.changeStatus(workDescription, WorkStatus.STARTED);
+                    worker.doWork(workDescription);
+                    workService.changeStatus(workDescription, WorkStatus.FINISHED);
+                    break;
+                } catch (WorkException | RuntimeException ex) {
+                    if (log.isErrorEnabled()) {
+                        log.error("Error during execution of " + workDescription);
+                    }
+                    workService.changeStatus(workDescription, WorkStatus.ERROR);
                 }
-                workService.changeStatus(workDescription, WorkStatus.STARTED);
-                worker.doWork(workDescription);
-                workService.changeStatus(workDescription, WorkStatus.FINISHED);
-                break;
             }
         }
     }

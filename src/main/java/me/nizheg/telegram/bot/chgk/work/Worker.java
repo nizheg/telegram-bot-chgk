@@ -4,6 +4,6 @@ public interface Worker {
 
     boolean canDo(WorkDescription workDescription);
 
-    void doWork(WorkDescription workDescription);
+    void doWork(WorkDescription workDescription) throws WorkException;
 
 }

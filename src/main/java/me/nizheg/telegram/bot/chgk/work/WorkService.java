@@ -15,6 +15,8 @@ public interface WorkService {
 
     void sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers);
 
+    void changeStatusForAllChats(long broadcastId, WorkStatus status);
+
     List<WorkDescription> getWorks(int count, WorkStatus status);
 
     void changeStatus(WorkDescription workDescription, WorkStatus status);

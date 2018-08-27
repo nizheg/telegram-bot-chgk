@@ -11,11 +11,11 @@ public class BroadcastStatus {
     private volatile int finished;
 
     public enum Status {
-        NOT_STARTED, REJECTED, FORWARD_INITIATED, IN_PROCESS, FINISHED, CANCELLED
+        CREATED, READY, STARTED, ERROR, CANCELLED, FINISHED
     }
 
     public BroadcastStatus() {
-        this(Status.NOT_STARTED);
+        this(Status.CREATED);
     }
 
     public BroadcastStatus(Status status) {

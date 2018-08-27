@@ -495,8 +495,8 @@
                                  constraintName="broadcast_message_receiver_broadcast_message_fk"
                                  referencedTableName="broadcast_message" referencedColumnNames="id"/>
         <createIndex tableName="broadcast_message_receiver" indexName="broadcast_message_receiver_idx">
-            <column name="chat_id"/>
             <column name="broadcast_message_id"/>
+            <column name="chat_id"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

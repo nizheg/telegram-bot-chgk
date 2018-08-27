@@ -76,8 +76,26 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
     }
 
     @Override
-    public void updateStatus(long id, long chatId, String status) {
+    public void updateStatusByIdChatIdStatus(long id, long chatId, List<String> fromStatuses, String status) {
+        if (fromStatuses == null || fromStatuses.isEmpty()) {
+            return;
+        }
         template.update("update broadcast_message_receiver set status = ? "
-                + "where chat_id = ? and broadcast_message_id = ?", status, chatId, id);
+                        + "where broadcast_message_id = ? and chat_id = ? and status in ?",
+                status, id, chatId, fromStatuses);
+
+
+    }
+
+    @Override
+    public void updateStatusByIdStatus(long id, List<String> fromStatuses, String status) {
+        if (fromStatuses == null || fromStatuses.isEmpty()) {
+            return;
+        }
+        template.update(
+                "update broadcast_message_receiver set status = ? "
+                        + "where broadcast_message_id = ? and status in ?",
+                status, id, fromStatuses);
+
     }
 }

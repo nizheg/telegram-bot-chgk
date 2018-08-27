@@ -3,6 +3,8 @@ package me.nizheg.telegram.bot.chgk.work;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,7 +56,6 @@ public class WorkServiceImpl implements WorkService {
                 WorkType.SEND_MESSAGE.name(),
                 WorkStatus.CREATED.name());
     }
-
 
     @Override
     public void sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers) {
@@ -117,18 +118,66 @@ public class WorkServiceImpl implements WorkService {
                 .build();
     }
 
+
+    /**
+     * Change status of workDescription. Matrix of possible transitions:<br>
+     * created: -> ready, -------, -----, ---------, --------<br>
+     * ready:   -> -----, started, -----, cancelled, --------<br>
+     * started: -> -----, -------, error, ---------, finished<br>
+     * error:   -> ready, -------, -----, ---------, --------<br>
+     * cancelled:> ready, -------, -----, ---------, --------<br>
+     * finished:-> ready, -------, -----, ---------, --------<br>
+     *
+     * @param workDescription - which status is changing
+     * @param toStatus - new status
+     */
     @Override
-    public void changeStatus(WorkDescription workDescription, WorkStatus status) {
+    public void changeStatus(WorkDescription workDescription, WorkStatus toStatus) {
+        List<String> fromStatusesStrings = getFromStatusesForTransition(toStatus);
+
         if (workDescription instanceof SendMessageWork) {
             SendMessageWork sendMessageWork = (SendMessageWork) workDescription;
-            broadcastMessageDao.updateStatus(sendMessageWork.getId(), sendMessageWork.getChatId(), status.toString());
+            broadcastMessageDao.updateStatusByIdChatIdStatus(sendMessageWork.getId(),
+                    sendMessageWork.getChatId(), fromStatusesStrings, toStatus.toString());
         } else if (workDescription instanceof ForwardMessageWork) {
             ForwardMessageWork forwardMessageWork = (ForwardMessageWork) workDescription;
-            broadcastMessageDao.updateStatus(forwardMessageWork.getId(), forwardMessageWork.getChatId(),
-                    status.toString());
+            broadcastMessageDao.updateStatusByIdChatIdStatus(forwardMessageWork.getId(),
+                    forwardMessageWork.getChatId(), fromStatusesStrings, toStatus.toString());
         } else if (!(workDescription instanceof NoWork)) {
             throw new UnsupportedOperationException(workDescription.getClass().toString());
         }
+    }
+
+    @Override
+    public void changeStatusForAllChats(long broadcastId, WorkStatus status) {
+        List<String> fromStatusesStrings = getFromStatusesForTransition(WorkStatus.CANCELLED);
+        broadcastMessageDao.updateStatusByIdStatus(broadcastId, fromStatusesStrings, WorkStatus.CANCELLED.name());
+    }
+
+    private List<String> getFromStatusesForTransition(WorkStatus toStatus) {
+        List<WorkStatus> fromStatuses = Collections.emptyList();
+        switch (toStatus) {
+            case CREATED:
+                break;
+            case READY:
+                fromStatuses = Arrays.asList(WorkStatus.CREATED, WorkStatus.ERROR, WorkStatus.CANCELLED,
+                        WorkStatus.FINISHED);
+                break;
+            case STARTED:
+                fromStatuses = Collections.singletonList(WorkStatus.READY);
+                break;
+            case ERROR:
+                fromStatuses = Collections.singletonList(WorkStatus.STARTED);
+                break;
+            case CANCELLED:
+                fromStatuses = Collections.singletonList(WorkStatus.READY);
+                break;
+            case FINISHED:
+                fromStatuses = Collections.singletonList(WorkStatus.STARTED);
+                break;
+            default:
+        }
+        return fromStatuses.stream().map(Enum::name).collect(Collectors.toList());
     }
 
     private enum WorkType {
@@ -137,6 +186,5 @@ public class WorkServiceImpl implements WorkService {
     }
 
     private static class NoWork implements WorkDescription {
-
     }
 }

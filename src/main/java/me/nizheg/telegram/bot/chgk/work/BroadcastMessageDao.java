@@ -10,5 +10,7 @@ public interface BroadcastMessageDao {
 
     List<BroadcastMessage> findByStatus(String status, int limit);
 
-    void updateStatus(long id, long chatId, String status);
+    void updateStatusByIdChatIdStatus(long id, long chatId, List<String> fromStatuses, String status);
+
+    void updateStatusByIdStatus(long id, List<String> fromStatuses, String status);
 }

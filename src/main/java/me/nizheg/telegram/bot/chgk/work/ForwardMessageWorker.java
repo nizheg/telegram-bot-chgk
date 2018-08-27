@@ -26,7 +26,7 @@ public class ForwardMessageWorker implements Worker {
     }
 
     @Override
-    public void doWork(WorkDescription workDescription) {
+    public void doWork(WorkDescription workDescription) throws WorkException {
         if (!canDo(workDescription)) {
             throw new IllegalArgumentException("Unsupported work");
         }
@@ -41,7 +41,10 @@ public class ForwardMessageWorker implements Worker {
         TelegramApiCall<AtomicResponse<Message>> messageResponse = telegramApiClientSupplier.get()
                 .forwardMessage(forwardingMessage);
         messageResponse.setCallback((errorResponse, httpStatus) -> this.handleError(httpStatus, chatId));
-        messageResponse.await();
+        AtomicResponse<Message> response = messageResponse.await();
+        if (!response.isOk()) {
+            throw new WorkException(response.getDescription().orElse(""));
+        }
         if (log.isInfoEnabled()) {
             log.info("Broadcast sending is processed for chat " + chatId);
         }

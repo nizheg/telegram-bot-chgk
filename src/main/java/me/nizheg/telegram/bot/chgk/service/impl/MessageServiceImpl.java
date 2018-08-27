@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
@@ -15,6 +16,7 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.work.WorkService;
+import me.nizheg.telegram.bot.chgk.work.WorkStatus;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 
 import static me.nizheg.telegram.bot.chgk.dto.SendingMessage.RECEIVER_ALL;
@@ -65,6 +67,15 @@ public class MessageServiceImpl implements MessageService {
             default:
                 throw new UnsupportedOperationException("Not supported now");
         }
+    }
+
+    @Override
+    public void setStatus(long id, BroadcastStatus.Status status) {
+        workService.changeStatusForAllChats(id, convert(status));
+    }
+
+    private WorkStatus convert(BroadcastStatus.Status status) {
+        return WorkStatus.valueOf(status.name());
     }
 
 }
