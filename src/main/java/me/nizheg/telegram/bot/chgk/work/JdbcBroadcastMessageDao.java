@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -30,7 +31,7 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
         parameters.put("data", data);
         parameters.put("type", type);
         Number id = jdbcInsert.executeAndReturnKey(parameters);
-        int update = template.update("insert into broadcast_message_receiver(broadcast_message_id, chat_id, status)\n"
+        template.update("insert into broadcast_message_receiver(broadcast_message_id, chat_id, status)\n"
                         + "select ?, t.chat_id, ?\n"
                         + "from (\n"
                         + "\tselect distinct(property.chat_id), max(using_time) as utm\n"
@@ -42,6 +43,19 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
                         + ") as t",
                 id, status, Properties.CHAT_ACTIVE_KEY, Boolean.TRUE.toString());
 
+    }
+
+    @Override
+    public void createBroadcastToChats(String data, String type, String status, List<Long> chatIds) {
+        Map<String, Object> parameters = new HashMap<>(2);
+        parameters.put("data", data);
+        parameters.put("type", type);
+        Number id = jdbcInsert.executeAndReturnKey(parameters);
+        List<Object[]> batchParameters = chatIds.stream()
+                .map(chatId -> new Object[] {id, chatId, status})
+                .collect(Collectors.toList());
+        template.batchUpdate("insert into broadcast_message_receiver(broadcast_message_id, chat_id, status)\n"
+                + "values (?, ?, ?)", batchParameters);
     }
 
     @Override

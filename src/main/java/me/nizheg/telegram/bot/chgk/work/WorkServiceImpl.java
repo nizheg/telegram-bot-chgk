@@ -21,12 +21,7 @@ public class WorkServiceImpl implements WorkService {
 
     @Override
     public void forwardMessageToActiveChats(ForwardMessageData forwardMessageData) {
-        String data;
-        try {
-            data = objectMapper.writeValueAsString(forwardMessageData);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
+        String data = serializeData(forwardMessageData);
         broadcastMessageDao.createBroadcastToActiveChats(data,
                 WorkType.FORWARD_MESSAGE.name(),
                 WorkStatus.CREATED.name());
@@ -34,16 +29,51 @@ public class WorkServiceImpl implements WorkService {
     }
 
     @Override
+    public void forwardMessageToChats(ForwardMessageData forwardMessageData, List<Long> receivers) {
+        String data = serializeData(forwardMessageData);
+        broadcastMessageDao.createBroadcastToChats(data,
+                WorkType.FORWARD_MESSAGE.name(),
+                WorkStatus.CREATED.name(),
+                receivers);
+    }
+
+    private String serializeData(ForwardMessageData forwardMessageData) {
+        String data;
+        try {
+            data = objectMapper.writeValueAsString(forwardMessageData);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+        return data;
+    }
+
+    @Override
     public void sendMessageToActiveChats(SendMessageData sendMessageData) {
+        String data = serializeData(sendMessageData);
+        broadcastMessageDao.createBroadcastToActiveChats(data,
+                WorkType.SEND_MESSAGE.name(),
+                WorkStatus.CREATED.name());
+    }
+
+
+    @Override
+    public void sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers) {
+        String data = serializeData(sendMessageData);
+        broadcastMessageDao.createBroadcastToChats(data,
+                WorkType.SEND_MESSAGE.name(),
+                WorkStatus.CREATED.name(),
+                receivers
+        );
+    }
+
+    private String serializeData(SendMessageData sendMessageData) {
         String data;
         try {
             data = objectMapper.writeValueAsString(sendMessageData);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
-        broadcastMessageDao.createBroadcastToActiveChats(data,
-                WorkType.SEND_MESSAGE.name(),
-                WorkStatus.CREATED.name());
+        return data;
     }
 
     @Override

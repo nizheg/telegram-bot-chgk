@@ -3,22 +3,16 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
 import lombok.RequiredArgsConstructor;
-import me.nizheg.telegram.bot.api.model.AtomicResponse;
-import me.nizheg.telegram.bot.api.model.Callback;
-import me.nizheg.telegram.bot.api.model.ErrorResponse;
-import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
-import me.nizheg.telegram.bot.api.service.param.ChatId;
-import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
@@ -116,26 +110,6 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    private static me.nizheg.telegram.bot.api.service.param.Message convertMessage(SendingMessage message) {
-        return new me.nizheg.telegram.bot.api.service.param.Message(
-                message.getText(),
-                null,
-                Optional.ofNullable(message.getParseMode())
-                        .map(ParseMode::valueOf)
-                        .orElse(null),
-                message.getDisableWebPagePreview());
-    }
-
-
-    private static me.nizheg.telegram.bot.api.service.param.ForwardingMessage convertMessage(
-            ForwardMessageData sourceMessage) {
-        me.nizheg.telegram.bot.api.service.param.ForwardingMessage forwardingMessage = new me.nizheg.telegram.bot.api
-                .service.param.ForwardingMessage();
-        forwardingMessage.setFromChatId(new ChatId(sourceMessage.getFromChatId()));
-        forwardingMessage.setMessageId(sourceMessage.getMessageId());
-        return forwardingMessage;
-    }
-
     @Override
     public synchronized BroadcastStatus setStatus(BroadcastStatus status) {
         if (BroadcastStatus.Status.CANCELLED.equals(status.getStatus())) {
@@ -150,18 +124,16 @@ public class MessageServiceImpl implements MessageService {
         return broadcastStatus;
     }
 
-
     private void sendMessage(SendingMessage message, Long chatId) {
         if (StringUtils.isEmpty(message.getText())) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
             return;
         }
-        Message telegramMessage = convertMessage(message);
-        this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
-        broadcastStatus.setTotalCount(1);
-        broadcastStatus.setMessage(message.getText());
-        telegramMessage.setChatId(new ChatId(chatId));
-        telegramApiClient.sendMessage(telegramMessage).setCallback(new SendCallback(chatId));
+        SendMessageData sendMessageData = new SendMessageData();
+        sendMessageData.setText(message.getText());
+        sendMessageData.setDisableWebPagePreview(message.getDisableWebPagePreview());
+        sendMessageData.setParseMode(message.getParseMode());
+        workService.sendMessageToChats(sendMessageData, Collections.singletonList(chatId));
     }
 
     private void sendMessageToAll(SendingMessage message) {
@@ -179,17 +151,10 @@ public class MessageServiceImpl implements MessageService {
     private void forwardMessage(Long chatId) {
         if (forwardMessageData == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
-                    "Сообщение для отправки не установлено");
+                    "Сообщение для рассылки не установлено");
             return;
         }
-        final me.nizheg.telegram.bot.api.service.param.ForwardingMessage telegramForwardedMessage =
-                convertMessage(forwardMessageData);
-        final String text = this.forwardMessageData.getText();
-        this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
-        broadcastStatus.setTotalCount(1);
-        broadcastStatus.setMessage(text);
-        telegramForwardedMessage.setChatId(new ChatId(chatId));
-        telegramApiClient.forwardMessage(telegramForwardedMessage).setCallback(new SendCallback(chatId));
+        workService.forwardMessageToChats(this.forwardMessageData, Collections.singletonList(chatId));
     }
 
     private void forwardMessageToAll() {
@@ -200,29 +165,5 @@ public class MessageServiceImpl implements MessageService {
         }
         workService.forwardMessageToActiveChats(this.forwardMessageData);
 
-    }
-
-    private class SendCallback implements Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> {
-
-        private final Long chatId;
-
-        private SendCallback(Long chatId) {this.chatId = chatId;}
-
-        @Override
-        public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
-            switch (httpStatus) {
-                case FORBIDDEN:
-                case BAD_REQUEST:
-                    chatService.deactivateChat(chatId);
-                    break;
-                default:
-                    logger.error("Api exception. Skip chat " + chatId);
-            }
-        }
-
-        @Override
-        public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
-            broadcastStatus.setStatus(BroadcastStatus.Status.FINISHED);
-        }
     }
 }
