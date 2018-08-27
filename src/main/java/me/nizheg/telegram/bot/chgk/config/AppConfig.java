@@ -179,7 +179,7 @@ public class AppConfig {
     @Bean
     @Autowired
     public MessageReceiver messageReceiver(UpdateHandler updateHandler) {
-        return new MessageReceiver(telegramApiClient(), updateHandler, propertyService);
+        return new MessageReceiver(this::telegramApiClient, updateHandler, propertyService);
     }
 
     @Bean
