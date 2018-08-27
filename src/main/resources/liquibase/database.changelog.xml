@@ -50,8 +50,9 @@
         </createTable>
         <addPrimaryKey tableName="used_task" columnNames="task_id,chat_id"/>
         <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="used_task"
-            constraintName="fk_used_task_task" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 constraintName="fk_used_task_task" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="task"/>
 
         <createSequence sequenceName="answer_seq"/>
 
@@ -65,8 +66,9 @@
 
         <addPrimaryKey columnNames="id" tableName="answer"/>
         <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="answer"
-            constraintName="fk_answer_task" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 constraintName="fk_answer_task" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="task"/>
         <createIndex tableName="answer" indexName="answer_task_id_index">
             <column name="task_id"/>
         </createIndex>
@@ -89,11 +91,13 @@
         </createTable>
         <addPrimaryKey columnNames="task_id,category_id" tableName="task_category"/>
         <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_category"
-            constraintName="fk_task_category_task" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 constraintName="fk_task_category_task" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="task"/>
         <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="task_category"
-            constraintName="fk_task_category_category" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="category"/>
+                                 constraintName="fk_task_category_category" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="category"/>
     </changeSet>
 
     <changeSet id="2" author="nzhegalin">
@@ -184,8 +188,10 @@
         </createTable>
         <addPrimaryKey tableName="feedback_message" columnNames="id"/>
         <addForeignKeyConstraint baseColumnNames="telegram_user_id" baseTableName="feedback_message"
-            constraintName="fk_feedback_message_telegram_user" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="telegram_user"/>
+                                 constraintName="fk_feedback_message_telegram_user" deferrable="false"
+                                 initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="telegram_user"/>
     </changeSet>
 
     <changeSet id="9" author="nzhegalin">
@@ -209,13 +215,13 @@
             <column name="position" type="int"/>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="task_id"
-            baseTableName="task_picture" constraintName="fk_task_picture_task"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 baseTableName="task_picture" constraintName="fk_task_picture_task"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
         <addForeignKeyConstraint baseColumnNames="picture_id"
-            baseTableName="task_picture" constraintName="fk_task_picture_picture"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
+                                 baseTableName="task_picture" constraintName="fk_task_picture_picture"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
         <addUniqueConstraint columnNames="task_id,picture_id" tableName="task_picture"/>
 
         <createTable tableName="comment_picture">
@@ -228,13 +234,13 @@
             <column name="position" type="int"/>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="task_id"
-            baseTableName="comment_picture" constraintName="fk_comment_picture_task"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 baseTableName="comment_picture" constraintName="fk_comment_picture_task"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
         <addForeignKeyConstraint baseColumnNames="picture_id"
-            baseTableName="comment_picture" constraintName="fk_comment_picture_picture"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
+                                 baseTableName="comment_picture" constraintName="fk_comment_picture_picture"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="picture"/>
         <addUniqueConstraint columnNames="task_id,picture_id" tableName="comment_picture"/>
     </changeSet>
 
@@ -250,13 +256,13 @@
             <column name="answer_time" type="timestamp with time zone" defaultValueDate="now()"></column>
         </createTable>
         <addForeignKeyConstraint baseColumnNames="telegram_user_id"
-            baseTableName="answer_log" constraintName="fk_answer_log_telegram_user"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="telegram_user"/>
+                                 baseTableName="answer_log" constraintName="fk_answer_log_telegram_user"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="telegram_user"/>
         <addForeignKeyConstraint baseColumnNames="task_id"
-            baseTableName="answer_log" constraintName="fk_answer_log_task"
-            deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
-            onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 baseTableName="answer_log" constraintName="fk_answer_log_task"
+                                 deferrable="false" initiallyDeferred="false" onDelete="NO ACTION"
+                                 onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
 
         <addUniqueConstraint columnNames="chat_id,task_id" tableName="answer_log"/>
     </changeSet>
@@ -281,8 +287,9 @@
         </createTable>
         <addPrimaryKey tableName="used_task_archive" columnNames="chat_id,task_id"/>
         <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="used_task_archive"
-            constraintName="fk_used_task_archive_task" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 constraintName="fk_used_task_archive_task" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="task"/>
     </changeSet>
 
     <changeSet id="13" author="nzhegalin">
@@ -312,8 +319,9 @@
         </createTable>
         <addPrimaryKey tableName="task_rating" columnNames="task_id,telegram_user_id"/>
         <addForeignKeyConstraint baseColumnNames="task_id" baseTableName="task_rating"
-            constraintName="fk_task_rating_task" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="task"/>
+                                 constraintName="fk_task_rating_task" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="task"/>
     </changeSet>
 
     <changeSet id="16" author="nzhegalin">
@@ -328,8 +336,9 @@
         </createTable>
         <addPrimaryKey tableName="tour" columnNames="id"/>
         <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="tour"
-            constraintName="fk_tour_tour" deferrable="false" initiallyDeferred="false"
-            onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="tour"/>
+                                 constraintName="fk_tour_tour" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="tour"/>
     </changeSet>
 
     <changeSet id="17" author="nzhegalin">
@@ -412,7 +421,8 @@
 
     <changeSet id="25" author="nzhegalin">
         <sql>
-            insert into task(id,task_text,imported_task_text,status) values (-1,'Вопрос не выбран','Вопрос не выбран','DELETED');
+            insert into task(id,task_text,imported_task_text,status) values (-1,'Вопрос не выбран','Вопрос не
+            выбран','DELETED');
         </sql>
     </changeSet>
 
@@ -455,5 +465,38 @@
 
     <changeSet id="28" author="nzhegalin">
         <dropUniqueConstraint tableName="chat" uniqueColumns="username" constraintName="chat_username_key"/>
+    </changeSet>
+
+    <changeSet id="29" author="nzhegalin">
+        <createTable tableName="broadcast_message">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="type" type="java.sql.Types.VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="jsonb"/>
+        </createTable>
+        <createTable tableName="broadcast_message_receiver">
+            <column name="number" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="broadcast_message_id" type="bigint">
+                <constraints nullable="false" foreignKeyName=""/>
+            </column>
+            <column name="chat_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="java.sql.Types.VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="broadcast_message_receiver" baseColumnNames="broadcast_message_id"
+                                 constraintName="broadcast_message_receiver_broadcast_message_fk"
+                                 referencedTableName="broadcast_message" referencedColumnNames="id"/>
+        <createIndex tableName="broadcast_message_receiver" indexName="broadcast_message_receiver_idx">
+            <column name="chat_id"/>
+            <column name="broadcast_message_id"/>
+        </createIndex>
     </changeSet>
 </databaseChangeLog>

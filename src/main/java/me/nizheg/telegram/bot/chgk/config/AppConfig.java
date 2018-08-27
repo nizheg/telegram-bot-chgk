@@ -12,6 +12,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -78,6 +79,7 @@ import me.nizheg.telegram.bot.chgk.util.RatingHelper;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
+import me.nizheg.telegram.bot.chgk.work.WorkConfig;
 import me.nizheg.telegram.bot.command.HelpCommand;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 import me.nizheg.telegram.bot.event.ChatEventListener;
@@ -104,6 +106,7 @@ import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
  * @author Nikolay Zhegalin
  */
 @Configuration
+@Import(WorkConfig.class)
 @ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
         "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
         "me.nizheg.telegram.bot.chgk.command", "info.chgk", "me.nizheg.payments"})

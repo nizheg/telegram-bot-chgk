@@ -1,11 +1,10 @@
 package me.nizheg.telegram.bot.chgk.service;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 public interface Properties {
+
     String CHAT_ACTIVE_KEY = "chat.active";
     String CHAT_TIMER = "chat.timer";
     String CATEGORY_KEY = "category";
