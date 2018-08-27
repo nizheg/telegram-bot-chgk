@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 import java.util.Optional;
 
-import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
+import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 
@@ -32,26 +32,24 @@ public class MessageController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public BroadcastStatus send(@RequestBody final SendingMessage message, Principal principal) {
-        return Optional.ofNullable(principal)
+    public void send(@RequestBody final SendingMessage message, Principal principal) {
+        TelegramUser currentUser = Optional.ofNullable(principal)
                 .filter(p -> StringUtils.isNotBlank(p.getName()))
                 .map(p -> telegramUserService.getByUsername(p.getName()))
-                .map(me -> {
-                    message.setSender(me);
-                    return messageService.send(message);
-                })
-                .orElse(new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пользователь не найден"));
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        message.setSender(currentUser);
+        messageService.send(message);
     }
-
-    @RequestMapping(value = "/status", method = RequestMethod.POST)
-    public BroadcastStatus setStatus(@RequestBody BroadcastStatus status) {
-        return messageService.setStatus(status);
-    }
-
-    @RequestMapping(value = "/status", method = RequestMethod.GET)
-    public BroadcastStatus getStatus() {
-        return messageService.getStatus();
-    }
+//
+//    @RequestMapping(value = "/status", method = RequestMethod.POST)
+//    public BroadcastStatus setStatus(@RequestBody BroadcastStatus status) {
+//        return messageService.setStatus(status);
+//    }
+//
+//    @RequestMapping(value = "/status", method = RequestMethod.GET)
+//    public BroadcastStatus getStatus() {
+//        return messageService.getStatus();
+//    }
 
 
 }
