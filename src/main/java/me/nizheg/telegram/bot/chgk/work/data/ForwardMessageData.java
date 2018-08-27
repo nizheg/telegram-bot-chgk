@@ -13,6 +13,7 @@ import lombok.Setter;
 public class ForwardMessageData {
 
     private long messageId;
-    private ChatId fromChatId;
+    private long fromChatId;
     private Boolean disableNotification;
+    private String text;
 }

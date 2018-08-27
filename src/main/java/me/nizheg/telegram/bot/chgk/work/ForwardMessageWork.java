@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import me.nizheg.telegram.bot.chgk.work.data.ChatId;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 
 @Data
@@ -21,7 +20,7 @@ public class ForwardMessageWork implements WorkDescription {
         return forwardMessageData.getMessageId();
     }
 
-    public ChatId getFromChatId() {
+    public long getFromChatId() {
         return forwardMessageData.getFromChatId();
     }
 

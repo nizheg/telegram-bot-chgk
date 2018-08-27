@@ -24,7 +24,6 @@ import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
-import me.nizheg.telegram.bot.chgk.dto.ForwardingMessage;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
@@ -55,24 +54,23 @@ public class MessageServiceImpl implements MessageService {
             ("Message Broadcast "));
 
     private BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.NOT_STARTED);
-    private volatile ForwardingMessage forwardingMessage;
+    private volatile ForwardMessageData forwardMessageData;
 
     @Override
-    public synchronized BroadcastStatus setMessageForForwarding(@Nonnull ForwardingMessage forwardingMessage) {
-        Validate.notNull(forwardingMessage);
+    public synchronized void setMessageForForwarding(@Nonnull ForwardMessageData forwardMessageData) {
+        Validate.notNull(forwardMessageData);
         switch (broadcastStatus.getStatus()) {
             case NOT_STARTED:
             case REJECTED:
             case FORWARD_INITIATED:
             case FINISHED:
             case CANCELLED:
-                this.forwardingMessage = forwardingMessage;
+                this.forwardMessageData = forwardMessageData;
                 this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.FORWARD_INITIATED);
-                this.broadcastStatus.setMessage(forwardingMessage.getText());
+                this.broadcastStatus.setMessage(forwardMessageData.getText());
                 break;
             default:
         }
-        return this.broadcastStatus;
     }
 
     @Override
@@ -140,7 +138,7 @@ public class MessageServiceImpl implements MessageService {
 
 
     private static me.nizheg.telegram.bot.api.service.param.ForwardingMessage convertMessage(
-            ForwardingMessage sourceMessage) {
+            ForwardMessageData sourceMessage) {
         me.nizheg.telegram.bot.api.service.param.ForwardingMessage forwardingMessage = new me.nizheg.telegram.bot.api
                 .service.param.ForwardingMessage();
         forwardingMessage.setFromChatId(new ChatId(sourceMessage.getFromChatId()));
@@ -152,7 +150,7 @@ public class MessageServiceImpl implements MessageService {
     public synchronized BroadcastStatus setStatus(BroadcastStatus status) {
         if (BroadcastStatus.Status.CANCELLED.equals(status.getStatus())) {
             broadcastStatus.setStatus(BroadcastStatus.Status.CANCELLED);
-            this.forwardingMessage = null;
+            this.forwardMessageData = null;
         }
         return broadcastStatus;
     }
@@ -189,15 +187,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void forwardMessage(List<Long> receivers) {
-        if (forwardingMessage == null || forwardingMessage.getFromChatId() == null
-                || forwardingMessage.getMessageId() == null) {
+        if (forwardMessageData == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
                     "Сообщение для рассылки не установлено");
             return;
         }
         final me.nizheg.telegram.bot.api.service.param.ForwardingMessage telegramForwardedMessage =
-                convertMessage(forwardingMessage);
-        final String text = this.forwardingMessage.getText();
+                convertMessage(forwardMessageData);
+        final String text = this.forwardMessageData.getText();
 
         doBroadcast(() -> text, receivers, chatId -> {
             telegramForwardedMessage.setChatId(chatId);
@@ -207,17 +204,12 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void forwardMessage() {
-        if (forwardingMessage == null || forwardingMessage.getFromChatId() == null
-                || forwardingMessage.getMessageId() == null) {
+        if (forwardMessageData == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
                     "Сообщение для рассылки не установлено");
             return;
         }
-        ForwardMessageData forwardMessageData = new ForwardMessageData();
-        forwardMessageData.setFromChatId(
-                new me.nizheg.telegram.bot.chgk.work.data.ChatId(this.forwardingMessage.getFromChatId()));
-        forwardMessageData.setMessageId(this.forwardingMessage.getMessageId());
-        workService.forwardMessageToActiveChats(forwardMessageData);
+        workService.forwardMessageToActiveChats(this.forwardMessageData);
 
     }
 

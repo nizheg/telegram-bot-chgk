@@ -7,10 +7,10 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.Message;
-import me.nizheg.telegram.bot.chgk.dto.ForwardingMessage;
 import me.nizheg.telegram.bot.chgk.dto.Role;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
+import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 
@@ -39,10 +39,10 @@ public class SaveForwardedMessage implements NonCommandMessageProcessor {
     }
 
     private void saveForwardedMessage(@Nonnull Message message) {
-        ForwardingMessage forwardingMessage = new ForwardingMessage();
-        forwardingMessage.setFromChatId(message.getForwardFromChat().getId());
-        forwardingMessage.setMessageId(message.getForwardFromMessageId());
-        forwardingMessage.setText(message.getText());
-        messageService.setMessageForForwarding(forwardingMessage);
+        ForwardMessageData forwardMessageData = new ForwardMessageData();
+        forwardMessageData.setFromChatId(message.getForwardFromChat().getId());
+        forwardMessageData.setMessageId(message.getForwardFromMessageId());
+        forwardMessageData.setText(message.getText());
+        messageService.setMessageForForwarding(forwardMessageData);
     }
 }

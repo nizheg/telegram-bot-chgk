@@ -31,7 +31,7 @@ public class ForwardMessageWorker implements Worker {
         ForwardMessageWork forwardMessageWork = (ForwardMessageWork) workDescription;
         me.nizheg.telegram.bot.api.service.param.ForwardingMessage forwardingMessage = new me.nizheg.telegram.bot.api
                 .service.param.ForwardingMessage();
-        forwardingMessage.setFromChatId(new ChatId(forwardMessageWork.getFromChatId().getChatId()));
+        forwardingMessage.setFromChatId(new ChatId(forwardMessageWork.getFromChatId()));
         forwardingMessage.setMessageId(forwardMessageWork.getMessageId());
         long chatId = forwardMessageWork.getChatId();
         forwardingMessage.setChatId(new ChatId(chatId));
