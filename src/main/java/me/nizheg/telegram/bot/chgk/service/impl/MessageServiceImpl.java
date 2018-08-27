@@ -7,17 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
 import lombok.RequiredArgsConstructor;
+import me.nizheg.telegram.bot.api.model.AtomicResponse;
+import me.nizheg.telegram.bot.api.model.Callback;
+import me.nizheg.telegram.bot.api.model.ErrorResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
@@ -34,7 +31,6 @@ import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.work.WorkService;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 import me.nizheg.telegram.bot.chgk.work.data.SendMessageData;
-import me.nizheg.util.NamedThreadFactory;
 
 import static me.nizheg.telegram.bot.chgk.dto.SendingMessage.RECEIVER_ALL;
 import static me.nizheg.telegram.bot.chgk.dto.SendingMessage.RECEIVER_ME;
@@ -49,9 +45,6 @@ public class MessageServiceImpl implements MessageService {
     private final TelegramApiClient telegramApiClient;
     private final TaskSender taskSender;
     private final WorkService workService;
-
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor(new NamedThreadFactory
-            ("Message Broadcast "));
 
     private BroadcastStatus broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.NOT_STARTED);
     private volatile ForwardMessageData forwardMessageData;
@@ -87,7 +80,7 @@ public class MessageServiceImpl implements MessageService {
                         taskSender.sendTaskText(currentTask, myIdValue);
                         this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.FINISHED);
                     } else {
-                        send(message, Collections.singletonList(myIdValue));
+                        send(message, myIdValue);
                     }
                 } else {
                     this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
@@ -95,17 +88,14 @@ public class MessageServiceImpl implements MessageService {
                 }
                 break;
             case RECEIVER_ALL:
-//                final List<Long> activeChats = chatService.getActiveChats();
-//                logger.info(">>>There was found " + activeChats.size() + " active chats for broadcast");
-//                send(message, activeChats);
                 switch (broadcastStatus.getStatus()) {
                     case FORWARD_INITIATED:
-                        forwardMessage();
+                        forwardMessageToAll();
                         break;
                     case IN_PROCESS:
                         break;
                     default:
-                        sendMessage(message);
+                        sendMessageToAll(message);
                 }
                 break;
             default:
@@ -114,15 +104,15 @@ public class MessageServiceImpl implements MessageService {
         return this.broadcastStatus;
     }
 
-    private void send(SendingMessage message, List<Long> receivers) {
+    private void send(SendingMessage message, Long chatId) {
         switch (broadcastStatus.getStatus()) {
             case FORWARD_INITIATED:
-                forwardMessage(receivers);
+                forwardMessage(chatId);
                 break;
             case IN_PROCESS:
                 break;
             default:
-                sendMessage(message, receivers);
+                sendMessage(message, chatId);
         }
     }
 
@@ -161,20 +151,20 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void sendMessage(SendingMessage message, List<Long> chatIds) {
+    private void sendMessage(SendingMessage message, Long chatId) {
         if (StringUtils.isEmpty(message.getText())) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
             return;
         }
         Message telegramMessage = convertMessage(message);
-        doBroadcast(message::getText, chatIds, chatId -> {
-            telegramMessage.setChatId(chatId);
-            telegramApiClient.sendMessage(telegramMessage).setCallback(
-                    (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
-        });
+        this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
+        broadcastStatus.setTotalCount(1);
+        broadcastStatus.setMessage(message.getText());
+        telegramMessage.setChatId(new ChatId(chatId));
+        telegramApiClient.sendMessage(telegramMessage).setCallback(new SendCallback(chatId));
     }
 
-    private void sendMessage(SendingMessage message) {
+    private void sendMessageToAll(SendingMessage message) {
         if (StringUtils.isEmpty(message.getText())) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED, "Пустой текст");
             return;
@@ -186,24 +176,23 @@ public class MessageServiceImpl implements MessageService {
         workService.sendMessageToActiveChats(sendMessageData);
     }
 
-    private void forwardMessage(List<Long> receivers) {
+    private void forwardMessage(Long chatId) {
         if (forwardMessageData == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
-                    "Сообщение для рассылки не установлено");
+                    "Сообщение для отправки не установлено");
             return;
         }
         final me.nizheg.telegram.bot.api.service.param.ForwardingMessage telegramForwardedMessage =
                 convertMessage(forwardMessageData);
         final String text = this.forwardMessageData.getText();
-
-        doBroadcast(() -> text, receivers, chatId -> {
-            telegramForwardedMessage.setChatId(chatId);
-            telegramApiClient.forwardMessage(telegramForwardedMessage).setCallback(
-                    (errorResponse, httpStatus) -> this.handleError(httpStatus, chatId.getChatId()));
-        });
+        this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
+        broadcastStatus.setTotalCount(1);
+        broadcastStatus.setMessage(text);
+        telegramForwardedMessage.setChatId(new ChatId(chatId));
+        telegramApiClient.forwardMessage(telegramForwardedMessage).setCallback(new SendCallback(chatId));
     }
 
-    private void forwardMessage() {
+    private void forwardMessageToAll() {
         if (forwardMessageData == null) {
             this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.REJECTED,
                     "Сообщение для рассылки не установлено");
@@ -213,23 +202,27 @@ public class MessageServiceImpl implements MessageService {
 
     }
 
-    private void handleError(HttpStatus httpStatus, long chatId) {
-        switch (httpStatus) {
-            case FORBIDDEN:
-            case BAD_REQUEST:
-                chatService.deactivateChat(chatId);
-                break;
-            default:
-                logger.error("Api exception. Skip chat " + chatId);
+    private class SendCallback implements Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> {
+
+        private final Long chatId;
+
+        private SendCallback(Long chatId) {this.chatId = chatId;}
+
+        @Override
+        public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
+            switch (httpStatus) {
+                case FORBIDDEN:
+                case BAD_REQUEST:
+                    chatService.deactivateChat(chatId);
+                    break;
+                default:
+                    logger.error("Api exception. Skip chat " + chatId);
+            }
         }
 
-    }
-
-    private void doBroadcast(
-            Supplier<String> messageTextSupplier, List<Long> receivers, Consumer<ChatId> messageSender) {
-        this.broadcastStatus = new BroadcastStatus(BroadcastStatus.Status.IN_PROCESS);
-        broadcastStatus.setTotalCount(receivers.size());
-        broadcastStatus.setMessage(messageTextSupplier.get());
-        executorService.submit(new SendingTask(receivers, broadcastStatus, messageSender));
+        @Override
+        public void onSuccessResult(AtomicResponse<me.nizheg.telegram.bot.api.model.Message> result) {
+            broadcastStatus.setStatus(BroadcastStatus.Status.FINISHED);
+        }
     }
 }
