@@ -13,13 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.SimpleThreadScope;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -27,9 +23,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Resource;
-import javax.sql.DataSource;
 
 import me.nizheg.payments.service.PaymentService;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
@@ -57,13 +50,11 @@ import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
-import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Cipher;
-import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
@@ -107,10 +98,7 @@ import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
  */
 @Configuration
 @Import(WorkConfig.class)
-@ComponentScan({"me.nizheg.telegram.bot.chgk.repository", "me.nizheg.telegram.bot.chgk.service",
-        "me.nizheg.telegram.bot.chgk.event", "me.nizheg.telegram.bot.chgk.util", "me.nizheg.telegram.bot.chgk.domain",
-        "me.nizheg.telegram.bot.chgk.command", "info.chgk", "me.nizheg.payments"})
-@PropertySource("classpath:/config.properties")
+@ComponentScan({"info.chgk", "me.nizheg.payments"})
 @EnableTransactionManagement
 public class AppConfig {
 
@@ -130,8 +118,6 @@ public class AppConfig {
     @Autowired
     private TaskRatingService taskRatingService;
     @Autowired
-    private TaskDao taskDao;
-    @Autowired
     private TourService tourService;
     @Autowired
     private ChatService chatService;
@@ -142,8 +128,6 @@ public class AppConfig {
     @Autowired
     private ChatGameService chatGameService;
     @Autowired
-    private MessageService messageService;
-    @Autowired
     private PictureService pictureService;
     @Autowired
     private Cipher cipher;
@@ -151,22 +135,6 @@ public class AppConfig {
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
         return beanFactory -> beanFactory.registerScope(SCOPE_THREAD, new SimpleThreadScope());
-    }
-
-    @Resource
-    @Bean
-    public DataSource dataSource(
-            @Autowired Environment environment) {
-        final JndiDataSourceLookup dsLookup = new JndiDataSourceLookup();
-        dsLookup.setResourceRef(true);
-        String databaseJndiName = environment.getProperty("database.jndi");
-        return dsLookup.getDataSource(databaseJndiName);
-    }
-
-    @Bean
-    @Autowired
-    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean

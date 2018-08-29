@@ -17,7 +17,6 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 @Builder
 public class UserAnswerResult {
 
-    @NonNull
     private final boolean isCorrect;
     @Nullable
     private String exactAnswer;
