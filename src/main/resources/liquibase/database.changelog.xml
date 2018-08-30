@@ -616,4 +616,10 @@
             </column>
         </insert>
     </changeSet>
+    <changeSet id="create_base_authorities" author="nzhegalin">
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='new_users')"/>
+            <column name="authority" value="user"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
