@@ -3,17 +3,17 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import lombok.extern.apachecommons.CommonsLog;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
@@ -24,29 +24,10 @@ import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.service.PropertyService;
 
+@CommonsLog
 @Service
 public class ChatGameServiceImpl implements ChatGameService {
 
-    static {
-        int maxSize;
-        try {
-            maxSize = Integer.parseInt(System.getProperty("chat.cache.size", "500"));
-        } catch (RuntimeException ex) {
-            maxSize = 500;
-        }
-        MAX_SIZE = maxSize;
-        int concurrencyLevel;
-        try {
-            concurrencyLevel = Integer.parseInt(System.getProperty("chat.cache.connections.count", "40"));
-        } catch (RuntimeException ex) {
-            concurrencyLevel = 40;
-        }
-        CONCURRENCY_LEVEL = concurrencyLevel;
-    }
-
-    private final static int MAX_SIZE;
-    private final static int CONCURRENCY_LEVEL;
-    private final Log logger = LogFactory.getLog(getClass());
     private final ConcurrentMap<Long, ChatGame> chatGames;
     private final PropertyService propertyService;
     private final ChatService chatService;
@@ -54,7 +35,8 @@ public class ChatGameServiceImpl implements ChatGameService {
 
     public ChatGameServiceImpl(
             PropertyService propertyService,
-            ChatService chatService, ChatGameFactory chatGameFactory) {
+            ChatService chatService,
+            ChatGameFactory chatGameFactory) {
         this.propertyService = propertyService;
         this.chatService = chatService;
         this.chatGameFactory = chatGameFactory;
@@ -63,9 +45,12 @@ public class ChatGameServiceImpl implements ChatGameService {
                 ((AutoChatGame) chatGame).pause();
             }
         };
+        int maxSize = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.size")).orElse(500);
+        int concurrencyLevel = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.connections.count"))
+                .orElse(40);
         chatGames = new ConcurrentLinkedHashMap.Builder<Long, ChatGame>()//
-                .maximumWeightedCapacity(MAX_SIZE) //
-                .concurrencyLevel(CONCURRENCY_LEVEL) //
+                .maximumWeightedCapacity(maxSize) //
+                .concurrencyLevel(concurrencyLevel) //
                 .listener(evictionListener) //
                 .build();
     }
@@ -111,19 +96,19 @@ public class ChatGameServiceImpl implements ChatGameService {
         long chatId = chat.getId();
         ChatGame chatGame = chatGames.get(chatId);
         if (chatGame == null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Put in cache chat " + chatId);
+            if (log.isTraceEnabled()) {
+                log.trace("Put in cache chat " + chatId);
             }
             try {
                 chatService.createOrUpdate(chat);
             } catch (DuplicationException ex) {
-                logger.error("Chat is created yet " + chat.getId(), ex);
+                log.error("Chat is created yet " + chat.getId(), ex);
             }
             chatGame = putInCache(chat);
         }
-        if (logger.isTraceEnabled()) {
+        if (log.isTraceEnabled()) {
             long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            logger.trace("Get game is executed in " + elapsedTime + " ms for chat " + chatId);
+            log.trace("Get game is executed in " + elapsedTime + " ms for chat " + chatId);
         }
         return chatGame;
     }

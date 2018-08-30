@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +9,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.chgk.dto.Property;
 import me.nizheg.telegram.bot.chgk.repository.PropertyDao;
 import me.nizheg.telegram.bot.service.PropertyService;
@@ -14,18 +17,22 @@ import me.nizheg.telegram.bot.service.PropertyService;
 /**
  * @author Nikolay Zhegalin
  */
+@RequiredArgsConstructor
 @Service("propertyService")
 @Transactional
 public class PropertyServiceImpl implements PropertyService {
 
     private final PropertyDao propertyDao;
-
-    public PropertyServiceImpl(PropertyDao propertyDao) {this.propertyDao = propertyDao;}
+    private final PropertyResolver propertyResolver;
 
     @Override
     @Transactional(readOnly = true)
     @Nullable
     public String getValue(String key) {
+        String value = propertyResolver.getProperty(key);
+        if (StringUtils.isNotBlank(value)) {
+            return value;
+        }
         if (propertyDao.isExist(key)) {
             return propertyDao.read(key).getValue();
         }
@@ -41,6 +48,16 @@ public class PropertyServiceImpl implements PropertyService {
             return null;
         }
         return Long.valueOf(stringValue);
+    }
+
+    @Nullable
+    @Override
+    public Integer getIntegerValue(String key) {
+        String stringValue = getValue(key);
+        if (stringValue == null) {
+            return null;
+        }
+        return Integer.valueOf(stringValue);
     }
 
     @Override
