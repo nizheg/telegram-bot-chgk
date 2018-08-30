@@ -14,7 +14,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.SimpleThreadScope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -39,6 +38,7 @@ import me.nizheg.telegram.bot.chgk.command.MigrateCommand;
 import me.nizheg.telegram.bot.chgk.command.NextCommand;
 import me.nizheg.telegram.bot.chgk.command.RatingCommand;
 import me.nizheg.telegram.bot.chgk.command.RepeatCommand;
+import me.nizheg.telegram.bot.chgk.command.SaveForwardedMessage;
 import me.nizheg.telegram.bot.chgk.command.StartCommand;
 import me.nizheg.telegram.bot.chgk.command.StatCommand;
 import me.nizheg.telegram.bot.chgk.command.StopCommand;
@@ -55,6 +55,7 @@ import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Cipher;
+import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.ScheduledOperationService;
 import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
@@ -346,6 +347,11 @@ public class AppConfig {
     }
 
     @Bean
+    public SaveForwardedMessage saveForwardedMessage(@Autowired MessageService messageService) {
+        return new SaveForwardedMessage(telegramUserService, messageService);
+    }
+
+    @Bean
     public TourList tourList() {
         return new TourList(tourService);
     }
@@ -389,13 +395,6 @@ public class AppConfig {
         return new AutoChatGame(chat, timeout, propertyService, categoryService, tourService, taskService,
                 answerLogService, botInfo, telegramUserService, taskScheduler(), answerSender(), warningSender(),
                 scheduledOperationService, clock());
-    }
-
-    @Bean
-    public ResourceBundleMessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("i18n.messages");
-        return messageSource;
     }
 
     @Bean

@@ -1,11 +1,10 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
+import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.api.model.Message;
 import me.nizheg.telegram.bot.chgk.dto.Role;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
@@ -14,18 +13,11 @@ import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 
-@Component
+@RequiredArgsConstructor
 public class SaveForwardedMessage implements NonCommandMessageProcessor {
 
     private final TelegramUserService telegramUserService;
     private final MessageService messageService;
-
-    public SaveForwardedMessage(
-            TelegramUserService telegramUserService,
-            MessageService messageService) {
-        this.telegramUserService = telegramUserService;
-        this.messageService = messageService;
-    }
 
     @Override
     public void process(CommandContext ctx) {
