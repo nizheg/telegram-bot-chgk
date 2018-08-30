@@ -48,10 +48,10 @@ public class ChatGameServiceImpl implements ChatGameService {
         int maxSize = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.size")).orElse(500);
         int concurrencyLevel = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.connections.count"))
                 .orElse(40);
-        chatGames = new ConcurrentLinkedHashMap.Builder<Long, ChatGame>()//
-                .maximumWeightedCapacity(maxSize) //
-                .concurrencyLevel(concurrencyLevel) //
-                .listener(evictionListener) //
+        chatGames = new ConcurrentLinkedHashMap.Builder<Long, ChatGame>()
+                .maximumWeightedCapacity(maxSize)
+                .concurrencyLevel(concurrencyLevel)
+                .listener(evictionListener)
                 .build();
     }
 
