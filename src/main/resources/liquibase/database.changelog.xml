@@ -622,4 +622,11 @@
             <column name="authority" value="user"/>
         </insert>
     </changeSet>
+    <changeSet id="add_timestamps_for_message_broadcast" author="nzhegalin">
+        <addColumn tableName="broadcast_message_receiver">
+            <column name="creation_time" type="timestamp with time zone" defaultValueDate="now()"/>
+            <column name="change_time" type="timestamp with time zone" defaultValueDate="now()"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
