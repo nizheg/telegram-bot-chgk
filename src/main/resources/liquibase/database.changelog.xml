@@ -500,4 +500,114 @@
             <column name="chat_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="create_security_entities" author="nzhegalin">
+        <createTable tableName="users">
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="password" type="VARCHAR(100)"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="authorities">
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="authorities" columnNames="username,authority"/>
+
+        <createSequence sequenceName="groupd_id_seq"/>
+        <createTable tableName="groups">
+            <column name="id" type="int" defaultValueSequenceNext="groupd_id_seq">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="group_name" type="VARCHAR(100)"/>
+        </createTable>
+
+        <createTable tableName="group_members">
+            <column name="group_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="group_members" columnNames="group_id,username"/>
+        <addForeignKeyConstraint baseTableName="group_members" baseColumnNames="group_id"
+                                 constraintName="group_members_group_id_fk"
+                                 referencedTableName="groups"
+                                 referencedColumnNames="id"/>
+
+        <createTable tableName="group_authorities">
+            <column name="group_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="group_authorities" columnNames="group_id,authority"/>
+        <addForeignKeyConstraint baseTableName="group_authorities" baseColumnNames="group_id"
+                                 constraintName="group_authorities_group_id_fk"
+                                 referencedTableName="groups"
+                                 referencedColumnNames="id"/>
+
+    </changeSet>
+    <changeSet id="create_http_session" author="nzhegalin">
+        <createTable tableName="http_session">
+            <column name="primary_id" type="CHAR(36)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="session_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creation_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_access_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_inactive_interval" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiry_time" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="principal_name" type="VARCHAR(100)"/>
+        </createTable>
+        <createIndex tableName="http_session" indexName="http_session_id_idx" unique="true">
+            <column name="session_id"/>
+        </createIndex>
+        <createIndex tableName="http_session" indexName="http_expiry_time_idx">
+            <column name="expiry_time"/>
+        </createIndex>
+        <createIndex tableName="http_session" indexName="http_pricinpal_name_idx">
+            <column name="principal_name"/>
+        </createIndex>
+
+        <createTable tableName="http_session_attributes">
+            <column name="session_primary_id" type="CHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attribute_bytes" type="BYTEA">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="http_session_attributes" columnNames="session_primary_id,attribute_name"/>
+        <addForeignKeyConstraint baseTableName="http_session_attributes" baseColumnNames="SESSION_PRIMARY_ID"
+                                 constraintName="http_session_attribute_http_sesion_fk"
+                                 referencedTableName="http_session"
+                                 referencedColumnNames="primary_id" onDelete="CASCADE"/>
+        <createIndex tableName="http_session_attributes" indexName="http_session_attributes_idx">
+            <column name="session_primary_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
