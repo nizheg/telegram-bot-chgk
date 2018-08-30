@@ -610,4 +610,10 @@
             <column name="session_primary_id"/>
         </createIndex>
     </changeSet>
+    <changeSet id="add_default_user_group" author="nzhegalin">
+        <insert tableName="groups">
+            <column name="group_name" value="new_users">
+            </column>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
