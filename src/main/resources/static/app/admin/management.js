@@ -9,9 +9,12 @@
                                dictionary) {
         var t = this;
         t.archived = null;
+        t.archiving = false;
         t.archiveTasks = function () {
-            t.archived = '-';
+            t.archiving = true;
+            t.archived = null;
             api.archiveTasks().then(function (data) {
+                t.archiving = false;
                 t.archived = data;
             });
         }

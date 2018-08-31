@@ -1,4 +1,5 @@
 <p><a ng-href="#">Домой</a> | <a ng-href="#/tours/new">Неразобранные турниры</a> | <a ng-href="#/tasks">Неразобранные задания</a></p>
 <form ng-submit="t.archiveTasks()">
-    Архивировано: {{t.archived}} <input class="btn-primary" type="submit" value="Архивировать">
+    <input ng-disabled="t.archiving" class="btn-primary" type="submit" value="Архивировать">
 </form>
+<p ng-if="t.archived != null">Архивировано: {{t.archived}} </p>
