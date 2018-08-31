@@ -628,5 +628,19 @@
             <column name="change_time" type="timestamp with time zone" defaultValueDate="now()"/>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="create_admin_group" author="nzhegalin">
+        <insert tableName="groups">
+            <column name="group_name" value="admins"/>
+        </insert>
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='admins')"/>
+            <column name="authority" value="manage_tasks"/>
+        </insert>
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='admins')"/>
+            <column name="authority" value="manage_application"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>

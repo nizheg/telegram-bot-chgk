@@ -145,11 +145,6 @@ public class TaskController {
         pictureService.deletePictureFromTaskComment(taskId, pictureId);
     }
 
-    @RequestMapping(value = "/service/archive", method = RequestMethod.POST)
-    public String archiveTasks() {
-        int archived = taskService.archiveTasks();
-        return "Archived: " + archived;
-    }
 
     public static class StatusWrapper {
         private LightTask.Status status;

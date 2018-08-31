@@ -31,6 +31,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .antMatchers("/0d2f72c055554a3d83c31744f7f451e0").permitAll()
+                .antMatchers(
+                        "/api/answer/**",
+                        "/api/category/**",
+                        "/api/picture/**",
+                        "/api/task/**",
+                        "/api/dbTask/**",
+                        "/api/tour/**",
+                        "/api/message/**").hasAuthority("manage_tasks")
+                .antMatchers("/api/manage/service/**").hasAuthority("manage_application")
                 .anyRequest().authenticated()
                 .and().formLogin()
                 .and().httpBasic();
