@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
@@ -17,6 +18,9 @@ import me.nizheg.util.NamedThreadFactory;
 public class WorkManager {
 
     private final WorkService workService;
+    @Getter
+    private volatile int period;
+    @Getter
     private volatile int batchSize;
     private ScheduledExecutorService scheduledExecutorService;
     private ScheduledFuture<?> scheduledFuture;
@@ -28,8 +32,9 @@ public class WorkManager {
         workers.add(worker);
     }
 
-    public synchronized void start(long period, TimeUnit unit, int batchSize) {
+    public synchronized void start(int period, TimeUnit unit, int batchSize) {
         this.batchSize = batchSize;
+        this.period = period;
         if (this.scheduledExecutorService == null) {
             this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
                     new NamedThreadFactory("worker-"));
@@ -85,7 +90,6 @@ public class WorkManager {
     private List<WorkDescription> getWorks(int count) {
         return workService.getWorks(count, WorkStatus.READY);
     }
-
 
     private void doWork(WorkDescription workDescription) {
         if (log.isDebugEnabled()) {

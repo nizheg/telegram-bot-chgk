@@ -7,12 +7,12 @@
 
 
 <label>Периодичность запуска: (с)
-    <input ng-disabled="t.isWorkInProgress" size="10" type="text" ng-model="t.workConfig.periodInSeconds"></label>
+    <input ng-disabled="t.workStatus.started" size="10" type="text" ng-model="t.workStatus.periodInSeconds"></label>
 <label>Количество задач:
-    <input ng-disabled="t.isWorkInProgress" size="10" type="text" ng-model="t.workConfig.batchSize"></label>
+    <input ng-disabled="t.workStatus.started" size="10" type="text" ng-model="t.workStatus.batchSize"></label>
 <form ng-submit="t.startWorking()">
-    <input ng-disabled="t.isWorkInProgress" class="btn-primary" type="submit" value="Запустить">
+    <input ng-disabled="t.workStatus.started" class="btn-primary" type="submit" value="Запустить">
 </form>
 <form ng-submit="t.stopWorking()">
-    <input ng-disabled="!t.isWorkInProgress" class="btn-primary" type="submit" value="Остановить">
+    <input ng-disabled="!t.workStatus.started" class="btn-primary" type="submit" value="Остановить">
 </form>

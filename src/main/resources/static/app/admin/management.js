@@ -19,19 +19,19 @@
             });
         }
 
-        t.workConfig = {
+        t.workStatus = {
             "periodInSeconds" : "1",
-            "batchSize" : "1"
+            "batchSize" : "1",
+            "started" : false
         };
-        t.isWorkInProgress = true;
         t.getWorkingStatus = function() {
             api.isWorkerStarted().then(function(data) {
-                t.isWorkInProgress = data;
+                t.workStatus = data;
             });
         }
 
         t.startWorking = function() {
-            api.startWorker(t.workConfig).then(function(data) { t.getWorkingStatus(); });
+            api.startWorker(t.workStatus).then(function(data) { t.getWorkingStatus(); });
         }
         t.stopWorking = function() {
             api.stopWorker().then(function(data) { t.getWorkingStatus(); })

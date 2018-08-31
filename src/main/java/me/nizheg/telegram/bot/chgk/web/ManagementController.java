@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.TimeUnit;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.work.WorkManager;
 
@@ -36,8 +39,12 @@ public class ManagementController {
     }
 
     @GetMapping("works/status")
-    public boolean isWorkerStarted() {
-        return workManager.isStarted();
+    public WorksConfig getStatus() {
+        boolean isStarted = workManager.isStarted();
+        int period = workManager.getPeriod();
+        int batchSize = workManager.getBatchSize();
+        return new WorksConfig(period, batchSize, isStarted);
+
     }
 
     @RequestMapping(value = "/tasks/archive", method = RequestMethod.POST)
@@ -46,9 +53,13 @@ public class ManagementController {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @Data
-    private static class WorksConfig {
-        long periodInSeconds =1;
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class WorksConfig {
+        int periodInSeconds =1;
         int batchSize = 1;
+        boolean isStarted;
     }
 }
