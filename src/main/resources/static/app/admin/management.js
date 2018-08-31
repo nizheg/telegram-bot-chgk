@@ -18,5 +18,24 @@
                 t.archived = data;
             });
         }
+
+        t.workConfig = {
+            "periodInSeconds" : "1",
+            "batchSize" : "1"
+        };
+        t.isWorkInProgress = true;
+        t.getWorkingStatus = function() {
+            api.isWorkerStarted().then(function(data) {
+                t.isWorkInProgress = data;
+            });
+        }
+
+        t.startWorking = function() {
+            api.startWorker(t.workConfig).then(function(data) { t.getWorkingStatus(); });
+        }
+        t.stopWorking = function() {
+            api.stopWorker().then(function(data) { t.getWorkingStatus(); })
+        }
+        t.getWorkingStatus();
     }
 })();

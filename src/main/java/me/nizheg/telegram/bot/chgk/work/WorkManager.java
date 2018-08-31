@@ -53,6 +53,11 @@ public class WorkManager {
         this.scheduledFuture = null;
     }
 
+    public synchronized boolean isStarted() {
+        return this.scheduledFuture != null && this.scheduledExecutorService != null &&
+                !this.scheduledExecutorService.isShutdown();
+    }
+
     private void processWork() {
         log.debug("Start works processing");
         List<WorkDescription> works;

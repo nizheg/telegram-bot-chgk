@@ -181,6 +181,15 @@
             },
             archiveTasks: function() {
                 return $http.post("api/manage/tasks/archive").then(function (response) { return response.data});
+            },
+            startWorker: function(workConfig) {
+                return $http.post("api/manage/works", workConfig);
+            },
+            stopWorker: function() {
+                return $http.delete("api/manage/works")
+            },
+            isWorkerStarted: function() {
+                return $http.get("/api/manage/works/status").then(function (response) {return response.data});
             }
         };
     }

@@ -1,5 +1,18 @@
-<p><a ng-href="#">Домой</a> | <a ng-href="#/tours/new">Неразобранные турниры</a> | <a ng-href="#/tasks">Неразобранные задания</a></p>
+<p><a ng-href="#">Домой</a> | <a ng-href="#/tours/new">Неразобранные турниры</a> | <a ng-href="#/tasks">Неразобранные
+    задания</a></p>
 <form ng-submit="t.archiveTasks()">
     <input ng-disabled="t.archiving" class="btn-primary" type="submit" value="Архивировать">
 </form>
 <p ng-if="t.archived != null">Архивировано: {{t.archived}} </p>
+
+
+<label>Периодичность запуска: (с)
+    <input ng-disabled="t.isWorkInProgress" size="10" type="text" ng-model="t.workConfig.periodInSeconds"></label>
+<label>Количество задач:
+    <input ng-disabled="t.isWorkInProgress" size="10" type="text" ng-model="t.workConfig.batchSize"></label>
+<form ng-submit="t.startWorking()">
+    <input ng-disabled="t.isWorkInProgress" class="btn-primary" type="submit" value="Запустить">
+</form>
+<form ng-submit="t.stopWorking()">
+    <input ng-disabled="!t.isWorkInProgress" class="btn-primary" type="submit" value="Остановить">
+</form>
