@@ -32,8 +32,7 @@ public class ManagementController {
     }
 
     @RequestMapping(value = "/tasks/archive", method = RequestMethod.POST)
-    public String archiveTasks() {
-        int archived = taskService.archiveTasks();
-        return "Archived: " + archived;
+    public int archiveTasks() {
+        return taskService.archiveTasks();
     }
 }

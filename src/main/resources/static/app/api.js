@@ -178,6 +178,9 @@
                 }).then(function (response) {
                     return response.data
                 });
+            },
+            archiveTasks: function() {
+                return $http.post("api/manage/tasks/archive").then(function (response) { return response.data});
             }
         };
     }
