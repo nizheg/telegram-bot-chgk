@@ -1,8 +1,8 @@
 (function () {
     'use strict';
-    angular.module('tasks_archive', ['ngTouch'])
-            .controller('TasksArchiveController', TasksArchiveController);
-    function TasksArchiveController($log,
+    angular.module('management', ['ngTouch'])
+            .controller('ManagementController', ManagementController);
+    function ManagementController($log,
                                $routeParams,
                                $location,
                                api,

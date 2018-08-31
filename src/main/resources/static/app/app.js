@@ -7,7 +7,7 @@
         'tour',
         'tours',
         'message',
-        'tasks_archive'
+        'management'
     ]).config(config);
 
     function config($routeProvider) {
@@ -55,9 +55,9 @@
                     controllerAs: 't'
 
                 })
-                .when('/tasks_archive', {
-                    templateUrl: 'app/admin/tasks-archive.html',
-                    controller: 'TasksArchiveController',
+                .when('/management', {
+                    templateUrl: 'app/admin/management.html',
+                    controller: 'ManagementController',
                     controllerAs: 't'
                 })
                 .otherwise({
