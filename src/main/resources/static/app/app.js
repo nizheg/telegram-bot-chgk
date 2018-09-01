@@ -49,6 +49,12 @@
                     controllerAs: 't'
 
                 })
+                .when('/message/:id', {
+                    templateUrl: 'app/admin/message.html',
+                    controller: 'MessageController',
+                    controllerAs: 't'
+
+                })
                 .when('/message', {
                     templateUrl: 'app/admin/message.html',
                     controller: 'MessageController',

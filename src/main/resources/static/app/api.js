@@ -145,14 +145,15 @@
                     return response.data
                 });
             },
-            getMessageStatus: function () {
-                return $http.get('api/message/status')
+            getMessageStatus: function (id) {
+                return $http.get('api/message/' + id + '/status')
                         .then(function (response) {
                             return response.data;
                         })
             },
-            cancelMessageSending: function () {
-                return $http.post('api/message/status', {"status": 'CANCELLED'}).then(function (response) {
+            cancelMessageSending: function (id) {
+                return $http.patch('api/message/' + id + '/status', {"statuses" : {"CANCELLED" : -1}}).then(function
+                (response) {
                     return response.data
                 });
             },

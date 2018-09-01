@@ -3,6 +3,7 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -81,8 +82,14 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void setStatus(long id, SendingMessageReceiverStatus status) {
-        workService.changeStatusForAllReceivers(id, convertStatus(status));
+    public void setStatus(long id, SendingMessageStatus status) {
+        status.getStatuses().forEach((sendingMessageReceiverStatus, count) -> {
+            if (count == -1) {
+                workService.changeStatusForAllReceivers(id, convertStatus(sendingMessageReceiverStatus));
+            } else {
+                workService.changeStatusForPartOfReceivers(id, convertStatus(sendingMessageReceiverStatus), count);
+            }
+        });
     }
 
     @Override
@@ -100,7 +107,11 @@ public class MessageServiceImpl implements MessageService {
             resultBuilder.sendMessageData((SendMessageData) data);
         }
         resultBuilder.statuses(sendMessageWork.getStatuses().entrySet().stream()
-                .collect(Collectors.toMap(entry -> convertStatus(entry.getKey()), Map.Entry::getValue)));
+                .collect(Collectors.toMap(
+                        entry -> convertStatus(entry.getKey()),
+                        Map.Entry::getValue,
+                        (l, r) -> l,
+                        () -> new EnumMap<>(SendingMessageReceiverStatus.class))));
         return resultBuilder.build();
     }
 

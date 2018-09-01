@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -189,7 +190,11 @@ public class WorkServiceImpl implements WorkService {
 
     private SendingWorkStatus convertToSendWorkingStatus(BroadcastMessagePackage broadcastToActiveChats) {
         Map<WorkStatus, Integer> workStatuses = broadcastToActiveChats.getStatusesCount().entrySet().stream()
-                .collect(Collectors.toMap(entry -> WorkStatus.valueOf(entry.getKey()), Map.Entry::getValue));
+                .collect(Collectors.toMap(
+                        entry -> WorkStatus.valueOf(entry.getKey()),
+                        Map.Entry::getValue,
+                        (l, r) -> l,
+                        () -> new EnumMap<>(WorkStatus.class)));
         return SendingWorkStatus.builder()
                 .id(broadcastToActiveChats.getId())
                 .data(deserializeSendingWorkData(broadcastToActiveChats.getData(), broadcastToActiveChats.getType()))
