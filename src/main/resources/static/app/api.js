@@ -151,6 +151,12 @@
                             return response.data;
                         })
             },
+            getMessageStatuses: function(pageNumber) {
+                return $http.get('api/message?pageNumber=' + pageNumber)
+                    .then(function (response) {
+                        return response.data;
+                    })
+            },
             startSending: function (id, count) {
                 return $http.patch('api/message/' + id + '/status', {"statuses" : {"READY" : count}}).then(function
                 (response) {

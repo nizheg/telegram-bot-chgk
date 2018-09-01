@@ -171,6 +171,9 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
         List<BroadcastMessageDescription> descriptions = this.template.query(
                 "select id, data, type from broadcast_message order by id desc limit :limit offset :offset",
                 parameters, broadcastMessageDescriptionMapper);
+        if (descriptions.isEmpty()) {
+            return Collections.emptyList();
+        }
         List<Long> messageIds = descriptions.stream()
                 .map(BroadcastMessageDescription::getId)
                 .collect(Collectors.toList());

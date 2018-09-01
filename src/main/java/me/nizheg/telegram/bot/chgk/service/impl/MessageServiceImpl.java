@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
+import me.nizheg.telegram.bot.chgk.dto.PagingParameters;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessageReceiverStatus;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessageStatus;
@@ -95,6 +97,13 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public SendingMessageStatus getStatus(long id) {
         return convertToSendingMessageStatus(workService.getSendingWorkStatus(id));
+    }
+
+    @Override
+    public List<SendingMessageStatus> getStatuses(int page) {
+        PagingParameters pagingParameters = new PagingParameters(20).pageNumber(page);
+        List<SendingWorkStatus> sendingWorkStatuses = workService.getSendingWorkStatuses(pagingParameters);
+        return sendingWorkStatuses.stream().map(this::convertToSendingMessageStatus).collect(Collectors.toList());
     }
 
     private SendingMessageStatus convertToSendingMessageStatus(SendingWorkStatus sendMessageWork) {

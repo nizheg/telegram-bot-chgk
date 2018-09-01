@@ -7,6 +7,7 @@
         'tour',
         'tours',
         'message',
+        'messages',
         'management'
     ]).config(config);
 
@@ -46,6 +47,12 @@
                 .when('/tours/new', {
                     templateUrl: 'app/tour/tours.html',
                     controller: 'ToursController',
+                    controllerAs: 't'
+
+                })
+                .when('/messages', {
+                    templateUrl: 'app/admin/messages.html',
+                    controller: 'MessagesController',
                     controllerAs: 't'
 
                 })

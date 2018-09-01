@@ -1,14 +1,17 @@
 package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -39,6 +42,11 @@ public class MessageController {
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         message.setSender(currentUser);
         return messageService.send(message);
+    }
+
+    @GetMapping
+    public List<SendingMessageStatus> getMessages(@RequestParam(defaultValue = "1") int pageNumber) {
+        return messageService.getStatuses(pageNumber);
     }
 
     @PatchMapping(value = "{id}/status")

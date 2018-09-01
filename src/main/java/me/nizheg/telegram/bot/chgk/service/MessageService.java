@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service;
 
+import java.util.List;
+
 import lombok.NonNull;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessageStatus;
@@ -14,4 +16,6 @@ public interface MessageService {
     void setStatus(long id, SendingMessageStatus status);
 
     SendingMessageStatus getStatus(long id);
+
+    List<SendingMessageStatus> getStatuses(int page);
 }
