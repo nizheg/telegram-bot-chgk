@@ -3,16 +3,23 @@ package me.nizheg.telegram.bot.chgk.work;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
+import me.nizheg.telegram.bot.chgk.dto.PagingParameters;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 import me.nizheg.telegram.bot.chgk.work.data.SendMessageData;
+import me.nizheg.telegram.bot.chgk.work.data.SendingWorkData;
 
 @CommonsLog
 @RequiredArgsConstructor
@@ -22,59 +29,42 @@ public class WorkServiceImpl implements WorkService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void forwardMessageToActiveChats(ForwardMessageData forwardMessageData) {
+    public SendingWorkStatus sendMessageToActiveChats(ForwardMessageData forwardMessageData) {
         String data = serializeData(forwardMessageData);
-        broadcastMessageDao.createBroadcastToActiveChats(data,
+        BroadcastMessagePackage broadcastToActiveChats = broadcastMessageDao.createBroadcastToActiveChats(data,
                 WorkType.FORWARD_MESSAGE.name(),
                 WorkStatus.CREATED.name());
-
+        return convertToSendWorkingStatus(broadcastToActiveChats);
     }
 
     @Override
-    public void forwardMessageToChats(ForwardMessageData forwardMessageData, List<Long> receivers) {
+    public SendingWorkStatus sendMessageToActiveChats(SendMessageData sendMessageData) {
+        String data = serializeData(sendMessageData);
+        BroadcastMessagePackage broadcastToActiveChats = broadcastMessageDao.createBroadcastToActiveChats(data,
+                WorkType.SEND_MESSAGE.name(),
+                WorkStatus.CREATED.name());
+        return convertToSendWorkingStatus(broadcastToActiveChats);
+    }
+
+    @Override
+    public SendingWorkStatus sendMessageToChats(ForwardMessageData forwardMessageData, List<Long> receivers) {
         String data = serializeData(forwardMessageData);
-        broadcastMessageDao.createBroadcastToChats(data,
+        BroadcastMessagePackage broadcastToChats = broadcastMessageDao.createBroadcastToChats(data,
                 WorkType.FORWARD_MESSAGE.name(),
                 WorkStatus.CREATED.name(),
                 receivers);
-    }
-
-    private String serializeData(ForwardMessageData forwardMessageData) {
-        String data;
-        try {
-            data = objectMapper.writeValueAsString(forwardMessageData);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
-        return data;
+        return convertToSendWorkingStatus(broadcastToChats);
     }
 
     @Override
-    public void sendMessageToActiveChats(SendMessageData sendMessageData) {
+    public SendingWorkStatus sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers) {
         String data = serializeData(sendMessageData);
-        broadcastMessageDao.createBroadcastToActiveChats(data,
-                WorkType.SEND_MESSAGE.name(),
-                WorkStatus.CREATED.name());
-    }
-
-    @Override
-    public void sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers) {
-        String data = serializeData(sendMessageData);
-        broadcastMessageDao.createBroadcastToChats(data,
+        BroadcastMessagePackage broadcastToChats = broadcastMessageDao.createBroadcastToChats(data,
                 WorkType.SEND_MESSAGE.name(),
                 WorkStatus.CREATED.name(),
                 receivers
         );
-    }
-
-    private String serializeData(SendMessageData sendMessageData) {
-        String data;
-        try {
-            data = objectMapper.writeValueAsString(sendMessageData);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException(e);
-        }
-        return data;
+        return convertToSendWorkingStatus(broadcastToChats);
     }
 
     @Override
@@ -97,27 +87,6 @@ public class WorkServiceImpl implements WorkService {
             }
         }).collect(Collectors.toList());
     }
-
-    private ForwardMessageWork createForwardMessageData(BroadcastMessage broadcastMessage) throws java.io.IOException {
-        ForwardMessageData forwardMessageData =
-                objectMapper.readerFor(ForwardMessageData.class).readValue(broadcastMessage.getData());
-        return ForwardMessageWork.builder()
-                .id(broadcastMessage.getId())
-                .chatId(broadcastMessage.getChatId())
-                .forwardMessageData(forwardMessageData)
-                .build();
-    }
-
-    private SendMessageWork createSendMessageData(BroadcastMessage broadcastMessage) throws java.io.IOException {
-        SendMessageData sendMessageData =
-                objectMapper.readerFor(SendMessageData.class).readValue(broadcastMessage.getData());
-        return SendMessageWork.builder()
-                .id(broadcastMessage.getId())
-                .chatId(broadcastMessage.getChatId())
-                .sendMessageData(sendMessageData)
-                .build();
-    }
-
 
     /**
      * Change status of workDescription. Matrix of possible transitions:<br>
@@ -149,9 +118,46 @@ public class WorkServiceImpl implements WorkService {
     }
 
     @Override
-    public void changeStatusForAllChats(long broadcastId, WorkStatus status) {
-        List<String> fromStatusesStrings = getFromStatusesForTransition(WorkStatus.CANCELLED);
-        broadcastMessageDao.updateStatusByIdStatus(broadcastId, fromStatusesStrings, WorkStatus.CANCELLED.name());
+    public void changeStatusForAllReceivers(long sendingWorkId, WorkStatus status) {
+        List<String> fromStatusesStrings = getFromStatusesForTransition(status);
+        broadcastMessageDao.updateStatusByIdStatus(sendingWorkId, fromStatusesStrings, status.name(), null);
+    }
+
+    @Override
+    public void changeStatusForPartOfReceivers(long sendingWorkId, WorkStatus status, int count) {
+        List<String> fromStatusesStrings = getFromStatusesForTransition(status);
+        broadcastMessageDao.updateStatusByIdStatus(sendingWorkId, fromStatusesStrings, status.name(), count);
+    }
+
+    @Override
+    public SendingWorkStatus getSendingWorkStatus(long sendingWorkId) {
+        return convertToSendWorkingStatus(broadcastMessageDao.getPackage(sendingWorkId));
+    }
+
+    @Override
+    public List<SendingWorkStatus> getSendingWorkStatuses(@NonNull PagingParameters pagingParameters) {
+        return broadcastMessageDao.getPackages(pagingParameters)
+                .stream()
+                .map(this::convertToSendWorkingStatus)
+                .collect(Collectors.toList());
+    }
+
+    private ForwardMessageWork createForwardMessageData(BroadcastMessage broadcastMessage) {
+        ForwardMessageData forwardMessageData = deserializeForwardMessageData(broadcastMessage.getData());
+        return ForwardMessageWork.builder()
+                .id(broadcastMessage.getId())
+                .chatId(broadcastMessage.getChatId())
+                .forwardMessageData(forwardMessageData)
+                .build();
+    }
+
+    private SendMessageWork createSendMessageData(BroadcastMessage broadcastMessage) {
+        SendMessageData sendMessageData = deserializeSendMessageData(broadcastMessage.getData());
+        return SendMessageWork.builder()
+                .id(broadcastMessage.getId())
+                .chatId(broadcastMessage.getChatId())
+                .sendMessageData(sendMessageData)
+                .build();
     }
 
     private List<String> getFromStatusesForTransition(WorkStatus toStatus) {
@@ -178,6 +184,65 @@ public class WorkServiceImpl implements WorkService {
             default:
         }
         return fromStatuses.stream().map(Enum::name).collect(Collectors.toList());
+    }
+
+
+    private SendingWorkStatus convertToSendWorkingStatus(BroadcastMessagePackage broadcastToActiveChats) {
+        Map<WorkStatus, Integer> workStatuses = broadcastToActiveChats.getStatusesCount().entrySet().stream()
+                .collect(Collectors.toMap(entry -> WorkStatus.valueOf(entry.getKey()), Map.Entry::getValue));
+        return SendingWorkStatus.builder()
+                .id(broadcastToActiveChats.getId())
+                .data(deserializeSendingWorkData(broadcastToActiveChats.getData(), broadcastToActiveChats.getType()))
+                .statuses(workStatuses).build();
+    }
+
+    private String serializeData(ForwardMessageData forwardMessageData) {
+        String data;
+        try {
+            data = objectMapper.writeValueAsString(forwardMessageData);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+        return data;
+    }
+
+    private String serializeData(SendMessageData sendMessageData) {
+        String data;
+        try {
+            data = objectMapper.writeValueAsString(sendMessageData);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+        return data;
+    }
+
+    @Nullable
+    private SendingWorkData deserializeSendingWorkData(@Nonnull String data, @Nonnull String type) {
+        WorkType workType = WorkType.valueOf(type);
+        switch (workType) {
+            case SEND_MESSAGE:
+                return deserializeSendMessageData(data);
+            case FORWARD_MESSAGE:
+                return deserializeForwardMessageData(data);
+            default:
+                return null;
+        }
+    }
+
+    private SendMessageData deserializeSendMessageData(String data) {
+        try {
+            return objectMapper.readerFor(SendMessageData.class).readValue(data);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private ForwardMessageData deserializeForwardMessageData(String data) {
+        try {
+            return objectMapper.readerFor(ForwardMessageData.class).readValue(data);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private enum WorkType {

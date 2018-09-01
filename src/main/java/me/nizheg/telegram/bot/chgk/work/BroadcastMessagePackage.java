@@ -1,18 +1,17 @@
 package me.nizheg.telegram.bot.chgk.work;
 
-import lombok.Builder;
-import lombok.Data;
+import java.util.Collections;
+import java.util.Map;
+
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-@Data
-@Builder
-public class BroadcastMessage {
-
+@RequiredArgsConstructor
+public class BroadcastMessagePackage {
     @NonNull
     private final BroadcastMessageDescription description;
-    private final long chatId;
     @NonNull
-    private final String status;
+    private final Map<String, Integer> statusesCount;
 
     public long getId() {
         return description.getId();
@@ -26,4 +25,7 @@ public class BroadcastMessage {
         return description.getType();
     }
 
+    public Map<String, Integer> getStatusesCount() {
+        return Collections.unmodifiableMap(statusesCount);
+    }
 }

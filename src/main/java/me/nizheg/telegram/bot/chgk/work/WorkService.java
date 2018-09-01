@@ -2,22 +2,30 @@ package me.nizheg.telegram.bot.chgk.work;
 
 import java.util.List;
 
+import lombok.NonNull;
+import me.nizheg.telegram.bot.chgk.dto.PagingParameters;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 import me.nizheg.telegram.bot.chgk.work.data.SendMessageData;
 
 public interface WorkService {
 
-    void forwardMessageToActiveChats(ForwardMessageData forwardMessageData);
+    SendingWorkStatus sendMessageToActiveChats(ForwardMessageData forwardMessageData);
 
-    void forwardMessageToChats(ForwardMessageData forwardMessageData, List<Long> receivers);
+    SendingWorkStatus sendMessageToActiveChats(SendMessageData sendMessageData);
 
-    void sendMessageToActiveChats(SendMessageData sendMessageData);
+    SendingWorkStatus sendMessageToChats(ForwardMessageData forwardMessageData, List<Long> receivers);
 
-    void sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers);
+    SendingWorkStatus sendMessageToChats(SendMessageData sendMessageData, List<Long> receivers);
 
-    void changeStatusForAllChats(long broadcastId, WorkStatus status);
+    void changeStatusForAllReceivers(long broadcastId, WorkStatus status);
 
     List<WorkDescription> getWorks(int count, WorkStatus status);
 
     void changeStatus(WorkDescription workDescription, WorkStatus status);
+
+    void changeStatusForPartOfReceivers(long broadcastId, WorkStatus status, int count);
+
+    SendingWorkStatus getSendingWorkStatus(long sendingWorkId);
+
+    List<SendingWorkStatus> getSendingWorkStatuses(@NonNull PagingParameters pagingParameters);
 }

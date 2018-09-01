@@ -10,7 +10,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class ForwardMessageData {
+public class ForwardMessageData implements SendingWorkData {
 
     private long messageId;
     private long fromChatId;

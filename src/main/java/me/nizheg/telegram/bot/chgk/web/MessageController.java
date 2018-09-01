@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 import java.util.Optional;
 
-import me.nizheg.telegram.bot.chgk.dto.BroadcastStatus;
+import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
+import me.nizheg.telegram.bot.chgk.dto.SendingMessageReceiverStatus;
+import me.nizheg.telegram.bot.chgk.dto.SendingMessageStatus;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
@@ -21,38 +23,32 @@ import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
  * @author Nikolay Zhegalin
  */
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/message")
 public class MessageController {
 
     private final MessageService messageService;
     private final TelegramUserService telegramUserService;
 
-    public MessageController(
-            MessageService messageService,
-            TelegramUserService telegramUserService) {
-        this.messageService = messageService;
-        this.telegramUserService = telegramUserService;
-    }
-
     @RequestMapping(method = RequestMethod.POST)
-    public void send(@RequestBody final SendingMessage message, Principal principal) {
+    public SendingMessageStatus send(@RequestBody final SendingMessage message, Principal principal) {
         TelegramUser currentUser = Optional.ofNullable(principal)
                 .filter(p -> StringUtils.isNotBlank(p.getName()))
                 .map(p -> telegramUserService.getByUsername(p.getName()))
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         message.setSender(currentUser);
-        messageService.send(message);
+        return messageService.send(message);
     }
 
-    @PutMapping(value = "/{id}/status")
-    public void setStatus(@PathVariable long id, @RequestBody BroadcastStatus.Status status) {
+    @PutMapping(value = "{id}/status")
+    public void setStatus(@PathVariable long id, @RequestBody SendingMessageReceiverStatus status) {
         messageService.setStatus(id, status);
     }
-//
-//    @RequestMapping(value = "/status", method = RequestMethod.GET)
-//    public BroadcastStatus getStatus() {
-//        return messageService.getStatus();
-//    }
+
+    @RequestMapping(value = "{id}/status", method = RequestMethod.GET)
+    public SendingMessageStatus getStatus(@PathVariable long id) {
+        return messageService.getStatus(id);
+    }
 
 
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
-public class SendMessageData {
+public class SendMessageData implements SendingWorkData {
 
     private String text;
     private String parseMode;
