@@ -13,7 +13,9 @@
     t.parseModes"></select></label>
 
 <form ng-submit="t.sendMessage()">
-    <input class="btn-primary" ng-disabled="!t.isNew()" type="submit" value="Отправить">
+    <input class="btn-primary" ng-disabled="!t.isSendingAllowed" type="submit" value="Отправить">
+    <label><input ng-disabled="!t.isSendingAllowed || t.isSendingToAll" type="text" ng-model="t.sendCount"></label>
+    <label><input ng-disabled="!t.isSendingAllowed" type="checkbox" ng-model="t.isSendingToAll"> Всем</label>
 </form>
 
 <form ng-submit="t.sendMessageToMe()">
@@ -21,5 +23,5 @@
 </form>
 
 <form ng-submit="t.cancelSending()">
-    <input class="btn-primary" ng-disabled="t.isNew()" type="submit" value="Отменить">
+    <input class="btn-primary" ng-disabled="!t.isCancelAllowed" type="submit" value="Отменить">
 </form>

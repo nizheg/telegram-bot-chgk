@@ -8,14 +8,20 @@
                                api,
                                dictionary) {
         var t = this;
+        t.isSendingToAll = true;
+        t.sendCount = 0;
 
         t.parseModes = dictionary.getParseModes();
+
+        t.isActive = false;
 
         t.isNew = function () {
             return $routeParams.id == null;
         };
 
         t.refreshStatus = function() {
+            t.isCancelAllowed = false;
+            t.isSendingAllowed = true;
             t.message = "";
             t.parseMode = null;
             t.enableWebPagePreview = false;
@@ -35,7 +41,9 @@
                     Object.keys(t.status.statuses).forEach(function(key,index) {
                         t.statusDescription += '\n\t'+ t.getStatusDescription(key) + ':' + t.status.statuses[key];
                     });
-
+                    t.isCancelAllowed = t.status.statuses['READY'] > 0;
+                    t.isSendingAllowed = t.status.statuses['CREATED'] > 0 || t.status.statuses['ERROR'] > 0 ||
+                        t.status.statuses['CANCELLED'] > 0 || t.status.statuses['FINISHED'] > 0;
                 });
             }
         };
@@ -57,20 +65,35 @@
                 default :
                     return '';
             }
-
         };
 
         t.sendMessage = function () {
-            api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
-                $location.path('/message/' + sendingMessageStatus.id);
-            });
+            if (t.isNew()) {
+                api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
+                    startSending(sendingMessageStatus.id);
+                });
+            } else {
+                t.startSending($routeParams.id);
+            }
         };
+
+        t.startSending = function(id) {
+                            var count = t.sendCount;
+                            if (t.isSendingToAll) {
+                                count = -1;
+                            }
+                            api.startSending(id, count).then(function(sendingMessageStatus) {
+                                $location.path('/message/' + id);
+                                t.refreshStatus();
+                            });
+        }
 
         t.sendMessageToMe = function () {
             api.sendMessageToMe(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
                 $location.path('/message/' + sendingMessageStatus.id);
             });
         };
+
         t.cancelSending = function () {
             api.cancelMessageSending($routeParams.id).then(function (data) {
                 t.refreshStatus();

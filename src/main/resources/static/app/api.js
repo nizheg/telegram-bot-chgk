@@ -151,6 +151,12 @@
                             return response.data;
                         })
             },
+            startSending: function (id, count) {
+                return $http.patch('api/message/' + id + '/status', {"statuses" : {"READY" : count}}).then(function
+                (response) {
+                    return response.data
+                });
+            },
             cancelMessageSending: function (id) {
                 return $http.patch('api/message/' + id + '/status', {"statuses" : {"CANCELLED" : -1}}).then(function
                 (response) {

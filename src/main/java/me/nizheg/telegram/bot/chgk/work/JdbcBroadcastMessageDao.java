@@ -99,6 +99,7 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
                             .build();
                     return BroadcastMessage.builder()
                             .description(description)
+                            .chatId(rs.getLong("chat_id"))
                             .status(rs.getString("status"))
                             .build();
                 });
@@ -130,14 +131,17 @@ public class JdbcBroadcastMessageDao implements BroadcastMessageDao {
         parameters.put("change_time", OffsetDateTime.now());
         parameters.put("id", id);
         parameters.put("statuses", fromStatuses);
-        StringBuilder sqlBuilder = new StringBuilder("update broadcast_message_receiver "
-                + "set status = :status, change_time =:change_time "
-                + "where broadcast_message_id = :id and status in (:statuses)");
+
+        StringBuilder conditionBuilder = new StringBuilder("select number from broadcast_message_receiver where "
+                + "broadcast_message_id = :id and status in (:statuses) order by number");
         if (limit != null) {
-            sqlBuilder.append(" limit :limit");
+            conditionBuilder.append(" limit :limit");
             parameters.put("limit", limit);
         }
-        template.update(sqlBuilder.toString(), parameters);
+        String updateQuery = String.format("update broadcast_message_receiver "
+                + "set status = :status, change_time =:change_time "
+                + "where number in (%s)", conditionBuilder.toString());
+        template.update(updateQuery, parameters);
     }
 
     @Override
