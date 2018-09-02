@@ -34,7 +34,7 @@ public class SendMessageWorker implements Worker {
         }
         SendMessageWork sendMessageWork = (SendMessageWork) workDescription;
         if (StringUtils.isEmpty(sendMessageWork.getText())) {
-            return;
+            throw new IllegalArgumentException("Empty text");
         }
         Long chatId = sendMessageWork.getChatId();
         Message telegramMessage = new Message(
