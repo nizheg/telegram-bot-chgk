@@ -70,20 +70,17 @@
         t.sendMessage = function () {
             if (t.isNew()) {
                 api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
-                    t.startSending(sendingMessageStatus.id);
+                    $location.path('/message/' + sendingMessageStatus.id);
                 });
-            } else {
-                t.startSending($routeParams.id);
             }
         };
 
-        t.startSending = function(id) {
+        t.startSending = function() {
                             var count = t.sendCount;
                             if (t.isSendingToAll) {
                                 count = -1;
                             }
-                            api.startSending(id, count).then(function(sendingMessageStatus) {
-                                $location.path('/message/' + id);
+                            api.startSending($routeParams.id, count).then(function(sendingMessageStatus) {
                                 t.refreshStatus();
                             });
         }
@@ -93,10 +90,7 @@
                 api.sendMessageToMe(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
                     $location.path('/message/' + sendingMessageStatus.id);
                 });
-            } else {
-                t.startSending($routeParams.id);
             }
-
         };
 
         t.cancelSending = function () {

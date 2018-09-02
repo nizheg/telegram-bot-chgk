@@ -13,15 +13,18 @@
     t.parseModes"></select></label>
 
 <form ng-submit="t.sendMessage()">
-    <input class="btn-primary" ng-disabled="!t.isSendingAllowed" type="submit" value="Отправить">
-    <label><input ng-disabled="!t.isSendingAllowed || t.isSendingToAll" type="text" ng-model="t.sendCount"></label>
-    <label><input ng-disabled="!t.isSendingAllowed" type="checkbox" ng-model="t.isSendingToAll"> Всем</label>
+    <input class="btn-primary" ng-disabled="!t.isNew()" type="submit" value="Отправить всем">
 </form>
 
 <form ng-submit="t.sendMessageToMe()">
-    <input class="btn-primary" ng-disabled="!t.isSendingAllowed" type="submit" value="Отправить мне">
+    <input class="btn-primary" ng-disabled="!t.isNew()" type="submit" value="Отправить мне">
 </form>
 
+<form ng-submit="t.startSending()">
+    <input class="btn-primary" ng-disabled="!t.isSendingAllowed || t.isNew()" type="submit" value="Начать отправку">
+    <label><input ng-disabled="!t.isSendingAllowed || t.isNew() || t.isSendingToAll" type="text" ng-model="t.sendCount"></label>
+    <label><input ng-disabled="!t.isSendingAllowed || t.isNew()" type="checkbox" ng-model="t.isSendingToAll"> Всем</label>
+</form>
 <form ng-submit="t.cancelSending()">
     <input class="btn-primary" ng-disabled="!t.isCancelAllowed" type="submit" value="Отменить">
 </form>
