@@ -4,11 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.security.Principal;
 import java.util.List;
@@ -22,6 +23,7 @@ import me.nizheg.telegram.bot.chgk.dto.SendingMessageStatus;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
+import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
 
 /**
  * @author Nikolay Zhegalin
@@ -34,7 +36,7 @@ public class MessageController {
     private final MessageService messageService;
     private final TelegramUserService telegramUserService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public SendingMessageStatus send(@RequestBody @Valid final SendingMessage message, Principal principal) {
         TelegramUser currentUser = Optional.ofNullable(principal)
                 .filter(p -> StringUtils.isNotBlank(p.getName()))
@@ -54,10 +56,14 @@ public class MessageController {
         messageService.setStatus(id, status);
     }
 
-    @RequestMapping(value = "{id}/status", method = RequestMethod.GET)
+    @GetMapping(value = "{id}/status")
     public SendingMessageStatus getStatus(@PathVariable long id) {
         return messageService.getStatus(id);
     }
 
+    @GetMapping("forwardData")
+    public DeferredResult<ForwardMessageData> getForwardData() {
+        return messageService.waitMessageForForwarding();
+    }
 
 }

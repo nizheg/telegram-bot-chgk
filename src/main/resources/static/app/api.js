@@ -131,6 +131,15 @@
                     return response.data
                 });
             },
+            waitForwardMessage: function() {
+                return $http.get('api/message/forwardData').then(function (response) { return response.data});
+            },
+            forwardMessage: function(forwardMessageData) {
+                return $http.post('api/message', {"receiver": "all", "forwardMessageData": forwardMessageData})
+                .then(function (response) {
+                    return response.data;
+                });
+            },
             sendMessage: function (text, disableWebPagePreview, parseMode) {
                 return $http.post('api/message', {"receiver": "all", "sendMessageData": {"text": text,
                 "disableWebPagePreview": disableWebPagePreview, "parseMode": parseMode}})

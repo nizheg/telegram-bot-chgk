@@ -20,6 +20,8 @@
         };
 
         t.refreshStatus = function() {
+            t.forwardButtonText = 'Форвард сообщения';
+            t.forwardWaiting = false;
             t.isCancelAllowed = false;
             t.isSendingAllowed = true;
             t.message = "";
@@ -67,6 +69,18 @@
             }
         };
 
+        t.initForwarding = function() {
+            t.forwardWaiting = true;
+            t.forwardButtonText = 'Сделайте форвард боту';
+            api.waitForwardMessage().then(function(forwardData) {
+                t.forwardWaiting = false;
+                t.forwardButtonText = 'Форвард сообщения';
+                api.forwardMessage(forwardData).then(function(sendingMessageStatus) {
+                    $location.path('/message/' + sendingMessageStatus.id);
+                });
+            });
+        }
+        
         t.sendMessage = function () {
             if (t.isNew()) {
                 api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {

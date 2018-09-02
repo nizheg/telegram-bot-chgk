@@ -2,6 +2,10 @@
 
 <pre>Статус: {{ t.statusDescription }}</pre>
 
+<form ng-submit="t.initForwarding()">
+    <input class="btn-primary" ng-disabled="!t.isNew() || t.forwardWaiting" type="submit" value="{{t.forwardButtonText}}">
+</form>
+
 <div>
     <p>Текст сообщения</p>
     <textarea ng-disabled="!t.isNew()" rows="10" ng-model="t.message">{{ t.message }}</textarea>

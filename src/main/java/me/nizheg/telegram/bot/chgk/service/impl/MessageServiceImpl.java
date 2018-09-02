@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -38,10 +39,29 @@ public class MessageServiceImpl implements MessageService {
     private final ChatGameService chatGameService;
     private final TaskSender taskSender;
     private final WorkService workService;
+    private DeferredResult<ForwardMessageData> forwardMessageDataWaiting;
 
     @Override
-    public void setMessageForForwarding(ForwardMessageData forwardingMessage) {
+    public synchronized void setMessageForForwarding(ForwardMessageData forwardingMessage) {
+        if (this.forwardMessageDataWaiting != null) {
+            this.forwardMessageDataWaiting.setResult(forwardingMessage);
+        }
+    }
 
+    @Override
+    public synchronized DeferredResult<ForwardMessageData> waitMessageForForwarding() {
+        if (this.forwardMessageDataWaiting != null) {
+            return this.forwardMessageDataWaiting;
+        }
+        this.forwardMessageDataWaiting = new DeferredResult<>(30000L);
+        this.forwardMessageDataWaiting.onTimeout(this::cleanForwardMessageDataWaiting);
+        this.forwardMessageDataWaiting.onCompletion(this::cleanForwardMessageDataWaiting);
+        this.forwardMessageDataWaiting.onError(error -> cleanForwardMessageDataWaiting());
+        return this.forwardMessageDataWaiting;
+    }
+
+    private synchronized void cleanForwardMessageDataWaiting() {
+        this.forwardMessageDataWaiting = null;
     }
 
     @Override
