@@ -19,7 +19,7 @@
 </form>
 
 <form ng-submit="t.sendMessageToMe()">
-    <input class="btn-primary" ng-disabled="!t.isNew()" type="submit" value="Отправить мне">
+    <input class="btn-primary" ng-disabled="!t.isSendingAllowed" type="submit" value="Отправить мне">
 </form>
 
 <form ng-submit="t.cancelSending()">

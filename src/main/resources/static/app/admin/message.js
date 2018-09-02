@@ -70,7 +70,7 @@
         t.sendMessage = function () {
             if (t.isNew()) {
                 api.sendMessage(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
-                    startSending(sendingMessageStatus.id);
+                    t.startSending(sendingMessageStatus.id);
                 });
             } else {
                 t.startSending($routeParams.id);
@@ -89,9 +89,14 @@
         }
 
         t.sendMessageToMe = function () {
-            api.sendMessageToMe(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
-                $location.path('/message/' + sendingMessageStatus.id);
-            });
+            if (t.isNew()) {
+                api.sendMessageToMe(t.message, !t.enableWebPagePreview, t.parseMode).then(function (sendingMessageStatus) {
+                    $location.path('/message/' + sendingMessageStatus.id);
+                });
+            } else {
+                t.startSending($routeParams.id);
+            }
+
         };
 
         t.cancelSending = function () {
