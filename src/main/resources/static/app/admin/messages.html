@@ -1,10 +1,8 @@
 <p><a ng-href="#">Домой</a></p>
 <p><a href="" ng-click="t.previousPage()">&lt;&lt;Предыдущая</a>&nbsp;
     <a href="" ng-click="t.nextPage()">Следующая&gt;&gt;</a></p>
-<br/>
-
-
 <ul>
+    <li><a ng-href="#/message">+ Создать новое сообщение</a></li>
 <li ng-repeat="mes in t.messages">
 <a ng-href="#/message/{{mes.id}}">{{mes.id}} {{t.getStatusText(mes)}}</a><br/>
     {{t.getStatusStatuses(mes)}}<br/>
