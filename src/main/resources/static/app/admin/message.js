@@ -78,6 +78,9 @@
                 api.forwardMessage(forwardData).then(function(sendingMessageStatus) {
                     $location.path('/message/' + sendingMessageStatus.id);
                 });
+            }, function() {
+                t.forwardWaiting = false;
+                t.forwardButtonText = 'Форвард сообщения';
             });
         }
         
