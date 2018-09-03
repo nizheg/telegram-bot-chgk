@@ -52,6 +52,7 @@ import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
+import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Cipher;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
@@ -402,7 +403,7 @@ public class AppConfig {
     }
 
     @Bean
-    public ChatGameServiceImpl chatGameService() {
+    public ChatGameService chatGameService() {
         return new ChatGameServiceImpl(propertyService, chatService, new ChatGameFactory() {
             @Override
             public ChatGame createChatGame(Chat chat) {
