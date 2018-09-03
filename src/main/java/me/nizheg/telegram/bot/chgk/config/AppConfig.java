@@ -52,7 +52,6 @@ import me.nizheg.telegram.bot.chgk.domain.ChatGameFactory;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
-import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Cipher;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
@@ -127,8 +126,6 @@ public class AppConfig {
     private ScheduledOperationService scheduledOperationService;
     @Autowired
     private BotInfo botInfo;
-    @Autowired
-    private ChatGameService chatGameService;
     @Autowired
     private PictureService pictureService;
     @Autowired
@@ -258,35 +255,35 @@ public class AppConfig {
     @Bean
     public CategoryCommand categoryCommand() {
         return new CategoryCommand(this::telegramApiClient, categoryService, chatService,
-                chatGameService, taskService, tourList());
+                chatGameService(), taskService, tourList());
     }
 
     @Bean
     public RepeatCommand repeatCommand() {
-        return new RepeatCommand(this::telegramApiClient, chatService, chatGameService,
+        return new RepeatCommand(this::telegramApiClient, chatService, chatGameService(),
                 taskSender(), warningSender());
     }
 
     @Bean
     public AnswerCommand answerCommand() {
-        return new AnswerCommand(this::telegramApiClient, chatService, chatGameService,
+        return new AnswerCommand(this::telegramApiClient, chatService, chatGameService(),
                 answerSender());
     }
 
     @Bean
     public HintCommand hintCommand() {
-        return new HintCommand(this::telegramApiClient, chatService, chatGameService, answerSender());
+        return new HintCommand(this::telegramApiClient, chatService, chatGameService(), answerSender());
     }
 
     @Bean
     public NextCommand nextCommand() {
-        return new NextCommand(this::telegramApiClient, chatService, chatGameService,
+        return new NextCommand(this::telegramApiClient, chatService, chatGameService(),
                 nextTaskSender());
     }
 
     @Bean
     public StopCommand stopCommand() {
-        return new StopCommand(this::telegramApiClient, chatService, chatGameService);
+        return new StopCommand(this::telegramApiClient, chatService, chatGameService());
     }
 
     @Bean
@@ -296,8 +293,7 @@ public class AppConfig {
 
     @Bean
     public TourCommand tourCommand() {
-        return new TourCommand(this::telegramApiClient, chatService, chatGameService,
-                tourList());
+        return new TourCommand(this::telegramApiClient, chatService, chatGameService(), tourList());
     }
 
     @Bean
@@ -307,13 +303,13 @@ public class AppConfig {
 
     @Bean
     public TimerCommand timerCommand() {
-        return new TimerCommand(this::telegramApiClient, chatGameService);
+        return new TimerCommand(this::telegramApiClient, chatGameService());
     }
 
     @Bean
     public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand() {
         ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand = new ClearCurrentTaskAndSendNextCommand(
-                this::telegramApiClient, chatGameService);
+                this::telegramApiClient, chatGameService());
         clearCurrentTaskAndSendNextCommand.setCommandsHolderSupplier(this::commandsHolder);
         return clearCurrentTaskAndSendNextCommand;
     }
@@ -327,7 +323,7 @@ public class AppConfig {
 
     @Bean
     public DefaultCommand defaultCommand() {
-        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService,
+        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService(),
                 taskSender(), telegramUserService, ratingHelper(), botInfo, clock());
     }
 
@@ -343,7 +339,7 @@ public class AppConfig {
 
     @Bean
     public MigrateCommand migrateCommand() {
-        return new MigrateCommand(this::telegramApiClient, chatService, chatGameService,
+        return new MigrateCommand(this::telegramApiClient, chatService, chatGameService(),
                 cipher);
     }
 
