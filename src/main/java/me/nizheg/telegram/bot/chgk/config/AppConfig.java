@@ -62,6 +62,7 @@ import me.nizheg.telegram.bot.chgk.service.TaskRatingService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
+import me.nizheg.telegram.bot.chgk.service.impl.ChatGameServiceImpl;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckMessageNotBlank;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
@@ -405,8 +406,8 @@ public class AppConfig {
     }
 
     @Bean
-    public ChatGameFactory chatGameFactory() {
-        return new ChatGameFactory() {
+    public ChatGameServiceImpl chatGameService() {
+        return new ChatGameServiceImpl(propertyService, chatService, new ChatGameFactory() {
             @Override
             public ChatGame createChatGame(Chat chat) {
                 return chatGame(chat);
@@ -416,7 +417,7 @@ public class AppConfig {
             public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
                 return autoChatGame(chat, timeout);
             }
-        };
+        });
     }
 
     @Bean

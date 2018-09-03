@@ -3,7 +3,6 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,7 +24,6 @@ import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.service.PropertyService;
 
 @CommonsLog
-@Service
 public class ChatGameServiceImpl implements ChatGameService {
 
     private final ConcurrentMap<Long, ChatGame> chatGames;
