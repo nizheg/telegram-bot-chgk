@@ -211,7 +211,7 @@
                 return $http.delete("api/manage/works")
             },
             isWorkerStarted: function() {
-                return $http.get("/api/manage/works/status").then(function (response) {return response.data});
+                return $http.get("api/manage/works/status").then(function (response) {return response.data});
             }
         };
     }
