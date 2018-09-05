@@ -1,5 +1,6 @@
 package me.nizheg.telegram.bot.chgk.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -163,7 +164,7 @@ public class AppConfig {
         CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
         CheckMessageNotBlank checkMessageNotBlank = new CheckMessageNotBlank();
         String channelName = propertyService.getValue("bot.channel");
-        if (channelName != null) {
+        if (StringUtils.isNotBlank(channelName)) {
             checkMessageNotBlank.setSuccessor(new CheckUserInChannel(botInfo, channelName,
                     this::telegramApiClient, usersInChannelCache()));
         }
