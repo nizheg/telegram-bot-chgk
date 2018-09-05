@@ -43,7 +43,7 @@ public class JdbcTaskRatingDao implements TaskRatingDao {
                     telegramUserId, value);
         } catch (DataIntegrityViolationException ex) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Task " + taskId + " is voted yet for user " + telegramUserId + ". Updating of it.", ex);
+                logger.debug("Task " + taskId + " is voted yet for user " + telegramUserId + ". Updating of it.");
             }
             // postgres don't allow do it in the same transaction
             newTransaction.execute(new TransactionCallbackWithoutResult() {
