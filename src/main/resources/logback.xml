@@ -35,6 +35,7 @@
             <maxFileSize>20MB</maxFileSize>
         </triggeringPolicy>
         <encoder>
+            <charset>UTF-8</charset>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg %n</pattern>
         </encoder>
     </appender>
