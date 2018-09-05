@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/dbTask/**",
                         "/api/tour/**",
                         "/api/message/**").hasAuthority("manage_tasks")
-                .antMatchers("/api/manage/service/**").hasAuthority("manage_application")
+                .antMatchers("/api/manage/**").hasAuthority("manage_application")
                 .anyRequest().authenticated()
                 .and().formLogin()
                 .and().httpBasic();
