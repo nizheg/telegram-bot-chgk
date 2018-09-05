@@ -94,8 +94,8 @@ public class ChatGameServiceImpl implements ChatGameService {
         long chatId = chat.getId();
         ChatGame chatGame = chatGames.get(chatId);
         if (chatGame == null) {
-            if (log.isTraceEnabled()) {
-                log.trace("Put in cache chat " + chatId);
+            if (log.isDebugEnabled()) {
+                log.debug("Put in cache chat " + chatId);
             }
             try {
                 chatService.createOrUpdate(chat);
@@ -104,9 +104,9 @@ public class ChatGameServiceImpl implements ChatGameService {
             }
             chatGame = putInCache(chat);
         }
-        if (log.isTraceEnabled()) {
+        if (log.isDebugEnabled()) {
             long elapsedTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            log.trace("Get game is executed in " + elapsedTime + " ms for chat " + chatId);
+            log.debug("Get game is executed in " + elapsedTime + " ms for chat " + chatId);
         }
         return chatGame;
     }
