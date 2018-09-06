@@ -1,7 +1,6 @@
 package me.nizheg.telegram.bot.chgk.service.impl;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-
+import org.ehcache.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -12,9 +11,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
 
+import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 import me.nizheg.telegram.bot.chgk.dto.ChatMapping;
@@ -32,9 +30,10 @@ import me.nizheg.telegram.bot.service.PropertyService;
  * @author Nikolay Zhegalin
  */
 @Service
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
-    private final ConcurrentMap<Long, Long> activeChatsCache;
+    private final Cache<Long, Long> activeChatsCache;
     private final PropertyService propertyService;
     private final ChatDao chatDao;
     private final ChatErrorDao chatErrorDao;
@@ -42,28 +41,6 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMappingDao chatMappingDao;
     private final TaskDao taskDao;
     private TransactionTemplate newTransaction;
-
-    public ChatServiceImpl(
-            PropertyService propertyService,
-            ChatDao chatDao,
-            ChatErrorDao chatErrorDao,
-            AnswerLogDao answerLogDao,
-            ChatMappingDao chatMappingDao,
-            TaskDao taskDao) {
-        this.propertyService = propertyService;
-        this.chatDao = chatDao;
-        this.chatErrorDao = chatErrorDao;
-        this.answerLogDao = answerLogDao;
-        this.chatMappingDao = chatMappingDao;
-        this.taskDao = taskDao;
-        int maxSize = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.size")).orElse(500);
-        int concurrencyLevel = Optional.ofNullable(propertyService.getIntegerValue("chat.cache.connections.count"))
-                .orElse(40);
-        activeChatsCache = new ConcurrentLinkedHashMap.Builder<Long, Long>()
-                .maximumWeightedCapacity(maxSize)
-                .concurrencyLevel(concurrencyLevel)
-                .build();
-    }
 
     @Autowired
     public void setTransactionPlatformManager(PlatformTransactionManager txManager) {

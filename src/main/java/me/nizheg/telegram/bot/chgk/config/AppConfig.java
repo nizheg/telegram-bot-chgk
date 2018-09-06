@@ -194,6 +194,23 @@ public class AppConfig {
     }
 
     @Bean
+    public Cache<Long, Long> activeChatsCache() {
+        Long lifeTimeInSeconds = propertyService.getLongValue("chat.cache.live.seconds");
+        if (lifeTimeInSeconds == null) {
+            lifeTimeInSeconds = (long) 24 * 60 * 60;
+        }
+        Long cacheCapacity = propertyService.getLongValue("chat.cache.capacity");
+        if (cacheCapacity == null) {
+            cacheCapacity = 1000L;
+        }
+        CacheConfigurationBuilder<Long, Long> cacheConfiguration =
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, Long.class,
+                        ResourcePoolsBuilder.heap(cacheCapacity))
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(lifeTimeInSeconds)));
+        return cacheManager().createCache("chatCache", cacheConfiguration);
+    }
+
+    @Bean
     public NonCommandExecutor nonCommandExecutor(
             @Autowired(required = false)
                     List<NonCommandMessageProcessor> nonCommandMessageProcessors) {
