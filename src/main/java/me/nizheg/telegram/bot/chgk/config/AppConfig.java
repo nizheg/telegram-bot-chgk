@@ -7,6 +7,7 @@ import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.expiry.ExpiryPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -195,19 +196,42 @@ public class AppConfig {
 
     @Bean
     public Cache<Long, Long> activeChatsCache() {
-        Long lifeTimeInSeconds = propertyService.getLongValue("chat.cache.live.seconds");
-        if (lifeTimeInSeconds == null) {
-            lifeTimeInSeconds = (long) 24 * 60 * 60;
+        Long accessTtlInSeconds = propertyService.getLongValue("chat.cache.ttl.access.seconds");
+        if (accessTtlInSeconds == null) {
+            accessTtlInSeconds = (long) 24 * 60 * 60;
         }
         Long cacheCapacity = propertyService.getLongValue("chat.cache.capacity");
         if (cacheCapacity == null) {
             cacheCapacity = 1000L;
         }
+        ExpiryPolicy<Object, Object> expiryPolicy = ExpiryPolicyBuilder.expiry()
+                .access(Duration.ofSeconds(accessTtlInSeconds))
+                .build();
         CacheConfigurationBuilder<Long, Long> cacheConfiguration =
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, Long.class,
                         ResourcePoolsBuilder.heap(cacheCapacity))
-                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(lifeTimeInSeconds)));
+                        .withExpiry(expiryPolicy);
         return cacheManager().createCache("chatCache", cacheConfiguration);
+    }
+
+    @Bean
+    public Cache<Long, ChatGame> chatGamesCache() {
+        Long accessTtlInSeconds = propertyService.getLongValue("chat.cache.ttl.access.seconds");
+        if (accessTtlInSeconds == null) {
+            accessTtlInSeconds = (long) 24 * 60 * 60;
+        }
+        Long cacheCapacity = propertyService.getLongValue("chat.cache.capacity");
+        if (cacheCapacity == null) {
+            cacheCapacity = 1000L;
+        }
+        ExpiryPolicy<Object, Object> expiryPolicy = ExpiryPolicyBuilder.expiry()
+                .access(Duration.ofSeconds(accessTtlInSeconds))
+                .build();
+        CacheConfigurationBuilder<Long, ChatGame> cacheConfiguration =
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, ChatGame.class,
+                        ResourcePoolsBuilder.heap(cacheCapacity))
+                        .withExpiry(expiryPolicy);
+        return cacheManager().createCache("chatGamesCache", cacheConfiguration);
     }
 
     @Bean
@@ -422,7 +446,7 @@ public class AppConfig {
 
     @Bean
     public ChatGameService chatGameService() {
-        return new ChatGameServiceImpl(propertyService, chatService, new ChatGameFactory() {
+        return new ChatGameServiceImpl(propertyService, chatService, chatGamesCache(), new ChatGameFactory() {
             @Override
             public ChatGame createChatGame(Chat chat) {
                 return chatGame(chat);

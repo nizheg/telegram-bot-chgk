@@ -385,4 +385,10 @@ public class ChatGame {
         return LEVENSHTEIN_DISTANCE.apply(answer, expected) <= 2;
     }
 
+    @Override
+    public String toString() {
+        return "ChatGame{" +
+                "chat=" + chat +
+                '}';
+    }
 }

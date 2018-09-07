@@ -2,14 +2,14 @@ package me.nizheg.telegram.bot.chgk.dto;
 
 import java.io.Serializable;
 
+import lombok.ToString;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
+@ToString
 public class Chat implements Serializable {
 
     private static final long serialVersionUID = 1182165756024143195L;
