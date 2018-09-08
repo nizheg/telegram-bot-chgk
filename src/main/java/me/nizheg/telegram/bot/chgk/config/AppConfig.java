@@ -7,6 +7,7 @@ import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -108,30 +109,6 @@ public class AppConfig {
     public static final String SCOPE_THREAD = "thread";
     @Autowired
     private PropertyService propertyService;
-    @Autowired
-    private CategoryService categoryService;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private TelegramUserService telegramUserService;
-    @Autowired
-    private PaymentService paymentService;
-    @Autowired
-    private AnswerLogService answerLogService;
-    @Autowired
-    private TaskRatingService taskRatingService;
-    @Autowired
-    private TourService tourService;
-    @Autowired
-    private ChatService chatService;
-    @Autowired
-    private ScheduledOperationService scheduledOperationService;
-    @Autowired
-    private BotInfo botInfo;
-    @Autowired
-    private PictureService pictureService;
-    @Autowired
-    private Cipher cipher;
 
     @Bean
     public static BeanFactoryPostProcessor beanFactoryPostProcessor() {
@@ -140,6 +117,7 @@ public class AppConfig {
 
     @Bean
     @Scope(SCOPE_THREAD)
+    @Autowired
     public TelegramApiClient telegramApiClient() {
         String apiToken = propertyService.getValue("api.token");
         return new TelegramApiClientImpl(apiToken);
@@ -147,19 +125,23 @@ public class AppConfig {
 
     @Bean
     @Autowired
-    public MessageReceiver messageReceiver(UpdateHandler updateHandler) {
+    public MessageReceiver messageReceiver(UpdateHandler updateHandler, PropertyService propertyService) {
         return new MessageReceiver(this::telegramApiClient, updateHandler, propertyService);
     }
 
     @Bean
     @Autowired
-    public UpdateHandler updateHandler(EventsProcessor eventsProcessor, NonCommandExecutor nonCommandExecutor) {
-        return new UpdateHandlerImpl(messageParser(), callbackQueryParser(), commandsHolder(), commandExecutor(),
+    public UpdateHandler updateHandler(
+            MessageParser messageParser, CallbackQueryParser callbackQueryParser,
+            EventsProcessor eventsProcessor, NonCommandExecutor nonCommandExecutor, CommandsHolder commandsHolder,
+            CommandExecutor commandExecutor) {
+        return new UpdateHandlerImpl(messageParser, callbackQueryParser, commandsHolder, commandExecutor,
                 eventsProcessor, nonCommandExecutor);
     }
 
     @Bean
-    public CommandExecutor commandExecutor() {
+    @Autowired
+    public CommandExecutor commandExecutor(BotInfo botInfo) {
         ExceptionHandler exceptionHandler = exceptionHandler();
         CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
         CheckMessageNotBlank checkMessageNotBlank = new CheckMessageNotBlank();
@@ -235,147 +217,206 @@ public class AppConfig {
     }
 
     @Bean
-    public CallbackQueryParser callbackQueryParser() {
-        return new CallbackQueryParserImpl(commandsHolder());
+    @Autowired
+    public CallbackQueryParser callbackQueryParser(CommandsHolder commandsHolder) {
+        return new CallbackQueryParserImpl(commandsHolder);
     }
 
     @Bean
-    public MessageParser messageParser() {
+    @Autowired
+    public MessageParser messageParser(CommandsHolder commandsHolder) {
         AtomicResponse<User> userResponse = telegramApiClient().getMe().await();
         if (userResponse.isOk()) {
             User botUser = userResponse.getResult();
-            return new MessageParserImpl(botUser.getUsername(), commandsHolder());
+            return new MessageParserImpl(botUser.getUsername(), commandsHolder);
         } else {
             throw new IllegalStateException(userResponse.getDescription().orElse("Unable to fetch user"));
         }
     }
 
     @Bean
-    public CommandsHolder commandsHolder() {
+    @Autowired
+    public CommandsHolder commandsHolder(
+            StartCommand startCommand,
+            CategoryCommand categoryCommand,
+            RepeatCommand repeatCommand,
+            AnswerCommand answerCommand,
+            HintCommand hintCommand,
+            NextCommand nextCommand,
+            StopCommand stopCommand,
+            StatCommand statCommand,
+            TourCommand tourCommand,
+            TournamentCommand tournamentCommand,
+            TimerCommand timerCommand,
+            ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand,
+            HelpCommand helpCommand,
+            DefaultCommand defaultCommand,
+            RatingCommand ratingCommand,
+            MigrateCommand migrateCommand,
+            DonateCommand donateCommand) {
         return new CommandsHolderImpl(Arrays.asList(
-                startCommand(),
-                categoryCommand(),
-                repeatCommand(),
-                answerCommand(),
-                hintCommand(),
-                nextCommand(),
-                stopCommand(),
-                statCommand(),
-                tourCommand(),
-                tournamentCommand(),
-                timerCommand(),
-                clearCurrentTaskAndSendNextCommand(),
-                helpCommand(),
-                defaultCommand(),
-                ratingCommand(),
-                migrateCommand(),
-                donateCommand()
+                startCommand,
+                categoryCommand,
+                repeatCommand,
+                answerCommand,
+                hintCommand,
+                nextCommand,
+                stopCommand,
+                statCommand,
+                tourCommand,
+                tournamentCommand,
+                timerCommand,
+                clearCurrentTaskAndSendNextCommand,
+                helpCommand,
+                defaultCommand,
+                ratingCommand,
+                migrateCommand,
+                donateCommand
         ));
     }
 
     @Bean
-    public StartCommand startCommand() {
+    @Autowired
+    public StartCommand startCommand(ChatService chatService) {
         return new StartCommand(this::telegramApiClient, chatService);
     }
 
     @Bean
-    public CategoryCommand categoryCommand() {
+    @Autowired
+    public CategoryCommand categoryCommand(
+            CategoryService categoryService,
+            ChatService chatService,
+            ChatGameService chatGameService,
+            TaskService taskService,
+            TourList tourList) {
         return new CategoryCommand(this::telegramApiClient, categoryService, chatService,
-                chatGameService(), taskService, tourList());
+                chatGameService, taskService, tourList);
     }
 
     @Bean
-    public RepeatCommand repeatCommand() {
-        return new RepeatCommand(this::telegramApiClient, chatService, chatGameService(),
-                taskSender(), warningSender());
+    @Autowired
+    public RepeatCommand repeatCommand(
+            ChatService chatService,
+            ChatGameService chatGameService,
+            TaskSender taskSender) {
+        return new RepeatCommand(this::telegramApiClient, chatService, chatGameService, taskSender, warningSender());
     }
 
     @Bean
-    public AnswerCommand answerCommand() {
-        return new AnswerCommand(this::telegramApiClient, chatService, chatGameService(),
-                answerSender());
+    @Autowired
+    public AnswerCommand answerCommand(
+            ChatService chatService,
+            ChatGameService chatGameService,
+            AnswerSender answerSender) {
+        return new AnswerCommand(this::telegramApiClient, chatService, chatGameService, answerSender);
     }
 
     @Bean
-    public HintCommand hintCommand() {
-        return new HintCommand(this::telegramApiClient, chatService, chatGameService(), answerSender());
+    @Autowired
+    public HintCommand hintCommand(
+            ChatService chatService,
+            ChatGameService chatGameService,
+            AnswerSender answerSender) {
+        return new HintCommand(this::telegramApiClient, chatService, chatGameService, answerSender);
     }
 
     @Bean
-    public NextCommand nextCommand() {
-        return new NextCommand(this::telegramApiClient, chatService, chatGameService(),
-                nextTaskSender());
+    @Autowired
+    public NextCommand nextCommand(
+            ChatService chatService,
+            ChatGameService chatGameService,
+            NextTaskSender nextTaskSender) {
+        return new NextCommand(this::telegramApiClient, chatService, chatGameService, nextTaskSender);
     }
 
     @Bean
-    public StopCommand stopCommand() {
-        return new StopCommand(this::telegramApiClient, chatService, chatGameService());
+    @Autowired
+    public StopCommand stopCommand(ChatService chatService, ChatGameService chatGameService) {
+        return new StopCommand(this::telegramApiClient, chatService, chatGameService);
     }
 
     @Bean
-    public StatCommand statCommand() {
+    @Autowired
+    public StatCommand statCommand(AnswerLogService answerLogService, BotInfo botInfo) {
         return new StatCommand(this::telegramApiClient, answerLogService, botInfo);
     }
 
     @Bean
-    public TourCommand tourCommand() {
-        return new TourCommand(this::telegramApiClient, chatService, chatGameService(), tourList());
+    @Autowired
+    public TourCommand tourCommand(ChatService chatService, ChatGameService chatGameService, TourList tourList) {
+        return new TourCommand(this::telegramApiClient, chatService, chatGameService, tourList);
     }
 
     @Bean
-    public TournamentCommand tournamentCommand() {
-        return new TournamentCommand(this::telegramApiClient, chatService, tourList());
+    @Autowired
+    public TournamentCommand tournamentCommand(ChatService chatService, TourList tourList) {
+        return new TournamentCommand(this::telegramApiClient, chatService, tourList);
     }
 
     @Bean
-    public TimerCommand timerCommand() {
-        return new TimerCommand(this::telegramApiClient, chatGameService());
+    @Autowired
+    public TimerCommand timerCommand(ChatGameService chatGameService) {
+        return new TimerCommand(this::telegramApiClient, chatGameService);
     }
 
     @Bean
-    public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand() {
+    @Autowired
+    public ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand(
+            ChatGameService chatGameService,
+            BeanFactory beanFactory) {
         ClearCurrentTaskAndSendNextCommand clearCurrentTaskAndSendNextCommand = new ClearCurrentTaskAndSendNextCommand(
-                this::telegramApiClient, chatGameService());
-        clearCurrentTaskAndSendNextCommand.setCommandsHolderSupplier(this::commandsHolder);
+                this::telegramApiClient, chatGameService);
+        clearCurrentTaskAndSendNextCommand.setCommandsHolderSupplier(
+                () -> beanFactory.getBean(CommandsHolder.class));
         return clearCurrentTaskAndSendNextCommand;
     }
 
-    @Bean(initMethod = "init")
-    public HelpCommand helpCommand() {
+    @Bean
+    @Autowired
+    public HelpCommand helpCommand(BeanFactory beanFactory) {
         HelpCommand helpCommand = new HelpCommand(this::telegramApiClient);
-        helpCommand.setCommandsHolderSupplier(this::commandsHolder);
+        helpCommand.setCommandsHolderSupplier(() -> beanFactory.getBean(CommandsHolder.class));
         return helpCommand;
     }
 
     @Bean
-    public DefaultCommand defaultCommand() {
-        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService(),
-                taskSender(), telegramUserService, ratingHelper(), botInfo, clock());
+    @Autowired
+    public DefaultCommand defaultCommand(
+            ChatService chatService, ChatGameService chatGameService, TaskSender taskSender,
+            TelegramUserService telegramUserService, BotInfo botInfo) {
+        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService,
+                taskSender, telegramUserService, ratingHelper(), botInfo, clock());
     }
 
     @Bean
-    public RatingCommand ratingCommand() {
+    @Autowired
+    public RatingCommand ratingCommand(TaskRatingService taskRatingService) {
         return new RatingCommand(this::telegramApiClient, taskRatingService);
     }
 
     @Bean
-    public DonateCommand donateCommand() {
+    @Autowired
+    public DonateCommand donateCommand(PaymentService paymentService) {
         return new DonateCommand(this::telegramApiClient, paymentService, propertyService);
     }
 
     @Bean
-    public MigrateCommand migrateCommand() {
-        return new MigrateCommand(this::telegramApiClient, chatService, chatGameService(),
-                cipher);
+    @Autowired
+    public MigrateCommand migrateCommand(ChatService chatService, ChatGameService chatGameService, Cipher cipher) {
+        return new MigrateCommand(this::telegramApiClient, chatService, chatGameService, cipher);
     }
 
     @Bean
-    public SaveForwardedMessage saveForwardedMessage(@Autowired MessageService messageService) {
+    @Autowired
+    public SaveForwardedMessage saveForwardedMessage(
+            TelegramUserService telegramUserService,
+            MessageService messageService) {
         return new SaveForwardedMessage(telegramUserService, messageService);
     }
 
     @Bean
-    public TourList tourList() {
+    @Autowired
+    public TourList tourList(TourService tourService) {
         return new TourList(tourService);
     }
 
@@ -385,19 +426,23 @@ public class AppConfig {
     }
 
     @Bean
-    public TaskSender taskSender() {
+    @Autowired
+    public TaskSender taskSender(PictureService pictureService) {
         return new TaskSender(this::telegramApiClient, pictureService);
     }
 
     @Bean
-    public AnswerSender answerSender() {
-        return new AnswerSender(taskSender(), ratingHelper());
+    @Autowired
+    public AnswerSender answerSender(TaskSender taskSender) {
+        return new AnswerSender(taskSender, ratingHelper());
     }
 
     @Bean
-    public NextTaskSender nextTaskSender() {
-        return new NextTaskSender(this::telegramApiClient, taskSender(), answerSender(),
-                ratingHelper(), tourList(), botInfo);
+    @Autowired
+    public NextTaskSender nextTaskSender(
+            TaskSender taskSender, AnswerSender answerSender, TourList tourList,
+            BotInfo botInfo) {
+        return new NextTaskSender(this::telegramApiClient, taskSender, answerSender, ratingHelper(), tourList, botInfo);
     }
 
     @Bean
@@ -406,17 +451,31 @@ public class AppConfig {
     }
 
     @Bean
+    @Autowired
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public ChatGame chatGame(Chat chat) {
+    public ChatGame chatGame(
+            Chat chat, CategoryService categoryService, TourService tourService, TaskService
+            taskService, AnswerLogService answerLogService, TelegramUserService telegramUserService, BotInfo botInfo) {
         return new ChatGame(chat, propertyService, categoryService, tourService, taskService,
                 answerLogService, telegramUserService, botInfo, clock());
     }
 
     @Bean
+    @Autowired
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public AutoChatGame autoChatGame(Chat chat, int timeout) {
+    public AutoChatGame autoChatGame(
+            Chat chat,
+            int timeout,
+            CategoryService categoryService,
+            TourService tourService,
+            TaskService taskService,
+            AnswerLogService answerLogService,
+            BotInfo botInfo,
+            TelegramUserService telegramUserService,
+            AnswerSender answerSender,
+            ScheduledOperationService scheduledOperationService) {
         return new AutoChatGame(chat, timeout, propertyService, categoryService, tourService, taskService,
-                answerLogService, botInfo, telegramUserService, taskScheduler(), answerSender(), warningSender(),
+                answerLogService, botInfo, telegramUserService, taskScheduler(), answerSender, warningSender(),
                 scheduledOperationService, clock());
     }
 
@@ -428,24 +487,40 @@ public class AppConfig {
     }
 
     @Bean
-    public ChatGameService chatGameService() {
+    @Autowired
+    public ChatGameService chatGameService(ChatService chatService, ChatGameFactory chatGameFactory) {
         return new ChatGameServiceImpl(propertyService, chatService, chatGamesCache(), taskScheduler(),
-                new ChatGameFactory() {
-                    @Override
-                    public ChatGame createChatGame(Chat chat) {
-                        return chatGame(chat);
-                    }
+                chatGameFactory);
+    }
 
-                    @Override
-                    public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
-                        return autoChatGame(chat, timeout);
-                    }
-                });
+    @Bean
+    @Autowired
+    public ChatGameFactory chatGameFactory(
+            CategoryService categoryService,
+            TourService tourService,
+            TaskService taskService,
+            AnswerLogService answerLogService,
+            BotInfo botInfo,
+            TelegramUserService telegramUserService,
+            AnswerSender answerSender,
+            ScheduledOperationService scheduledOperationService) {
+        return new ChatGameFactory() {
+            @Override
+            public ChatGame createChatGame(Chat chat) {
+                return chatGame(chat, categoryService, tourService, taskService, answerLogService,
+                        telegramUserService, botInfo);
+            }
+
+            @Override
+            public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
+                return autoChatGame(chat, timeout, categoryService, tourService, taskService, answerLogService,
+                        botInfo, telegramUserService, answerSender, scheduledOperationService);
+            }
+        };
     }
 
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
     }
-
 }
