@@ -40,8 +40,7 @@ public class AutoChatGame extends ChatGame {
     private final static String OPERATION_ID_WARNING = "Warning";
     private final static int TIME_WARNING_BEFORE_ANSWER = 10;
     private final static int STATE_STARTED = 0;
-    private final static int STATE_PAUSED = 1;
-    private final static int STATE_STOPPED = 2;
+    private final static int STATE_STOPPED = 1;
     private final Map<String, Runner> operationRunners = new HashMap<>();
     private final TaskScheduler taskScheduler;
     private final AnswerOperation answerOperation;
@@ -103,8 +102,8 @@ public class AutoChatGame extends ChatGame {
         cleanActiveOperation();
     }
 
-    public void pause() {
-        state = STATE_PAUSED;
+    public synchronized boolean isInProgress() {
+        return scheduledOperation != null;
     }
 
     public synchronized int getTimeLeft() {
@@ -177,7 +176,7 @@ public class AutoChatGame extends ChatGame {
         if (currentState == STATE_STARTED || currentState == STATE_STOPPED) {
             deleteScheduledOperationLog();
         }
-        if (currentState == STATE_PAUSED || currentState == STATE_STOPPED) {
+        if (currentState == STATE_STOPPED) {
             return;
         }
         ScheduledOperation scheduledOperationLog = new ScheduledOperation();
@@ -246,7 +245,7 @@ public class AutoChatGame extends ChatGame {
         @Override
         public final void run() {
             int currentState = state;
-            if (currentState == STATE_STOPPED || currentState == STATE_PAUSED) {
+            if (currentState == STATE_STOPPED) {
                 return;
             }
             try {
