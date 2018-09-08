@@ -6,14 +6,14 @@ import org.ehcache.event.EventFiring;
 import org.ehcache.event.EventOrdering;
 import org.ehcache.event.EventType;
 import org.ehcache.impl.events.CacheEventAdapter;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -30,7 +30,6 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.service.PropertyService;
-import me.nizheg.util.NamedThreadFactory;
 
 @CommonsLog
 @RequiredArgsConstructor
@@ -40,10 +39,9 @@ public class ChatGameServiceImpl implements ChatGameService {
     private final PropertyService propertyService;
     private final ChatService chatService;
     private final Cache<Long, ChatGame> chatGamesCache;
+    private final TaskScheduler taskScheduler;
     private final ChatGameFactory chatGameFactory;
     private CacheEventListener<Long, ChatGame> cacheListener;
-    private final ScheduledExecutorService chatGamesCleaner = Executors.newSingleThreadScheduledExecutor(
-            new NamedThreadFactory("Chat games cleaner"));
 
     @PostConstruct
     public void init() {
@@ -55,7 +53,7 @@ public class ChatGameServiceImpl implements ChatGameService {
         for (Chat scheduledChat : scheduledChats) {
             putInCache(scheduledChat);
         }
-        chatGamesCleaner.scheduleAtFixedRate(this::cleanAutoChatGameStorage, 0, 1, TimeUnit.DAYS);
+        taskScheduler.scheduleAtFixedRate(this::cleanAutoChatGameStorage, Duration.ofDays(1));
     }
 
     private void cleanAutoChatGameStorage() {
@@ -77,7 +75,6 @@ public class ChatGameServiceImpl implements ChatGameService {
     @PreDestroy
     public void destroy() {
         this.chatGamesCache.getRuntimeConfiguration().deregisterCacheEventListener(cacheListener);
-        chatGamesCleaner.shutdown();
     }
 
     @Override

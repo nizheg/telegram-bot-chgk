@@ -213,7 +213,7 @@ public class AppConfig {
         }
         CacheConfigurationBuilder<Long, ChatGame> cacheConfiguration =
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, ChatGame.class,
-                        ResourcePoolsBuilder.heap(cacheCapacity)) ;
+                        ResourcePoolsBuilder.heap(cacheCapacity));
         return cacheManager().createCache("chatGamesCache", cacheConfiguration);
     }
 
@@ -429,17 +429,18 @@ public class AppConfig {
 
     @Bean
     public ChatGameService chatGameService() {
-        return new ChatGameServiceImpl(propertyService, chatService, chatGamesCache(), new ChatGameFactory() {
-            @Override
-            public ChatGame createChatGame(Chat chat) {
-                return chatGame(chat);
-            }
+        return new ChatGameServiceImpl(propertyService, chatService, chatGamesCache(), taskScheduler(),
+                new ChatGameFactory() {
+                    @Override
+                    public ChatGame createChatGame(Chat chat) {
+                        return chatGame(chat);
+                    }
 
-            @Override
-            public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
-                return autoChatGame(chat, timeout);
-            }
-        });
+                    @Override
+                    public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
+                        return autoChatGame(chat, timeout);
+                    }
+                });
     }
 
     @Bean
