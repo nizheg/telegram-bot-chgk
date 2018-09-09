@@ -227,7 +227,11 @@ public class ChatGame {
                 }
             }
         } else {
-            nextTask = taskService.getUnusedByChatTask(getChatId(), category);
+            if (chat.isPrivate()) {
+                nextTask = taskService.getUnusedByChatTaskForPrivateChat(getChatId(), category);
+            } else {
+                nextTask = taskService.getUnusedByChatTaskForGroupChat(getChatId(), category);
+            }
         }
         if (nextTask != null) {
             Task task = setCurrentTask(nextTask.getId());

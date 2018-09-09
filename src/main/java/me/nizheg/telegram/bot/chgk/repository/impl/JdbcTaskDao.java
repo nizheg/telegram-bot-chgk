@@ -19,7 +19,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -143,27 +142,31 @@ public class JdbcTaskDao implements TaskDao {
 
     @Override
     @CheckForNull
-    public LightTask getUnusedByChat(Long chatId, Category category) {
-        String categoryFilter = "";
-        List<Object> parameters = new ArrayList<>();
+    public LightTask getUnusedByChat(Long chatId, Category category, TaskSort sort) {
+        StringBuilder queryBuilder = new StringBuilder();
+        Map<String, Object> parameters = new HashMap<>();
+        queryBuilder.append("select * from task where id = (select id from task\n");
         if (category != null) {
-            categoryFilter = "inner join task_category tc on tc.task_id = task.id and category_id = ? \n";
-            parameters.add(category.getId());
+            queryBuilder.append("inner join task_category tc on tc.task_id = task.id and category_id = :category \n");
+            parameters.put("category", category.getId());
         }
-        parameters.add(PUBLISHED.name());
-        parameters.add(chatId);
-        parameters.add(chatId);
-        List<LightTask> tasks = template.query("select * from task where id = (select id from task\n" + //
-                categoryFilter + //
-                "left join used_task on used_task.task_id = task.id\n" + //
-                "left join task_priority on task_priority.task_id = task.id\n" + //
-                "where status = ?\n" + //
-                "and not exists (select 1 from used_task ut where ut.chat_id = ? and ut.task_id = task.id )\n" + //
-                "and not exists (select 1 from used_task_archive ut where ut.chat_id = ? and ut.task_id = task.id)\n" +
-                //
-                "group by id, priority\n" + //
-                "order by coalesce(priority, 100) desc, max(using_time) nulls first, count(chat_id)\n" + //
-                "limit 1)", parameters.toArray(), taskMapper);
+        queryBuilder.append("left join used_task on used_task.task_id = task.id\n");
+        queryBuilder.append("left join task_priority on task_priority.task_id = task.id\n");
+        queryBuilder.append("where status = :status\n" +
+                "and not exists (select 1 from used_task ut where ut.chat_id = :chatId and ut.task_id = task.id )\n" +
+                "and not exists (select 1 from used_task_archive ut where ut.chat_id = :chatId"
+                + " and ut.task_id = task.id)\n");
+        if (sort == TaskSort.PRIORITY) {
+            queryBuilder.append("group by id, priority\n" +
+                    "order by coalesce(priority, 100) desc, max(using_time) nulls first, count(chat_id)\n");
+        } else {
+            queryBuilder.append("group by id, priority\n" +
+                    "order by coalesce(priority, 100) >= 100 desc, max(using_time) nulls first, count(chat_id)\n");
+        }
+        queryBuilder.append("limit 1)");
+        parameters.put("status", PUBLISHED.name());
+        parameters.put("chatId", chatId);
+        List<LightTask> tasks = namedParameterJdbcTemplate.query(queryBuilder.toString(), parameters, taskMapper);
         if (tasks.isEmpty()) {
             return null;
         }

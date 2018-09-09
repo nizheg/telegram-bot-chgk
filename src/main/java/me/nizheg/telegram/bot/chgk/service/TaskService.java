@@ -33,7 +33,9 @@ public interface TaskService {
 
     OffsetDateTime getUsageTime(Long taskId, Long chatId);
 
-    LightTask getUnusedByChatTask(Long chatId, Category category);
+    LightTask getUnusedByChatTaskForPrivateChat(Long chatId, Category category);
+
+    LightTask getUnusedByChatTaskForGroupChat(Long chatId, Category category);
 
     List<LightTask> getByStatus(LightTask.Status status);
 

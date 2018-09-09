@@ -91,11 +91,19 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public LightTask getUnusedByChatTask(Long chatId, Category category) {
+    public LightTask getUnusedByChatTaskForPrivateChat(Long chatId, Category category) {
         if (category.getId().equals(Category.ALL)) {
             category = null;
         }
-        return taskDao.getUnusedByChat(chatId, category);
+        return taskDao.getUnusedByChat(chatId, category, TaskDao.TaskSort.PRIORITY);
+    }
+
+    @Override
+    public LightTask getUnusedByChatTaskForGroupChat(Long chatId, Category category) {
+        if (category.getId().equals(Category.ALL)) {
+            category = null;
+        }
+        return taskDao.getUnusedByChat(chatId, category, TaskDao.TaskSort.USING_TIME);
     }
 
     @Override

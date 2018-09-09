@@ -25,7 +25,7 @@ public interface TaskDao {
 
     OffsetDateTime getUsageTime(Long taskId, Long chatId);
 
-    LightTask getUnusedByChat(Long chatId, Category category);
+    LightTask getUnusedByChat(Long chatId, Category category, TaskSort sort);
 
     LightTask getNextTaskInTournament(long tournamentId, int currentTourNumber, int currentNumberInTour);
 
@@ -55,4 +55,6 @@ public interface TaskDao {
      * Transaction required
      */
     int archiveTasks();
+
+    enum TaskSort {PRIORITY, USING_TIME}
 }
