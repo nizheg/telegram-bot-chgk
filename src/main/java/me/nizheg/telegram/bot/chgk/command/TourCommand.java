@@ -103,7 +103,7 @@ public class TourCommand extends ChatGameCommand {
                     .map(Object::toString).orElse("");
             if (tournamentResult.isCurrentTaskFromTournament()) {
                 buttonMarkup = TelegramApiUtil.createInlineButtonMarkup(
-                        "Начать заново", "clear_and_next " + currentTaskId,
+                        "Начать заново", "clear_and_next",
                         "Продолжить", "next " + currentTaskId);
             } else {
                 buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next " + currentTaskId);
