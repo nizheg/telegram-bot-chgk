@@ -211,6 +211,7 @@ public class ChatGameServiceImpl implements ChatGameService {
                 log.debug("Removed value in cache " + key + " " + removedValue);
             }
             if (removedValue instanceof AutoChatGame) {
+                ((AutoChatGame) removedValue).stop();
                 AutoChatGame removedFromStorage = autoChatGamesStorage.remove(key);
                 if (log.isDebugEnabled()) {
                     log.debug("Removed from storage " + removedFromStorage);
