@@ -96,7 +96,7 @@ public class WorkServiceImpl implements WorkService {
      * started: -> -----, -------, error, ---------, finished<br>
      * error:   -> ready, -------, -----, ---------, --------<br>
      * cancelled:> ready, -------, -----, ---------, --------<br>
-     * finished:-> ready, -------, -----, ---------, --------<br>
+     * finished:-> -----, -------, -----, ---------, --------<br>
      *
      * @param workDescription - which status is changing
      * @param toStatus - new status
@@ -167,8 +167,7 @@ public class WorkServiceImpl implements WorkService {
             case CREATED:
                 break;
             case READY:
-                fromStatuses = Arrays.asList(WorkStatus.CREATED, WorkStatus.ERROR, WorkStatus.CANCELLED,
-                        WorkStatus.FINISHED);
+                fromStatuses = Arrays.asList(WorkStatus.CREATED, WorkStatus.ERROR, WorkStatus.CANCELLED);
                 break;
             case STARTED:
                 fromStatuses = Collections.singletonList(WorkStatus.READY);
