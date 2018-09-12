@@ -22,6 +22,7 @@ public class SaveForwardedMessage implements NonCommandMessageProcessor {
     @Override
     public void process(CommandContext ctx) {
         Optional.ofNullable(ctx.getMessage())
+                .filter(message -> ctx.getFrom() != null)
                 .filter(message -> message.getForwardFromChat() != null)
                 .filter(message -> telegramUserService.userHasRole(ctx.getFrom().getId(), Role.SUPER_ADMIN))
                 .ifPresent(message -> {
