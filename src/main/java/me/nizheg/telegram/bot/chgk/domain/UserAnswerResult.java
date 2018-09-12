@@ -22,7 +22,7 @@ public class UserAnswerResult {
     private String exactAnswer;
     @Nullable
     private Long firstAnsweredUser;
-    @NonNull
+    @Nullable
     private final OffsetDateTime usageTime;
     @NonNull
     private final Task currentTask;

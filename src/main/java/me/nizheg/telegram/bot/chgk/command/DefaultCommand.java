@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import lombok.NonNull;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
@@ -191,7 +193,7 @@ public class DefaultCommand extends ChatCommand {
         return compliment;
     }
 
-    private String printDiffTillNow(OffsetDateTime date) {
+    private String printDiffTillNow(@Nullable OffsetDateTime date) {
         if (date == null) {
             return "0";
         }
