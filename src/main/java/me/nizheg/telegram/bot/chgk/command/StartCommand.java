@@ -21,14 +21,6 @@ public class StartCommand extends ChatCommand {
     private final ChatService chatService;
 
     public StartCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService) {
-        super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        this.chatService = chatService;
-    }
-
-    public StartCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
             @Nonnull ChatService chatService) {
         super(telegramApiClientSupplier);

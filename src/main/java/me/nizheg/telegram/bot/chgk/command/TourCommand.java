@@ -16,11 +16,13 @@ import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.TournamentResult;
+import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.exception.IllegalIdException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
+import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.TelegramApiUtil;
@@ -28,27 +30,14 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 /**
  * @author Nikolay Zhegalin
  */
-public class TourCommand extends ChatGameCommand {
+@ChatActive
+public class TourCommand extends ChatCommand {
 
     private static final String COMMAND_FORMAT = "tour_?([0-9]+)?";
     private static final Pattern COMMAND_PATTERN = Pattern.compile(COMMAND_FORMAT);
     private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final TourList tourList;
-
-    public TourCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TourList tourList) {
-        super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(tourList, "tourList should be defined");
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.tourList = tourList;
-    }
 
     public TourCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -64,18 +53,16 @@ public class TourCommand extends ChatGameCommand {
         this.tourList = tourList;
     }
 
-    @Override
     protected ChatService getChatService() {
         return chatService;
     }
 
-    @Override
     protected ChatGameService getChatGameService() {
         return chatGameService;
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    public void execute(CommandContext ctx) throws CommandException {
         Long chatId = ctx.getChatId();
         String command = ctx.getCommand();
         Matcher commandMatcher = COMMAND_PATTERN.matcher(command);
@@ -96,6 +83,7 @@ public class TourCommand extends ChatGameCommand {
         }
 
         try {
+            ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
             TournamentResult tournamentResult = chatGame.setTournament(tourId);
             ReplyMarkup buttonMarkup;
             String currentTaskId = tournamentResult.getCurrentTask()

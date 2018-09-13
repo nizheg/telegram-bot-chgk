@@ -19,6 +19,7 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Category;
+import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
@@ -26,13 +27,15 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
+import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.util.Emoji;
 
 /**
  * @author Nikolay Zhegalin
  */
-public class CategoryCommand extends ChatGameCommand {
+@ChatActive
+public class CategoryCommand extends ChatCommand {
 
     private static final String COMMAND_NAME = "category";
     private static final String SHORT_COMMAND_NAME = Emoji.BOOKS;
@@ -45,21 +48,6 @@ public class CategoryCommand extends ChatGameCommand {
     private final TaskService taskService;
     private final TourList tourList;
     private volatile List<Category> categories = new ArrayList<>();
-
-    public CategoryCommand(
-            @NonNull TelegramApiClient telegramApiClient,
-            @NonNull CategoryService categoryService,
-            @NonNull ChatService chatService,
-            @NonNull ChatGameService chatGameService,
-            @NonNull TaskService taskService,
-            @NonNull TourList tourList) {
-        super(telegramApiClient);
-        this.categoryService = categoryService;
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.taskService = taskService;
-        this.tourList = tourList;
-    }
 
     public CategoryCommand(
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -76,18 +64,16 @@ public class CategoryCommand extends ChatGameCommand {
         this.tourList = tourList;
     }
 
-    @Override
     protected ChatService getChatService() {
         return chatService;
     }
 
-    @Override
     protected ChatGameService getChatGameService() {
         return chatGameService;
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) {
+    public void execute(CommandContext ctx) {
         String options = StringUtils.defaultString(ctx.getText());
         Matcher matcher = OPTION_PATTERN.matcher(options);
         String categoryId;
@@ -97,6 +83,7 @@ public class CategoryCommand extends ChatGameCommand {
             categoryId = resolveCategoryId(ctx.getText());
         }
         if (categoryId != null) {
+            ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
             if (categoryId.equals(Category.CURRENT)) {
                 Category currentCategory = chatGame.getCategory();
                 sendCurrentCategory(ctx, chatGame, currentCategory);

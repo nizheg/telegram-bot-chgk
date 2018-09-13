@@ -18,6 +18,7 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
+import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
@@ -27,29 +28,13 @@ import me.nizheg.telegram.util.TelegramApiUtil;
  * @author Nikolay Zhegalin
  */
 @UserInChannel
-public class RepeatCommand extends ChatGameCommand {
+@ChatActive
+public class RepeatCommand extends ChatCommand {
 
     private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final TaskSender taskSender;
     private final WarningSender warningSender;
-
-    public RepeatCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            @Nonnull ChatGameService chatGameService,
-            @Nonnull TaskSender taskSender,
-            @Nonnull WarningSender warningSender) {
-        super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        Validate.notNull(taskSender, "taskSender should be defined");
-        Validate.notNull(warningSender, "warningSender should be defined");
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.taskSender = taskSender;
-        this.warningSender = warningSender;
-    }
 
     public RepeatCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -68,19 +53,18 @@ public class RepeatCommand extends ChatGameCommand {
         this.warningSender = warningSender;
     }
 
-    @Override
     protected ChatService getChatService() {
         return chatService;
     }
 
-    @Override
     protected ChatGameService getChatGameService() {
         return chatGameService;
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    public void execute(CommandContext ctx) throws CommandException {
         Long chatId = ctx.getChatId();
+        ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
         Optional<Task> currentTaskOptional = chatGame.repeatTask();
         if (currentTaskOptional.isPresent()) {
             Task currentTask = currentTaskOptional.get();

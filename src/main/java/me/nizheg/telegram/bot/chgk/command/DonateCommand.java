@@ -39,17 +39,6 @@ public class DonateCommand extends ChatCommand {
     private final BigDecimal minSum = new BigDecimal(10);
 
     public DonateCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull PaymentService paymentService,
-            @Nonnull PropertyService propertyService) {
-        super(telegramApiClient);
-        Validate.notNull(paymentService, "paymentService should be defined");
-        Validate.notNull(propertyService, "propertyService should be defined");
-        this.paymentService = paymentService;
-        this.propertyService = propertyService;
-    }
-
-    public DonateCommand(
             Supplier<TelegramApiClient> telegramApiClientSupplier,
             @Nonnull PaymentService paymentService,
             @Nonnull PropertyService propertyService) {

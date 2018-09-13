@@ -20,6 +20,6 @@ public class CheckMessageNotBlank extends PreconditionChainStep {
         if (commandHandler != null && commandHandler.getClass().getAnnotation(MessageWithText.class) != null) {
             isSuccess = StringUtils.isNotBlank(context.getText());
         }
-        return new PreconditionResult(isSuccess, null);
+        return new PreconditionResult(isSuccess, "Check message not blank");
     }
 }

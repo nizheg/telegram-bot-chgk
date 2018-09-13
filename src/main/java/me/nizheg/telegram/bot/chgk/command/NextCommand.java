@@ -5,11 +5,13 @@ import java.util.function.Supplier;
 import lombok.NonNull;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
+import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.NextTaskSender;
+import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 
@@ -17,24 +19,12 @@ import me.nizheg.telegram.bot.command.CommandException;
  * @author Nikolay Zhegalin
  */
 @UserInChannel
-public class NextCommand extends ChatGameCommand {
-
-    private static final String ATTRIBUTE_ILLEGAL_TASK_ID = "TASK_ID_IS_ILLEGAL";
+@ChatActive
+public class NextCommand extends ChatCommand {
 
     private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final NextTaskSender nextTaskSender;
-
-    public NextCommand(
-            @NonNull TelegramApiClient telegramApiClient,
-            @NonNull ChatService chatService,
-            @NonNull ChatGameService chatGameService,
-            @NonNull NextTaskSender nextTaskSender) {
-        super(telegramApiClient);
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.nextTaskSender = nextTaskSender;
-    }
 
     public NextCommand(
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -47,18 +37,16 @@ public class NextCommand extends ChatGameCommand {
         this.nextTaskSender = nextTaskSender;
     }
 
-    @Override
     protected ChatService getChatService() {
         return chatService;
     }
 
-    @Override
     protected ChatGameService getChatGameService() {
         return chatGameService;
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    public void execute(CommandContext ctx) throws CommandException {
         Long currentTaskId = null;
         if (ctx.isCallbackQuery()) {
             try {
@@ -69,6 +57,7 @@ public class NextCommand extends ChatGameCommand {
         }
         try {
             TelegramApiClient telegramApiClient = getTelegramApiClient();
+            ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
             nextTaskSender.sendNextTask(chatGame, currentTaskId, new CallbackRequestDefaultCallback<>(ctx,
                     telegramApiClient));
         } catch (CurrentTaskIsOtherException e) {

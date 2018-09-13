@@ -27,14 +27,6 @@ public class RatingCommand extends ChatCommand {
     private final TaskRatingService taskRatingService;
 
     public RatingCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull TaskRatingService taskRatingService) {
-        super(telegramApiClient);
-        Validate.notNull(taskRatingService, "taskRatingService should be defined");
-        this.taskRatingService = taskRatingService;
-    }
-
-    public RatingCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
             @Nonnull TaskRatingService taskRatingService) {
         super(telegramApiClientSupplier);

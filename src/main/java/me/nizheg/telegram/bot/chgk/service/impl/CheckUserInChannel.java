@@ -77,7 +77,7 @@ public class CheckUserInChannel extends PreconditionChainStep {
                 throw new UserIsNotInChannelException(user, channelName);
             }
         }
-        return new PreconditionResult(true, null);
+        return new PreconditionResult(true, "Check user in channel");
     }
 
     private TelegramApiClient getTelegramApiClient() {

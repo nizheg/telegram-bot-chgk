@@ -47,6 +47,7 @@ import me.nizheg.telegram.util.Emoji;
  */
 @UserInChannel
 @MessageWithText
+@ChatActive(notifyUser = false)
 public class DefaultCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -56,25 +57,6 @@ public class DefaultCommand extends ChatCommand {
     private final RatingHelper ratingHelper;
     private final BotInfo botInfo;
     private final Clock clock;
-
-    public DefaultCommand(
-            @NonNull TelegramApiClient telegramApiClient,
-            @NonNull ChatService chatService,
-            @NonNull ChatGameService chatGameService,
-            @NonNull TaskSender taskSender,
-            @NonNull TelegramUserService telegramUserService,
-            @NonNull RatingHelper ratingHelper,
-            @NonNull BotInfo botInfo,
-            @NonNull Clock clock) {
-        super(telegramApiClient);
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.taskSender = taskSender;
-        this.telegramUserService = telegramUserService;
-        this.ratingHelper = ratingHelper;
-        this.botInfo = botInfo;
-        this.clock = clock;
-    }
 
     public DefaultCommand(
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -99,14 +81,7 @@ public class DefaultCommand extends ChatCommand {
     public void execute(CommandContext ctx) throws CommandException {
         String text = ctx.getText();
         Long chatId = ctx.getChatId();
-        boolean isChatActive = chatService.isChatActive(chatId);
-        ChatGame chatGame = null;
-        if (isChatActive) {
-            chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
-        }
-        if (chatGame == null) {
-            return;
-        }
+        ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
         User user = ctx.getFrom();
         UserAnswerResult userAnswerResult = chatGame.userAnswer(new UserAnswer(text, user));
         Task currentTask = userAnswerResult.getCurrentTask();

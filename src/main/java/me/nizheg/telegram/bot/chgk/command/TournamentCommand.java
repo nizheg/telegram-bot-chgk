@@ -1,19 +1,16 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
+import lombok.NonNull;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.EditedMessage;
 import me.nizheg.telegram.bot.api.service.param.Message;
-import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
@@ -21,40 +18,22 @@ import me.nizheg.telegram.bot.command.CommandContext;
 /**
  * @author Nikolay Zhegalin
  */
+@ChatActive
 public class TournamentCommand extends ChatCommand {
 
     private static final String COMMAND_NAME = "tournament";
     private static final Pattern COMMAND_PATTERN = Pattern.compile("(?:page(?<page>[0-9]+))?(?<query>.*)");
 
-    private final ChatService chatService;
     private final TourList tourList;
 
     public TournamentCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatService chatService,
-            TourList tourList) {
-        super(telegramApiClient);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(tourList, "tourList should be defined");
-        this.chatService = chatService;
-        this.tourList = tourList;
-    }
-
-    public TournamentCommand(
-            @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @Nonnull ChatService chatService, TourList tourList) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier, @NonNull TourList tourList) {
         super(telegramApiClientSupplier);
-        Validate.notNull(chatService, "chatService should be defined");
-        Validate.notNull(tourList, "tourList should be defined");
-        this.chatService = chatService;
         this.tourList = tourList;
     }
 
     @Override
     public void execute(CommandContext ctx) {
-        if (!chatService.isChatActive(ctx.getChatId())) {
-            return;
-        }
         Matcher matcher = COMMAND_PATTERN.matcher(ctx.getText());
         Optional<String> queryParam = Optional.empty();
         Optional<Integer> pageParam = Optional.empty();

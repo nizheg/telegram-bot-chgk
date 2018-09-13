@@ -31,14 +31,6 @@ public class TimerCommand extends ChatCommand {
     private final ChatGameService chatGameService;
 
     public TimerCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull ChatGameService chatGameService) {
-        super(telegramApiClient);
-        Validate.notNull(chatGameService, "chatGameService should be defined");
-        this.chatGameService = chatGameService;
-    }
-
-    public TimerCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
             @Nonnull ChatGameService chatGameService) {
         super(telegramApiClientSupplier);

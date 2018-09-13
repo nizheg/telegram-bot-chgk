@@ -25,6 +25,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.nizheg.payments.service.PaymentService;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.User;
@@ -65,6 +67,7 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.bot.chgk.service.impl.ChatGameServiceImpl;
+import me.nizheg.telegram.bot.chgk.service.impl.CheckChatActive;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckMessageNotBlank;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
@@ -95,6 +98,7 @@ import me.nizheg.telegram.bot.service.impl.EventsProcessorImpl;
 import me.nizheg.telegram.bot.service.impl.MessageParserImpl;
 import me.nizheg.telegram.bot.service.impl.MessageReceiver;
 import me.nizheg.telegram.bot.service.impl.NonCommandExecutorImpl;
+import me.nizheg.telegram.bot.service.impl.PreconditionChainStep;
 import me.nizheg.telegram.bot.service.impl.UpdateHandlerImpl;
 
 /**
@@ -141,16 +145,17 @@ public class AppConfig {
 
     @Bean
     @Autowired
-    public CommandExecutor commandExecutor(BotInfo botInfo) {
+    public CommandExecutor commandExecutor(BotInfo botInfo, ChatService chatService) {
         ExceptionHandler exceptionHandler = exceptionHandler();
         CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
-        CheckMessageNotBlank checkMessageNotBlank = new CheckMessageNotBlank();
+        PreconditionChainStep chainHead = new CheckMessageNotBlank();
+        PreconditionChainStep lastChainStep = chainHead.setSuccessor(new CheckChatActive(chatService));
         String channelName = propertyService.getValue("bot.channel");
         if (StringUtils.isNotBlank(channelName)) {
-            checkMessageNotBlank.setSuccessor(new CheckUserInChannel(botInfo, channelName,
+            lastChainStep.setSuccessor(new CheckUserInChannel(botInfo, channelName,
                     this::telegramApiClient, usersInChannelCache()));
         }
-        return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, checkMessageNotBlank);
+        return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, chainHead);
     }
 
     @Bean(initMethod = "init", destroyMethod = "close")
@@ -349,8 +354,8 @@ public class AppConfig {
 
     @Bean
     @Autowired
-    public TournamentCommand tournamentCommand(ChatService chatService, TourList tourList) {
-        return new TournamentCommand(this::telegramApiClient, chatService, tourList);
+    public TournamentCommand tournamentCommand(TourList tourList) {
+        return new TournamentCommand(this::telegramApiClient, tourList);
     }
 
     @Bean
@@ -453,6 +458,7 @@ public class AppConfig {
     @Bean
     @Autowired
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    @Nonnull
     public ChatGame chatGame(
             Chat chat, CategoryService categoryService, TourService tourService, TaskService
             taskService, AnswerLogService answerLogService, TelegramUserService telegramUserService, BotInfo botInfo) {
@@ -463,6 +469,7 @@ public class AppConfig {
     @Bean
     @Autowired
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    @Nonnull
     public AutoChatGame autoChatGame(
             Chat chat,
             int timeout,
@@ -505,12 +512,14 @@ public class AppConfig {
             AnswerSender answerSender,
             ScheduledOperationService scheduledOperationService) {
         return new ChatGameFactory() {
+            @Nonnull
             @Override
             public ChatGame createChatGame(Chat chat) {
                 return chatGame(chat, categoryService, tourService, taskService, answerLogService,
                         telegramUserService, botInfo);
             }
 
+            @Nonnull
             @Override
             public AutoChatGame createAutoChatGame(Chat chat, int timeout) {
                 return autoChatGame(chat, timeout, categoryService, tourService, taskService, answerLogService,

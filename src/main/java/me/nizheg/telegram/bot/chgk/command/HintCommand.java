@@ -18,6 +18,7 @@ import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
+import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 
@@ -25,22 +26,12 @@ import me.nizheg.telegram.bot.command.CommandException;
  * @author Nikolay Zhegalin
  */
 @UserInChannel
-public class HintCommand extends ChatGameCommand {
+@ChatActive
+public class HintCommand extends ChatCommand {
 
     private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final AnswerSender answerSender;
-
-    public HintCommand(
-            @NonNull TelegramApiClient telegramApiClient,
-            @NonNull ChatService chatService,
-            @NonNull ChatGameService chatGameService,
-            @NonNull AnswerSender answerSender) {
-        super(telegramApiClient);
-        this.chatService = chatService;
-        this.chatGameService = chatGameService;
-        this.answerSender = answerSender;
-    }
 
     public HintCommand(
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
@@ -53,20 +44,19 @@ public class HintCommand extends ChatGameCommand {
         this.answerSender = answerSender;
     }
 
-    @Override
     protected ChatService getChatService() {
         return chatService;
     }
 
-    @Override
     protected ChatGameService getChatGameService() {
         return chatGameService;
     }
 
     @Override
-    protected void executeChatGame(CommandContext ctx, ChatGame chatGame) throws CommandException {
+    public void execute(CommandContext ctx) throws CommandException {
         Long taskId = parseTaskId(ctx);
         try {
+            ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
             HintResult hintForTask = chatGame.getHintForTask(new Chat(ctx.getFrom()), taskId);
             Task hintForTaskTask = hintForTask.getTask().orElseThrow(NoTaskException::new);
             sendAnswerToUser(ctx, hintForTaskTask);

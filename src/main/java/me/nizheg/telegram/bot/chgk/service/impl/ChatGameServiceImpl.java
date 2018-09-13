@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -100,6 +101,7 @@ public class ChatGameServiceImpl implements ChatGameService {
 
     @Override
     @Transactional
+    @Nonnull
     public ChatGame getGame(final Chat chat) {
         long start = System.nanoTime();
         long chatId = chat.getId();
@@ -122,6 +124,7 @@ public class ChatGameServiceImpl implements ChatGameService {
         return chatGame;
     }
 
+    @Nonnull
     private ChatGame putInCache(Chat chat) {
         long chatId = chat.getId();
         ChatGame chatGame = autoChatGamesStorage.get(chatId);
@@ -138,6 +141,7 @@ public class ChatGameServiceImpl implements ChatGameService {
         return chatGame;
     }
 
+    @Nonnull
     private ChatGame createChatGame(Chat chat) {
         Integer timeout = propertyService.getIntegerValueForChat(Properties.CHAT_TIMER, chat.getId());
         if (timeout != null && timeout > 0) {

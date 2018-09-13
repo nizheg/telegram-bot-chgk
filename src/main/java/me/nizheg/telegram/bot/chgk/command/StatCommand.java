@@ -35,17 +35,6 @@ public class StatCommand extends ChatCommand {
     private final BotInfo botInfo;
 
     public StatCommand(
-            @Nonnull TelegramApiClient telegramApiClient,
-            @Nonnull AnswerLogService answerLogService,
-            @Nonnull BotInfo botInfo) {
-        super(telegramApiClient);
-        Validate.notNull(answerLogService, "answerLogService should be defined");
-        Validate.notNull(botInfo, "botInfo should be defined");
-        this.answerLogService = answerLogService;
-        this.botInfo = botInfo;
-    }
-
-    public StatCommand(
             @Nonnull Supplier<TelegramApiClient> telegramApiClientSupplier,
             @Nonnull AnswerLogService answerLogService,
             @Nonnull BotInfo botInfo) {
