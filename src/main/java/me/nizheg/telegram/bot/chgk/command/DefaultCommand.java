@@ -84,10 +84,7 @@ public class DefaultCommand extends ChatCommand {
         ChatGame chatGame = chatGameService.getGame(new Chat(ctx.getChat()));
         User user = ctx.getFrom();
         UserAnswerResult userAnswerResult = chatGame.userAnswer(new UserAnswer(text, user));
-        Task currentTask = userAnswerResult.getCurrentTask();
-        if (currentTask == null) {
-            throw new NoTaskException();
-        }
+        Task currentTask = userAnswerResult.getCurrentTask().orElseThrow(NoTaskException::new);
 
         if (userAnswerResult.isCorrect()) {
             StringBuilder resultBuilder = new StringBuilder();
@@ -138,7 +135,7 @@ public class DefaultCommand extends ChatCommand {
                 }
             }
 
-            OffsetDateTime usageTime = userAnswerResult.getUsageTime();
+            OffsetDateTime usageTime = userAnswerResult.getUsageTime().orElse(null);
             resultBuilder.append("\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: ")
                     .append(printDiffTillNow(usageTime));
             InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();

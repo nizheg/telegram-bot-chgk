@@ -6,7 +6,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 
@@ -24,7 +23,7 @@ public class UserAnswerResult {
     private Long firstAnsweredUser;
     @Nullable
     private final OffsetDateTime usageTime;
-    @NonNull
+    @Nullable
     private final Task currentTask;
 
     public Optional<String> getExactAnswer() {
@@ -33,5 +32,13 @@ public class UserAnswerResult {
 
     public Optional<Long> getFirstAnsweredUser() {
         return Optional.ofNullable(firstAnsweredUser);
+    }
+
+    public Optional<OffsetDateTime> getUsageTime() {
+        return Optional.ofNullable(usageTime);
+    }
+
+    public Optional<Task> getCurrentTask() {
+        return Optional.ofNullable(currentTask);
     }
 }
