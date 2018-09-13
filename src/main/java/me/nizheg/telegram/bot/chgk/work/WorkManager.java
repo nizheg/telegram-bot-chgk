@@ -53,8 +53,10 @@ public class WorkManager {
     }
 
     public synchronized void shutdown() {
-        this.scheduledExecutorService.shutdown();
-        this.scheduledExecutorService = null;
+        if (this.scheduledExecutorService != null) {
+            this.scheduledExecutorService.shutdown();
+            this.scheduledExecutorService = null;
+        }
         this.scheduledFuture = null;
     }
 
