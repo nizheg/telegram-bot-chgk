@@ -313,7 +313,6 @@ public class JdbcTaskDao implements TaskDao {
         template.execute("lock table used_task_archive, used_task, task");
         String archiveSql = "insert into used_task_archive\n"
                 + "select task_id, chat_id, using_time from used_task ut\n"
-                + "where not exists (select 1 from used_task_archive uta where uta.task_id = ut.task_id and uta.chat_id = ut.chat_id)\n"
                 + "except\n"
                 + "select ut1.task_id, ut1.chat_id, ut1.using_time\n"
                 + "from used_task ut1\n"
