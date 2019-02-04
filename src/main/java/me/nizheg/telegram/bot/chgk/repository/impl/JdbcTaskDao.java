@@ -102,6 +102,7 @@ public class JdbcTaskDao implements TaskDao {
     public void setUsedByChat(final Long taskId, final Long chatId) {
         try {
             template.update("insert into used_task(task_id, chat_id) values(?, ?)", taskId, chatId);
+            template.update("delete from used_task_archive where chat_id = ? and task_id = ?", chatId, taskId);
         } catch (DataIntegrityViolationException ex) {
             if (logger.isWarnEnabled()) {
                 logger.warn("Task " + taskId + " is used yet for chat " + chatId + ". Updating usage time of it.");
@@ -112,6 +113,7 @@ public class JdbcTaskDao implements TaskDao {
                 protected void doInTransactionWithoutResult(@Nonnull TransactionStatus transactionStatus) {
                     template.update("update used_task set using_time = ? where chat_id = ? and task_id = ?", new Date(),
                             chatId, taskId);
+                    template.update("delete from used_task_archive where chat_id = ? and task_id = ?", chatId, taskId);
                 }
             });
         }
