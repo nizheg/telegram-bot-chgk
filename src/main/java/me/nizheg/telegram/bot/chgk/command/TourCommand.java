@@ -9,11 +9,12 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
-import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.domain.TournamentResult;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -25,7 +26,9 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
-import me.nizheg.telegram.util.TelegramApiUtil;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
+import static me.nizheg.telegram.bot.api.util.TelegramHtmlUtil.escape;
 
 /**
  * @author Nikolay Zhegalin
@@ -78,7 +81,10 @@ public class TourCommand extends ChatCommand {
 
         String toursOfTourGroup = tourList.getToursListOfTourGroup(tourId);
         if (toursOfTourGroup != null) {
-            getTelegramApiClient().sendMessage(new Message(toursOfTourGroup, chatId));
+            getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                    .text(toursOfTourGroup)
+                    .chatId(new ChatId(chatId))
+                    .build());
             return;
         }
 
@@ -90,17 +96,21 @@ public class TourCommand extends ChatCommand {
                     .map(LightTask::getId)
                     .map(Object::toString).orElse("");
             if (tournamentResult.isCurrentTaskFromTournament()) {
-                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup(
-                        "Начать заново", "clear_and_next",
-                        "Продолжить", "next " + currentTaskId);
+                buttonMarkup = InlineKeyboardMarkup.oneRow(
+                        callbackDataButton("Начать заново", "clear_and_next"),
+                        callbackDataButton("Продолжить", "next " + currentTaskId));
             } else {
-                buttonMarkup = TelegramApiUtil.createInlineButtonMarkup("Начать", "next " + currentTaskId);
+                buttonMarkup = InlineKeyboardMarkup.oneRow(
+                        callbackDataButton("Начать", "next " + currentTaskId));
             }
             getTelegramApiClient().sendMessage(
-                    new Message("Выбран турнир <b>" +
-                            TelegramHtmlUtil.escape(tournamentResult.getTournament().getTitle()) +
-                            "</b>",
-                            chatId, ParseMode.HTML, true, null, buttonMarkup));
+                    Message.safeMessageBuilder()
+                            .text("Выбран турнир <b>" + escape(tournamentResult.getTournament().getTitle()) + "</b>")
+                            .chatId(new ChatId(chatId))
+                            .parseMode(ParseMode.HTML)
+                            .disableWebPagePreview(true)
+                            .replyMarkup(buttonMarkup)
+                            .build());
         } catch (IllegalIdException e) {
             logger.error("Illegal id of tournament for chat " + chatId, e);
             throw new CommandException("Неверный идентификатор турнира");

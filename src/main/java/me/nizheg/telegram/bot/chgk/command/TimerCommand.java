@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.command.ChatCommand;
@@ -62,17 +63,21 @@ public class TimerCommand extends ChatCommand {
             }
         }
         chatGameService.setTimer(ctx.getChatId(), timeoutMinutes * MINUTE);
-        getTelegramApiClient().sendMessage(new Message(
-                Emoji.BELL + " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>",
-                ctx.getChatId(), ParseMode.HTML));
+        getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                .text(Emoji.BELL +
+                        " <i>Установлен таймер автоматической выдачи вопросов в " + timeoutMinutes + " мин.</i>")
+                .chatId(new ChatId(ctx.getChatId()))
+                .parseMode(ParseMode.HTML)
+                .build());
     }
 
     private void resetTimer(CommandContext ctx) {
         chatGameService.clearTimer(ctx.getChatId());
-        getTelegramApiClient().sendMessage(
-                new Message(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>",
-                        ctx.getChatId(),
-                        ParseMode.HTML, false));
+        getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                .text(Emoji.BELL_WITH_CANCELLATION_STROKE + " <i>Автоматическая выдача вопросов выключена</i>")
+                .chatId(new ChatId(ctx.getChatId()))
+                .parseMode(ParseMode.HTML)
+                .build());
     }
 
     @Override

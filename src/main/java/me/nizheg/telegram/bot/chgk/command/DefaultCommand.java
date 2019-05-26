@@ -4,9 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +17,7 @@ import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
@@ -30,7 +28,6 @@ import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
-import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.chgk.util.DateUtils;
@@ -42,6 +39,8 @@ import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
 import me.nizheg.telegram.util.Emoji;
 
+import static java.util.Collections.singletonList;
+
 /**
  * @author Nikolay Zhegalin
  */
@@ -50,7 +49,6 @@ import me.nizheg.telegram.util.Emoji;
 @ChatActive(notifyUser = false)
 public class DefaultCommand extends ChatCommand {
 
-    private final ChatService chatService;
     private final ChatGameService chatGameService;
     private final TaskSender taskSender;
     private final TelegramUserService telegramUserService;
@@ -60,7 +58,6 @@ public class DefaultCommand extends ChatCommand {
 
     public DefaultCommand(
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
-            @NonNull ChatService chatService,
             @NonNull ChatGameService chatGameService,
             @NonNull TaskSender taskSender,
             @NonNull TelegramUserService telegramUserService,
@@ -68,7 +65,6 @@ public class DefaultCommand extends ChatCommand {
             @NonNull BotInfo botInfo,
             @NonNull Clock clock) {
         super(telegramApiClientSupplier);
-        this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.telegramUserService = telegramUserService;
@@ -138,20 +134,20 @@ public class DefaultCommand extends ChatCommand {
             OffsetDateTime usageTime = userAnswerResult.getUsageTime().orElse(null);
             resultBuilder.append("\n" + Emoji.HOURGLASS + " Время, потраченное на вопрос: ")
                     .append(printDiffTillNow(usageTime));
-            InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
-            buttonGroup.add(ratingHelper.createRatingButtons(currentTask.getId()));
-            InlineKeyboardButton nextButton = new InlineKeyboardButton();
-            nextButton.setText("Дальше");
-            nextButton.setCallbackData("next " + currentTask.getId());
-            buttonGroup.add(Collections.singletonList(nextButton));
-            replyMarkup.setInlineKeyboard(buttonGroup);
+            InlineKeyboardMarkup replyMarkup = InlineKeyboardMarkup.column(
+                    ratingHelper.createRatingButtons(currentTask.getId()),
+                    singletonList(InlineKeyboardButton.callbackDataButton("Дальше", "next " + currentTask.getId()))
+            );
             taskSender.sendTaskComment(resultBuilder, currentTask, chatId, replyMarkup,
                     (errorResponse, httpStatus) -> {
                     });
         } else {
-            getTelegramApiClient().sendMessage(new Message(
-                    "\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.", chatId, ParseMode.HTML));
+            getTelegramApiClient().sendMessage(
+                    Message.safeMessageBuilder()
+                            .text("\"<b>" + TelegramHtmlUtil.escape(text) + "</b>\" - это неверный ответ.")
+                            .chatId(new ChatId(chatId))
+                            .parseMode(ParseMode.HTML)
+                            .build());
         }
 
     }

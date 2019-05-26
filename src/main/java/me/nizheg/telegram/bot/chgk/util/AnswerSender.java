@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,15 +35,11 @@ public class AnswerSender implements AnswerOperation {
     public void sendAnswer(Task task, boolean isWithButtons, Long chatId, Callback<AtomicResponse<Message>> callback) {
         InlineKeyboardMarkup replyMarkup = null;
         if (isWithButtons) {
-            replyMarkup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> buttonGroup = new ArrayList<>();
             long taskId = task.getId();
-            buttonGroup.add(ratingHelper.createRatingButtons(taskId));
-            InlineKeyboardButton nextButton = new InlineKeyboardButton();
-            nextButton.setText("Дальше");
-            nextButton.setCallbackData("next " + taskId);
-            buttonGroup.add(Collections.singletonList(nextButton));
-            replyMarkup.setInlineKeyboard(buttonGroup);
+            replyMarkup = InlineKeyboardMarkup.column(
+                    ratingHelper.createRatingButtons(taskId),
+                    Collections.singletonList(InlineKeyboardButton.callbackDataButton("Дальше", "next " + taskId))
+            );
         }
         StringBuilder messageBuilder = new StringBuilder("<b>Ответ:</b>\n");
         sendAnswerOfTask(messageBuilder, task, chatId, replyMarkup, callback);

@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 import me.nizheg.telegram.bot.command.ChatCommand;
@@ -33,13 +34,15 @@ public class StartCommand extends ChatCommand {
         Long chatId = ctx.getChatId();
         if (!chatService.isChatActive(chatId)) {
             chatService.activateChat(chatId);
-            getTelegramApiClient().sendMessage(new Message(
-                    "Привет. Узнать, что я умею, можно с помощью команды /help.\nЧтобы получить вопрос, нажмите /next",
-                    chatId));
+            getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                    .text("Привет. Узнать, что я умею, можно с помощью команды /help.\nЧтобы получить вопрос, нажмите /next")
+                    .chatId(new ChatId(ctx.getChatId()))
+                    .build());
         } else {
-            getTelegramApiClient().sendMessage(
-                    new Message("Чтобы повторить вопрос, воспользуйтесь /repeat. Чтобы получить следующее - /next.",
-                            chatId));
+            getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                               .text("Чтобы повторить вопрос, воспользуйтесь /repeat. Чтобы получить следующее - /next.")
+                               .chatId(new ChatId(ctx.getChatId()))
+                               .build());
         }
     }
 

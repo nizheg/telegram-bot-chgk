@@ -8,12 +8,16 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.ExceptionHandler;
 import me.nizheg.telegram.util.TelegramApiUtil;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneButton;
 
 @RequiredArgsConstructor
 public class ChgkCommandExceptionHandler implements ExceptionHandler {
@@ -36,36 +40,48 @@ public class ChgkCommandExceptionHandler implements ExceptionHandler {
         } else if (exception instanceof UserIsNotInChannelException) {
             handleMessageException((UserIsNotInChannelException) exception, context);
         } else if (exception instanceof CommandException) {
-            telegramApiClient.sendMessage(
-                    new Message("<i>" +
-                            TelegramHtmlUtil.escape(exception.getMessage()) +
-                            "</i>", context.getChatId(),
-                            ParseMode.HTML));
+            telegramApiClient.sendMessage(Message.safeMessageBuilder()
+                    .text("<i>" + TelegramHtmlUtil.escape(exception.getMessage()) + "</i>")
+                    .chatId(new ChatId(context.getChatId()))
+                    .parseMode(ParseMode.HTML)
+                    .build());
         } else {
-            telegramApiClient.sendMessage(
-                    new Message("<i>" + getErrorDefaultMessage() + "</i>", context.getChatId(), ParseMode.HTML));
+            telegramApiClient.sendMessage(Message.safeMessageBuilder()
+                    .text("<i>" + getErrorDefaultMessage() + "</i>")
+                    .chatId(new ChatId(context.getChatId()))
+                    .parseMode(ParseMode.HTML)
+                    .build());
         }
     }
 
     private void handleMessageException(UserIsNotInChannelException exception, CommandContext context) {
         User user = exception.getUser();
         String mention = TelegramApiUtil.createUserMention(user);
-        getTelegramApiClient().sendMessage(
-                new Message(mention + ", <i>для того, чтобы пользоваться ботом, вы должны состоять в канале</i> " +
-                        exception.getChannelName(), context.getChatId(), ParseMode.HTML));
+        getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                .text(mention + ", <i>для того, чтобы пользоваться ботом, вы должны состоять в канале</i> " +
+                        exception.getChannelName())
+                .chatId(new ChatId(context.getChatId()))
+                .parseMode(ParseMode.HTML)
+                .build());
     }
 
     private void handleMessageException(NoTaskException commandException, CommandContext context) {
         getTelegramApiClient().sendMessage(
-                new Message("<i>" + NO_TASK_MESSAGE + "</i>",
-                        context.getChatId(), ParseMode.HTML, null, null,
-                        TelegramApiUtil.createInlineButtonMarkup("Получить вопрос", "next")));
+                Message.safeMessageBuilder()
+                        .text("<i>" + NO_TASK_MESSAGE + "</i>")
+                        .chatId(new ChatId(context.getChatId()))
+                        .parseMode(ParseMode.HTML)
+                        .replyMarkup(oneButton(callbackDataButton("Получить вопрос", "next")))
+                        .build());
     }
 
     private void handleMessageException(BotIsNotStartedException commandException, CommandContext context) {
         getTelegramApiClient().sendMessage(
-                new Message("<i>Необходимо активировать бота с помощью команды</i> /start",
-                        context.getChatId(), ParseMode.HTML));
+                Message.safeMessageBuilder()
+                        .text("<i>Необходимо активировать бота с помощью команды</i> /start")
+                        .chatId(new ChatId(context.getChatId()))
+                        .parseMode(ParseMode.HTML)
+                        .build());
     }
 
     @Override

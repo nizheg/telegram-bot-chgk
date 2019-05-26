@@ -65,8 +65,14 @@ public class TaskSender {
         List<AttachedPicture> attachedPicturesPart2 = attachedPictures.subList(i, attachedPicturesSize);
         ReplyMarkup messageReplyMarkup = attachedPicturesPart2.isEmpty() ? replyMarkup : null;
         telegramApiClient.sendMessage(
-                new Message(textBuilder.toString(), chatId, ParseMode.HTML, true, null, messageReplyMarkup))
-        .setCallback(callback);
+                Message.safeMessageBuilder()
+                        .text(textBuilder.toString())
+                        .chatId(new ChatId(chatId))
+                        .parseMode(ParseMode.HTML)
+                        .disableWebPagePreview(true)
+                        .replyMarkup(messageReplyMarkup)
+                        .build())
+                .setCallback(callback);
         sendAttachedPictures(telegramApiClient, chatId, attachedPicturesPart2, replyMarkup);
     }
 
@@ -87,12 +93,16 @@ public class TaskSender {
         }
         messageBuilder.append("\n\n<b>Комментарий:</b>\n").append(getComment(task));
         List<AttachedPicture> attachedPictures = task.getCommentPictures();
-        Message sendingMessage = new Message(messageBuilder.toString(), chatId, ParseMode.HTML, true);
+        Message.SafeMessageBuilder sendingMessageBuilder = Message.safeMessageBuilder()
+                .text(messageBuilder.toString())
+                .chatId(new ChatId(chatId))
+                .parseMode(ParseMode.HTML)
+                .disableWebPagePreview(true);
         if (attachedPictures.isEmpty()) {
-            sendingMessage.setReplyMarkup(replyMarkup);
+            sendingMessageBuilder.replyMarkup(replyMarkup);
         }
         TelegramApiClient telegramApiClient = getTelegramApiClient();
-        telegramApiClient.sendMessage(sendingMessage).setCallback(
+        telegramApiClient.sendMessage(sendingMessageBuilder.build()).setCallback(
                 new Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>>() {
                     @Override
                     public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {
@@ -114,9 +124,11 @@ public class TaskSender {
             List<AttachedPicture> attachedPictures,
             ReplyMarkup replyMarkup) {
         sendAttachedPictures(telegramApiClient, chatId, attachedPictures, replyMarkup, (errorResponse, httpStatus) ->
-                telegramApiClient.sendMessage(new Message("<i>Произошла непредвиденая ошибка при отправке "
-                        + "изображения</i>", chatId, ParseMode.HTML)));
-
+                telegramApiClient.sendMessage(Message.safeMessageBuilder()
+                        .text("<i>Произошла непредвиденая ошибка при отправке изображения</i>")
+                        .chatId(new ChatId(chatId))
+                        .parseMode(ParseMode.HTML)
+                        .build()));
     }
 
     private void sendAttachedPictures(
@@ -133,11 +145,14 @@ public class TaskSender {
             } else {
                 photo = new InputFile(attachedPicture.getSourceUrl());
             }
-            Photo sendingPhoto = new Photo(photo, new ChatId(chatId), attachedPicture.getCaption());
+            Photo.PhotoBuilder sendingPhotoBuilder = Photo.builder()
+                    .photo(photo)
+                    .chatId(new ChatId(chatId))
+                    .caption(attachedPicture.getCaption());
             if (!iterator.hasNext()) {
-                sendingPhoto.setReplyMarkup(replyMarkup);
+                sendingPhotoBuilder.replyMarkup(replyMarkup);
             }
-            telegramApiClient.sendPhoto(sendingPhoto).setCallback(
+            telegramApiClient.sendPhoto(sendingPhotoBuilder.build()).setCallback(
                     new Callback<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>>() {
                         @Override
                         public void onFailure(ErrorResponse errorResponse, HttpStatus httpStatus) {

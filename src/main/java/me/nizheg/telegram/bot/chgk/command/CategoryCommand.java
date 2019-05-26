@@ -16,6 +16,7 @@ import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardRemove;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
 import me.nizheg.telegram.bot.chgk.dto.Category;
@@ -135,8 +136,14 @@ public class CategoryCommand extends ChatCommand {
         replyKeyboardMarkup.setKeyboard(keyboard);
         TelegramApiClient telegramApiClient = getTelegramApiClient();
         telegramApiClient.sendMessage(
-                new Message("<i>Выберите категорию вопросов</i>", ctx.getChatId(), ParseMode.HTML, false, null,
-                        replyKeyboardMarkup)).setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
+                Message.safeMessageBuilder()
+                        .text("<i>Выберите категорию вопросов</i>")
+                        .chatId(new ChatId(ctx.getChatId()))
+                        .parseMode(ParseMode.HTML)
+                        .disableWebPagePreview(false)
+                        .replyMarkup(replyKeyboardMarkup)
+                        .build())
+                .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
     private void sendCurrentCategory(CommandContext ctx, ChatGame chatGame, Category currentCategory) {
@@ -172,8 +179,13 @@ public class CategoryCommand extends ChatCommand {
         }
         TelegramApiClient telegramApiClient = getTelegramApiClient();
         telegramApiClient.sendMessage(
-                new Message(messageBuilder.toString(), chatId, ParseMode.HTML, null, null, replyKeyboardRemove))
-        .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
+                Message.safeMessageBuilder()
+                        .text(messageBuilder.toString())
+                        .chatId(new ChatId(chatId))
+                        .parseMode(ParseMode.HTML)
+                        .replyMarkup(replyKeyboardRemove)
+                        .build())
+                .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
     private boolean isTourCategory(Category currentCategory) {
@@ -186,9 +198,13 @@ public class CategoryCommand extends ChatCommand {
         replyKeyboardRemove.setRemoveKeyboard(true);
         TelegramApiClient telegramApiClient = getTelegramApiClient();
         telegramApiClient.sendMessage(
-                new Message("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>", ctx.getChatId(),
-                        ParseMode.HTML, null, null, replyKeyboardRemove))
-        .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
+                Message.safeMessageBuilder()
+                        .text("<i>Выбрана новая категория</i> <b>" + category.getName() + "</b>")
+                        .chatId(new ChatId(ctx.getChatId()))
+                        .parseMode(ParseMode.HTML)
+                        .replyMarkup(replyKeyboardRemove)
+                        .build())
+                .setCallback(new CallbackRequestDefaultCallback<>(ctx, telegramApiClient));
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.WarningOperation;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
@@ -23,8 +24,12 @@ public class WarningSender implements WarningOperation {
     @Override
     public void sendTimeWarning(Chat chat, int seconds) {
         getTelegramApiClient().sendMessage(
-                new Message(Emoji.HOURGLASS + " <b>Осталось " + seconds + " с.</b>", chat.getId(), ParseMode.HTML,
-                        false));
+                Message.safeMessageBuilder()
+                        .text(Emoji.HOURGLASS + " <b>Осталось " + seconds + " с.</b>")
+                        .chatId(new ChatId(chat.getId()))
+                        .parseMode(ParseMode.HTML)
+                        .disableWebPagePreview(false)
+                        .build());
     }
 
     private TelegramApiClient getTelegramApiClient() {

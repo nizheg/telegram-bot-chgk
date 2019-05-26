@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
-import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -25,6 +24,9 @@ import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.util.Emoji;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneButton;
 
 /**
  * @author Nikolay Zhegalin
@@ -56,45 +58,32 @@ public class StatCommand extends ChatCommand {
 
         switch (mode) {
             case TOP10:
-                createTop10Message(ctx);
+                sendTop10Message(ctx);
                 break;
             case SCORE:
-                createScoreMessage(ctx);
+                sendScoreMessage(ctx);
                 break;
         }
 
     }
 
-    private void createTop10Message(CommandContext ctx) {
+    private void sendTop10Message(CommandContext ctx) {
         StatSearchParams params = new StatSearchParams();
         params.setExcludeUserIds(Collections.singletonList(botInfo.getBotUser().getId()));
         params.setLimit(10);
         List<StatEntry> statForChat = answerLogService.getStatForChat(ctx.getChatId(), params);
         if (statForChat.isEmpty()) {
             getTelegramApiClient().sendMessage(
-                    new Message("<i>В этом чате ещё никто ничего не отгадал.</i>", ctx.getChatId(), ParseMode.HTML));
+                    Message.safeMessageBuilder()
+                            .text("<i>В этом чате ещё никто ничего не отгадал.</i>")
+                            .chatId(new ChatId(ctx.getChatId()))
+                            .parseMode(ParseMode.HTML)
+                            .build());
         } else {
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            InlineKeyboardButton scoreButton = new InlineKeyboardButton();
-            scoreButton.setCallbackData("stat " + Mode.SCORE.name());
-            scoreButton.setText("Cчёт Знатоки против Бота");
-            markup.setInlineKeyboard(Collections.singletonList((Collections.singletonList(scoreButton))));
-            if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
-                EditedMessage editedMessage = new EditedMessage(new ChatId(ctx.getChatId()),
-                        ctx.getReplyToBotMessage().getMessageId(),
-                        createTop10Message(statForChat));
-                editedMessage.setDisableWebPagePreview(true);
-                editedMessage.setParseMode(ParseMode.HTML);
-                editedMessage.setReplyMarkup(markup);
-                getTelegramApiClient().editMessageText(editedMessage);
-            } else {
-                Message message = new Message(createTop10Message(statForChat), ctx.getChatId(), ParseMode.HTML, true);
-                message.setDisableNotification(true);
-                message.setReplyMarkup(markup);
-                getTelegramApiClient().sendMessage(message);
-            }
+            InlineKeyboardMarkup markup = oneButton(
+                    callbackDataButton("Cчёт Знатоки против Бота", "stat " + "" + Mode.SCORE.name()));
+            sendOrEditMessage(ctx, markup, createTop10Message(statForChat));
         }
-
     }
 
     private String createTop10Message(List<StatEntry> statForChat) {
@@ -113,29 +102,20 @@ public class StatCommand extends ChatCommand {
         return resultBuilder.toString();
     }
 
-    private void createScoreMessage(CommandContext ctx) {
+    private String createUserName(TelegramUser telegramUser) {
+        return "<b>" + TelegramHtmlUtil.escape(telegramUser.getFirstname())
+                + (StringUtils.isBlank(telegramUser.getLastname()) ? "" :
+                " " + TelegramHtmlUtil.escape(telegramUser.getLastname()))
+                + (StringUtils.isBlank(telegramUser.getUsername()) ? "</b>" :
+                "</b> @" + TelegramHtmlUtil.escape(telegramUser.getUsername()));
+    }
+
+    private void sendScoreMessage(CommandContext ctx) {
         List<StatEntry> statForChat = answerLogService.getStatForChatUser(ctx.getChatId(), botInfo.getBotUser().getId(),
                 "users");
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        InlineKeyboardButton testButton = new InlineKeyboardButton();
-        testButton.setCallbackData("stat " + Mode.TOP10.name());
-        testButton.setText("Топ-10 чата");
-        markup.setInlineKeyboard(Collections.singletonList(Collections.singletonList(testButton)));
-        if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
-            EditedMessage editedMessage = new EditedMessage(new ChatId(ctx.getChatId()),
-                    ctx.getReplyToBotMessage().getMessageId(),
-                    createScoreMessage(statForChat) );
-            editedMessage.setDisableWebPagePreview(true);
-            editedMessage.setParseMode(ParseMode.HTML);
-            editedMessage.setReplyMarkup(markup);
-            getTelegramApiClient().editMessageText(editedMessage);
-        } else {
-            Message message = new Message(createScoreMessage(statForChat), ctx.getChatId(), ParseMode.HTML, true);
-            message.setDisableNotification(true);
-            message.setReplyMarkup(markup);
-            getTelegramApiClient().sendMessage(message);
-        }
-
+        InlineKeyboardMarkup markup = oneButton(
+                callbackDataButton("Топ-10 чата", "stat " + Mode.TOP10.name()));
+        sendOrEditMessage(ctx, markup, createScoreMessage(statForChat));
     }
 
     private String createScoreMessage(List<StatEntry> statForChat) {
@@ -153,12 +133,28 @@ public class StatCommand extends ChatCommand {
         return Emoji.GLOWING_STAR + " <b>Cчёт Знатоки против Бота</b>\n" + usersScore + ":" + botScore;
     }
 
-    private String createUserName(TelegramUser telegramUser) {
-        return "<b>" + TelegramHtmlUtil.escape(telegramUser.getFirstname())
-                + (StringUtils.isBlank(telegramUser.getLastname()) ? "" :
-                " " + TelegramHtmlUtil.escape(telegramUser.getLastname()))
-                + (StringUtils.isBlank(telegramUser.getUsername()) ? "</b>" :
-                "</b> @" + TelegramHtmlUtil.escape(telegramUser.getUsername()));
+    private void sendOrEditMessage(CommandContext ctx, InlineKeyboardMarkup markup, String scoreMessage) {
+        if (ctx.isCallbackQuery() && ctx.getReplyToBotMessage() != null) {
+            EditedMessage editedMessage = EditedMessage.builder()
+                    .text(scoreMessage)
+                    .chatId(new ChatId(ctx.getChatId()))
+                    .messageId(ctx.getReplyToBotMessage().getMessageId())
+                    .parseMode(ParseMode.HTML)
+                    .disableWebPagePreview(true)
+                    .replyMarkup(markup)
+                    .build();
+            getTelegramApiClient().editMessageText(editedMessage);
+        } else {
+            Message message = Message.safeMessageBuilder()
+                    .text(scoreMessage)
+                    .chatId(new ChatId(ctx.getChatId()))
+                    .parseMode(ParseMode.HTML)
+                    .disableWebPagePreview(true)
+                    .disableNotification(true)
+                    .replyMarkup(markup)
+                    .build();
+            getTelegramApiClient().sendMessage(message);
+        }
     }
 
     @Override

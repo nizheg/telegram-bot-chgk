@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.SimpleThreadScope;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.nizheg.payments.service.PaymentService;
+import me.nizheg.telegram.bot.api.TelegramApiContext;
 import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.User;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
@@ -121,16 +123,20 @@ public class AppConfig {
 
     @Bean
     @Scope(SCOPE_THREAD)
-    @Autowired
     public TelegramApiClient telegramApiClient() {
         String apiToken = propertyService.getValue("api.token");
-        return new TelegramApiClientImpl(apiToken);
+        return new TelegramApiClientImpl(apiToken, telegramApiContext());
+    }
+
+    @Bean
+    public TelegramApiContext telegramApiContext() {
+        return new TelegramApiContext(new SimpleClientHttpRequestFactory());
     }
 
     @Bean
     @Autowired
     public MessageReceiver messageReceiver(UpdateHandler updateHandler, PropertyService propertyService) {
-        return new MessageReceiver(this::telegramApiClient, updateHandler, propertyService);
+        return new MessageReceiver(this::telegramApiClient, updateHandler, propertyService, 10);
     }
 
     @Bean
@@ -387,9 +393,9 @@ public class AppConfig {
     @Bean
     @Autowired
     public DefaultCommand defaultCommand(
-            ChatService chatService, ChatGameService chatGameService, TaskSender taskSender,
+            ChatGameService chatGameService, TaskSender taskSender,
             TelegramUserService telegramUserService, BotInfo botInfo) {
-        return new DefaultCommand(this::telegramApiClient, chatService, chatGameService,
+        return new DefaultCommand(this::telegramApiClient, chatGameService,
                 taskSender, telegramUserService, ratingHelper(), botInfo, clock());
     }
 

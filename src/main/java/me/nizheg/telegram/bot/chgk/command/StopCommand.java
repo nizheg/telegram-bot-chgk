@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import lombok.NonNull;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
@@ -31,7 +32,10 @@ public class StopCommand extends ChatCommand {
     public void execute(CommandContext ctx) {
         chatGameService.stopChatGame(ctx.getChatId());
         chatService.deactivateChat(ctx.getChatId());
-        getTelegramApiClient().sendMessage(new Message("До новых встреч!", ctx.getChatId()));
+        getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                .text("До новых встреч!")
+                .chatId(new ChatId(ctx.getChatId()))
+                .build());
     }
 
     @Override

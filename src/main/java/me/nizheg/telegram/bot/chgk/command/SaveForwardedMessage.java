@@ -1,7 +1,5 @@
 package me.nizheg.telegram.bot.chgk.command;
 
-import java.util.Optional;
-
 import javax.annotation.Nonnull;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +19,7 @@ public class SaveForwardedMessage implements NonCommandMessageProcessor {
 
     @Override
     public void process(CommandContext ctx) {
-        Optional.ofNullable(ctx.getMessage())
+        ctx.getMessage()
                 .filter(message -> ctx.getFrom() != null)
                 .filter(message -> message.getForwardFromChat() != null)
                 .filter(message -> telegramUserService.userHasRole(ctx.getFrom().getId(), Role.SUPER_ADMIN))

@@ -12,6 +12,7 @@ import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.TelegramApiCall;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.service.ChatService;
 
@@ -37,15 +38,12 @@ public class SendMessageWorker implements Worker {
             throw new IllegalArgumentException("Empty text");
         }
         Long chatId = sendMessageWork.getChatId();
-        Message telegramMessage = new Message(
-                sendMessageWork.getText(),
-                chatId,
-                Optional.ofNullable(sendMessageWork.getParseMode())
-                        .map(ParseMode::valueOf)
-                        .orElse(null),
-                sendMessageWork.getDisableWebPagePreview());
-
-
+        Message telegramMessage = Message.safeMessageBuilder()
+                .text(sendMessageWork.getText())
+                .chatId(new ChatId(chatId))
+                .parseMode(Optional.ofNullable(sendMessageWork.getParseMode()).map(ParseMode::valueOf).orElse(null))
+                .disableWebPagePreview(sendMessageWork.getDisableWebPagePreview())
+                .build();
         TelegramApiCall<AtomicResponse<me.nizheg.telegram.bot.api.model.Message>> messageResponse =
                 telegramApiClientSupplier.get().sendMessage(telegramMessage);
         messageResponse.setCallback((errorResponse, httpStatus) -> this.handleError(httpStatus, chatId));

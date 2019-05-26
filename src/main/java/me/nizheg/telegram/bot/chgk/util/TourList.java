@@ -1,7 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -9,6 +7,7 @@ import javax.annotation.Nullable;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardButton;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.api.util.TelegramHtmlUtil;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
@@ -18,6 +17,8 @@ import me.nizheg.telegram.bot.chgk.dto.composite.TourGroup;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.util.Emoji;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
 
 /**
  * @author Nikolay Zhegalin
@@ -50,7 +51,11 @@ public class TourList {
                     "\n\n<i>Найдено " + publishedTournamentsPage.getTotalCount() + " турниров. Уточните критерий "
                             + "поиска.</i>");
         }
-        return new Message(messageBuilder.toString(), chatId, ParseMode.HTML);
+        return Message.safeMessageBuilder()
+                .text(messageBuilder.toString())
+                .chatId(new ChatId(chatId))
+                .parseMode(ParseMode.HTML)
+                .build();
     }
 
     public Message getTournamentsListOfChat(Long chatId, int numberOfPage) {
@@ -79,23 +84,19 @@ public class TourList {
             if (nextPage >= numberOfPages) {
                 nextPage = 0;
             }
-            inlineKeyboardMarkup = new InlineKeyboardMarkup();
-            List<InlineKeyboardButton> keyboard = new ArrayList<>();
-            inlineKeyboardMarkup.setInlineKeyboard(Collections.singletonList(keyboard));
-            InlineKeyboardButton previous = new InlineKeyboardButton();
-            previous.setText(Emoji.LEFTWARDS_BLACK_ARROW);
-            previous.setCallbackData("tournament page" + previousPage);
-            keyboard.add(previous);
-            InlineKeyboardButton root = new InlineKeyboardButton();
-            root.setText(Emoji.OPEN_FILE_FOLDER + " Корень");
-            root.setCallbackData("tour");
-            keyboard.add(root);
-            InlineKeyboardButton next = new InlineKeyboardButton();
-            next.setText(Emoji.BLACK_RIGHTWARDS_ARROW);
-            next.setCallbackData("tournament page" + nextPage);
-            keyboard.add(next);
+            InlineKeyboardButton previous = callbackDataButton(Emoji.LEFTWARDS_BLACK_ARROW,
+                    "tournament page" + previousPage);
+            InlineKeyboardButton root = callbackDataButton(Emoji.OPEN_FILE_FOLDER + " Корень", "tour");
+            InlineKeyboardButton next = callbackDataButton(Emoji.BLACK_RIGHTWARDS_ARROW, "tournament page" + nextPage);
+            inlineKeyboardMarkup = InlineKeyboardMarkup.oneRow(previous, root, next);
         }
-        return new Message(messageBuilder.toString(), chatId, ParseMode.HTML, true, null, inlineKeyboardMarkup);
+        return Message.safeMessageBuilder()
+                .text(messageBuilder.toString())
+                .chatId(new ChatId(chatId))
+                .parseMode(ParseMode.HTML)
+                .disableWebPagePreview(true)
+                .replyMarkup(inlineKeyboardMarkup)
+                .build();
     }
 
     private String getTitle(LightTour lightTour) {

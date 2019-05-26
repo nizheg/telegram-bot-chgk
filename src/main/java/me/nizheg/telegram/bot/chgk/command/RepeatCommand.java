@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
+import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
@@ -22,7 +23,8 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.Emoji;
-import me.nizheg.telegram.util.TelegramApiUtil;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
 
 /**
  * @author Nikolay Zhegalin
@@ -74,11 +76,13 @@ public class RepeatCommand extends ChatCommand {
             }
             ReplyMarkup replyMarkup;
             if (ctx.isPrivateChat()) {
-                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + currentTaskId,
-                        "Дальше", "next " + currentTaskId);
+                replyMarkup = InlineKeyboardMarkup.oneRow(
+                        callbackDataButton("Ответ", "answer " + currentTaskId),
+                        callbackDataButton("Дальше", "next " + currentTaskId));
             } else {
-                replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + currentTaskId,
-                        "Дальше", "next " + currentTaskId);
+                replyMarkup = InlineKeyboardMarkup.oneRow(
+                        callbackDataButton("Подсказка", "hint " + currentTaskId),
+                        callbackDataButton("Дальше", "next " + currentTaskId));
             }
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Повторяю вопрос</b>\n");

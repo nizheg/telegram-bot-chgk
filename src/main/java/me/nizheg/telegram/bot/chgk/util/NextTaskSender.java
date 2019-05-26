@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.util;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -14,6 +13,7 @@ import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.domain.AutoChatGame;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
@@ -25,7 +25,10 @@ import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
 import me.nizheg.telegram.util.Emoji;
-import me.nizheg.telegram.util.TelegramApiUtil;
+
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneButton;
+import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneRow;
 
 /**
  * @author Nikolay Zhegalin
@@ -91,19 +94,27 @@ public class NextTaskSender {
                 } else {
                     messageText = "<i>Новых вопросов пока что больше нет!</i>";
                 }
-                Message message = new Message(messageText, chatId, ParseMode.HTML);
-                message.setReplyMarkup(TelegramApiUtil.createInlineButtonMarkup("Выбрать категорию", "category"));
+                Message message = Message.safeMessageBuilder()
+                        .text(messageText)
+                        .chatId(new ChatId(chatId))
+                        .parseMode(ParseMode.HTML)
+                        .replyMarkup(oneButton(callbackDataButton("Выбрать категорию", "category")))
+                        .build();
                 getTelegramApiClient().sendMessage(message).setCallback(callback);
             } else {
                 ReplyMarkup replyMarkup;
                 Task nextTask = nextTaskOptional.get();
                 Long taskId = nextTask.getId();
                 if (chatGame.getChat().isPrivate()) {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Ответ", "answer " + taskId,
-                            "Дальше", "next " + taskId);
+                    replyMarkup = oneRow(
+                            callbackDataButton("Ответ", "answer " + taskId),
+                            callbackDataButton("Дальше", "next " + taskId)
+                    );
                 } else {
-                    replyMarkup = TelegramApiUtil.createInlineButtonMarkup("Подсказка", "hint " + taskId,
-                            "Дальше", "next " + taskId);
+                    replyMarkup = oneRow(
+                            callbackDataButton("Подсказка", "hint " + taskId),
+                            callbackDataButton("Дальше", "next " + taskId)
+                    );
                 }
                 StringBuilder messageBuilder = new StringBuilder();
                 messageBuilder.append(Emoji.BLACK_QUESTION_MARK_ORNAMENT + "<b>Внимание, вопрос!</b>  ");
@@ -122,8 +133,7 @@ public class NextTaskSender {
     }
 
     private void sendAnswerOfPreviousTask(@Nonnull Chat chat, @Nonnull Task task) {
-        InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-        replyMarkup.setInlineKeyboard(Collections.singletonList(ratingHelper.createRatingButtons(task.getId())));
+        InlineKeyboardMarkup replyMarkup = InlineKeyboardMarkup.oneRow(ratingHelper.createRatingButtons(task.getId()));
         answerSender.sendAnswerOfTask(new StringBuilder("<b>Ответ к предыдущему вопросу:</b>\n"), task,
                 chat.getId(), replyMarkup, (errorResponse, httpStatus) -> {
                 });

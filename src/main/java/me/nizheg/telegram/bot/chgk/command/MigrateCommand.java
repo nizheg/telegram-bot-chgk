@@ -49,12 +49,14 @@ public class MigrateCommand extends ChatCommand {
             } catch (CipherException e) {
                 throw new IllegalStateException(e);
             }
-            getTelegramApiClient().sendMessage(new Message(
-                    "<i>Для переноса статистики использования в другой чат нажмите кнопку и выберите необходимый чат.</i>"
-                            + "\n\n<b>Внимание! Вся статистика использования в выбранном чате перед обновлением будет очищена.</b>",
-                    chatId, ParseMode.HTML, null, null,
-                    TelegramApiUtil.createInlineMarkupForPrintTextInAnotherChat("Выбрать чат",
-                            "/migrate " + chatIdEncrypted)));
+            getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                    .text("<i>Для переноса статистики использования в другой чат нажмите кнопку и выберите необходимый чат.</i>"
+                            + "\n\n<b>Внимание! Вся статистика использования в выбранном чате перед обновлением будет очищена.</b>")
+                    .chatId(new ChatId(chatId))
+                    .parseMode(ParseMode.HTML)
+                    .replyMarkup(TelegramApiUtil.createInlineMarkupForPrintTextInAnotherChat(
+                            "Выбрать чат", "/migrate " + chatIdEncrypted))
+                    .build());
         } else {
             Long fromChatId;
             try {
@@ -67,11 +69,12 @@ public class MigrateCommand extends ChatCommand {
             chatGameService.stopChatGame(ctx.getChatId());
             chatService.deactivateChat(ctx.getChatId());
             chatService.migrateChatToAnother(fromChatId, chatId);
-            getTelegramApiClient().sendMessage(
-                    new Message("<i>Перенос успешно завершен</i>", chatId, ParseMode.HTML));
-
+            getTelegramApiClient().sendMessage(Message.safeMessageBuilder()
+                    .text("<i>Перенос успешно завершен</i>")
+                    .chatId(new ChatId(ctx.getChatId()))
+                    .parseMode(ParseMode.HTML)
+                    .build());
         }
-
     }
 
     @Override

@@ -8,6 +8,7 @@ import me.nizheg.telegram.bot.api.model.AtomicResponse;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.AnswerCallbackRequest;
+import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.api.service.param.Message;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
@@ -137,7 +138,11 @@ public class HintCommand extends ChatCommand {
         }
 
         private void sendErrorMessage(String message) {
-            telegramApiClient.sendMessage(new Message("<i>" + message + "</i>", ctx.getChatId(), ParseMode.HTML));
+            telegramApiClient.sendMessage(Message.safeMessageBuilder()
+                    .text("<i>" + message + "</i>")
+                    .chatId(new ChatId(ctx.getChatId()))
+                    .parseMode(ParseMode.HTML)
+                    .build());
         }
 
         @Override
