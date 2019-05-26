@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import java.util.List;
 import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
+import me.nizheg.telegram.bot.chgk.exception.OperationForbiddenException;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
@@ -70,9 +72,24 @@ public class TaskController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
-    public LightTask patch(@PathVariable Long id, @RequestBody StatusWrapper statusWrapper) {
-        logger.debug("change status of task " + id + " to " + statusWrapper.getStatus());
-        return taskService.changeStatus(id, statusWrapper.getStatus());
+    public LightTask patch(
+            @PathVariable Long id,
+            @RequestBody StatusWrapper statusWrapper,
+            Authentication authentication) {
+        LightTask.Status status = statusWrapper.getStatus();
+        logger.debug("change status of task " + id + " to " + status);
+        if (status == LightTask.Status.PUBLISH_READY && taskService.read(id).getStatus() != LightTask.Status.PUBLISHED
+                || userHasAuthority(authentication, "manage_task_status")) {
+            return taskService.changeStatus(id, status);
+        } else {
+            throw new OperationForbiddenException("Operation forbidden");
+        }
+
+    }
+
+    private static boolean userHasAuthority(Authentication authentication, String authority) {
+        return authentication.isAuthenticated() &&
+                authentication.getAuthorities().stream().anyMatch(a -> authority.equals(a.getAuthority()));
     }
 
     @RequestMapping(value = "/{id}/category", method = RequestMethod.POST)
@@ -108,7 +125,10 @@ public class TaskController {
     }
 
     @RequestMapping(value = "/{taskId}/taskPicture/{pictureId}", method = RequestMethod.PUT)
-    public void updatePictureOfTaskText(@PathVariable Long taskId, @PathVariable Long pictureId, @RequestBody AttachedPicture attachedPicture) {
+    public void updatePictureOfTaskText(
+            @PathVariable Long taskId,
+            @PathVariable Long pictureId,
+            @RequestBody AttachedPicture attachedPicture) {
         logger.debug("update picture " + pictureId + " of task " + taskId);
         attachedPicture.setId(pictureId);
         pictureService.updatePictureOfTaskText(attachedPicture, taskId);
@@ -123,7 +143,8 @@ public class TaskController {
     @RequestMapping(value = "/{taskId}/commentPicture", method = RequestMethod.POST)
     public void attachPictureToTaskComment(@PathVariable Long taskId, @RequestBody AttachedPicture attachedPicture) {
         logger.debug("attach picture " + attachedPicture.getId() + " to task comment " + taskId);
-        pictureService.savePictureToTaskCommentAtPosition(attachedPicture.getId(), taskId, attachedPicture.getPosition());
+        pictureService.savePictureToTaskCommentAtPosition(attachedPicture.getId(), taskId,
+                attachedPicture.getPosition());
     }
 
     @RequestMapping(value = "/{taskId}/commentPicture", method = RequestMethod.GET)
@@ -133,7 +154,10 @@ public class TaskController {
     }
 
     @RequestMapping(value = "/{taskId}/commentPicture/{pictureId}", method = RequestMethod.PUT)
-    public void updatePictureOfTaskComment(@PathVariable Long taskId, @PathVariable Long pictureId, @RequestBody AttachedPicture attachedPicture) {
+    public void updatePictureOfTaskComment(
+            @PathVariable Long taskId,
+            @PathVariable Long pictureId,
+            @RequestBody AttachedPicture attachedPicture) {
         logger.debug("update picture " + pictureId + " of task comment " + taskId);
         attachedPicture.setId(pictureId);
         pictureService.updatePictureOfTaskComment(attachedPicture, taskId);
@@ -147,6 +171,7 @@ public class TaskController {
 
 
     public static class StatusWrapper {
+
         private LightTask.Status status;
 
         public LightTask.Status getStatus() {

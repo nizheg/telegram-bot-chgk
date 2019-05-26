@@ -628,7 +628,7 @@
             <column name="change_time" type="timestamp with time zone" defaultValueDate="now()"/>
         </addColumn>
     </changeSet>
-    
+
     <changeSet id="create_admin_group" author="nzhegalin">
         <insert tableName="groups">
             <column name="group_name" value="admins"/>
@@ -642,5 +642,37 @@
             <column name="authority" value="manage_application"/>
         </insert>
     </changeSet>
+
+    <changeSet id="add_db_load_authority_to_admins" author="nzhegalin">
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='admins')"/>
+            <column name="authority" value="db_load"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="add_manage_tour_status_authority_to_admins" author="nzhegalin">
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='admins')"/>
+            <column name="authority" value="manage_tour_status"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="add_manage_task_status_authority_to_admins" author="nzhegalin">
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='admins')"/>
+            <column name="authority" value="manage_task_status"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="create_tasks_manager" author="nzhegalin">
+        <insert tableName="groups">
+            <column name="group_name" value="tasks_manager"/>
+        </insert>
+        <insert tableName="group_authorities">
+            <column name="group_id" valueComputed="(select id from groups where group_name='tasks_manager')"/>
+            <column name="authority" value="manage_tasks"/>
+        </insert>
+    </changeSet>
+
 
 </databaseChangeLog>

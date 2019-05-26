@@ -17,6 +17,7 @@ import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
+import me.nizheg.telegram.bot.chgk.exception.OperationForbiddenException;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
@@ -58,16 +59,25 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public LightTask update(LightTask task) {
+        checkPermissions(task.getId());
         if (task.getStatus() == null) {
             task.setStatus(LightTask.Status.NEW);
         }
         return taskDao.update(task);
     }
 
+    private LightTask checkPermissions(Long taskId) {
+        LightTask savedTask = taskDao.getById(taskId);
+        if (savedTask.getStatus() == LightTask.Status.PUBLISHED) {
+            throw new OperationForbiddenException("It is forbidden to change task in PUBLISHED status");
+        }
+        return savedTask;
+    }
+
     @Transactional
     @Override
     public void delete(Long id) {
-        LightTask task = taskDao.getById(id);
+        LightTask task = checkPermissions(id);
         if (task != null) {
             task.setStatus(LightTask.Status.DELETED);
             taskDao.update(task);
@@ -139,11 +149,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void addCategory(Long taskId, String categoryId) {
+        checkPermissions(taskId);
         taskDao.addCategory(taskId, categoryId);
     }
 
     @Override
     public void removeCategory(Long taskId, String categoryId) {
+        checkPermissions(taskId);
         taskDao.removeCategory(taskId, categoryId);
     }
 

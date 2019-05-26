@@ -13,10 +13,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.sql.SQLException;
 
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
+import me.nizheg.telegram.bot.chgk.exception.OperationForbiddenException;
 
 /**
-
- *
  * @author Nikolay Zhegalin
  */
 @Controller
@@ -26,6 +25,13 @@ public class ExceptionHandlerController {
 
     private final Log logger = LogFactory.getLog(getClass());
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(OperationForbiddenException.class)
+    public ExceptionResponse forbidden(OperationForbiddenException ex) {
+        logger.error(ex.getMessage(), ex);
+        return new ExceptionResponse(ex.getMessage());
+    }
+
     @ResponseStatus(value = HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicationException.class)
     public ExceptionResponse conflict(DuplicationException ex) {
@@ -34,14 +40,14 @@ public class ExceptionHandlerController {
     }
 
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler({ SQLException.class, DataAccessException.class })
+    @ExceptionHandler({SQLException.class, DataAccessException.class})
     public ExceptionResponse databaseError(Exception ex) {
         logger.error(ex.getMessage(), ex);
         return new ExceptionResponse(ex.getMessage());
     }
 
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler({ Exception.class })
+    @ExceptionHandler({Exception.class})
     public ExceptionResponse commonError(Exception ex) {
         logger.error(ex.getMessage(), ex);
         return new ExceptionResponse(ex.getMessage());

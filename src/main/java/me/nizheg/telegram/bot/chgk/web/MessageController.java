@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.web;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessage;
 import me.nizheg.telegram.bot.chgk.dto.SendingMessageStatus;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
+import me.nizheg.telegram.bot.chgk.exception.OperationForbiddenException;
 import me.nizheg.telegram.bot.chgk.service.MessageService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.work.data.ForwardMessageData;
@@ -37,13 +39,25 @@ public class MessageController {
     private final TelegramUserService telegramUserService;
 
     @PostMapping
-    public SendingMessageStatus send(@RequestBody @Valid final SendingMessage message, Principal principal) {
+    public SendingMessageStatus send(
+            @RequestBody @Valid final SendingMessage message,
+            Principal principal,
+            Authentication authentication) {
         TelegramUser currentUser = Optional.ofNullable(principal)
                 .filter(p -> StringUtils.isNotBlank(p.getName()))
                 .map(p -> telegramUserService.getByUsername(p.getName()))
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         message.setSender(currentUser);
+        if (SendingMessage.RECEIVER_ME.equals(message.getReceiver())
+                && !userHasAuthority(authentication, "manage_application")) {
+            throw new OperationForbiddenException("Forbidden to broadcast");
+        }
         return messageService.send(message);
+    }
+
+    private static boolean userHasAuthority(Authentication authentication, String authority) {
+        return authentication.isAuthenticated() &&
+                authentication.getAuthorities().stream().anyMatch(a -> authority.equals(a.getAuthority()));
     }
 
     @GetMapping

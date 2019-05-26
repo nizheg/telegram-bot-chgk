@@ -32,15 +32,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users").permitAll()
                 .antMatchers("/0d2f72c055554a3d83c31744f7f451e0").permitAll()
+                .antMatchers("/app/admin/**/*.html").hasAuthority("manage_application")
+                .antMatchers("/api/manage/**").hasAuthority("manage_application")
+                .antMatchers("/app/task/import.html").hasAuthority("db_load")
+                .antMatchers("api/dbTask/**").hasAuthority("db_load")
+                .mvcMatchers(HttpMethod.PATCH, "/api/tour/**").hasAuthority("manage_tour_status")
                 .antMatchers(
                         "/api/answer/**",
                         "/api/category/**",
                         "/api/picture/**",
                         "/api/task/**",
-                        "/api/dbTask/**",
                         "/api/tour/**",
                         "/api/message/**").hasAuthority("manage_tasks")
-                .antMatchers("/api/manage/**").hasAuthority("manage_application")
                 .anyRequest().authenticated()
                 .and().formLogin()
                 .and().httpBasic();
