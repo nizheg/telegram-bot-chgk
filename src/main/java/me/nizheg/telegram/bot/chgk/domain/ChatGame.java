@@ -80,7 +80,7 @@ public class ChatGame {
         if (lightTask == null || NULL_TASK_ID == lightTask.getId()) {
             this.currentTask = null;
         } else {
-            this.currentTask = taskService.createCompositeTask(lightTask);
+            this.currentTask = taskService.fetchCompositeTask(lightTask);
         }
         if (this.currentTask != null) {
             this.currentTaskUsageTime = taskService.getUsageTime(this.currentTask.getId(), chatId);
@@ -143,7 +143,7 @@ public class ChatGame {
         taskService.setTaskUsed(taskId, chatId);
         Task compositeTask = null;
         if (taskId != NULL_TASK_ID) {
-            compositeTask = taskService.createCompositeTask(taskId);
+            compositeTask = taskService.fetchCompositeTask(taskId);
         }
         this.currentTask = compositeTask;
         if (this.currentTask != null) {
@@ -327,7 +327,7 @@ public class ChatGame {
         HintResult.HintResultBuilder builder = HintResult.builder();
         if (taskId != null &&
                 Optional.ofNullable(this.currentTask).filter(task -> !taskId.equals(task.getId())).isPresent()) {
-            Task requestedTask = taskService.createCompositeTask(taskId);
+            Task requestedTask = taskService.fetchCompositeTask(taskId);
             builder.task(requestedTask).isTaskCurrent(false);
         } else if (this.currentTask != null) {
             OffsetDateTime usageTime = getUsageTime();

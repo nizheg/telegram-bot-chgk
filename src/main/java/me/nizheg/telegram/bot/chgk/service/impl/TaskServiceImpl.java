@@ -6,13 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
+import lombok.RequiredArgsConstructor;
+import me.nizheg.telegram.bot.chgk.dto.Answer;
+import me.nizheg.telegram.bot.chgk.dto.AttachedPicture;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
 import me.nizheg.telegram.bot.chgk.dto.LightTour;
+import me.nizheg.telegram.bot.chgk.dto.Picture;
 import me.nizheg.telegram.bot.chgk.dto.UsageStat;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.dto.composite.Tournament;
@@ -20,6 +25,7 @@ import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
 import me.nizheg.telegram.bot.chgk.exception.OperationForbiddenException;
 import me.nizheg.telegram.bot.chgk.repository.TaskDao;
 import me.nizheg.telegram.bot.chgk.service.AnswerService;
+import me.nizheg.telegram.bot.chgk.service.CategoryService;
 import me.nizheg.telegram.bot.chgk.service.PictureService;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 
@@ -27,20 +33,13 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
  * @author Nikolay Zhegalin
  */
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
 
     private final TaskDao taskDao;
     private final AnswerService answerService;
     private final PictureService pictureService;
-
-    public TaskServiceImpl(
-            TaskDao taskDao,
-            AnswerService answerService,
-            PictureService pictureService) {
-        this.taskDao = taskDao;
-        this.answerService = answerService;
-        this.pictureService = pictureService;
-    }
+    private final CategoryService categoryService;
 
     @Transactional
     @Override
@@ -159,17 +158,53 @@ public class TaskServiceImpl implements TaskService {
         taskDao.removeCategory(taskId, categoryId);
     }
 
+    @Transactional
+    @Override
+    public Task create(Task task) {
+        LightTask savedTask = create((LightTask) task);
+        long taskId = savedTask.getId();
+        task.setId(taskId);
+        List<AttachedPicture> textPictures = task.getTextPictures();
+        if (textPictures != null) {
+            textPictures.forEach(attachedPicture -> {
+                Picture savedPicture = pictureService.create(attachedPicture);
+                pictureService.savePictureToTaskTextAtPosition(savedPicture.getId(), taskId,
+                        attachedPicture.getPosition());
+            });
+        }
+        List<AttachedPicture> commentPictures = task.getCommentPictures();
+        if (commentPictures != null) {
+            commentPictures.forEach(attachedPicture -> {
+                Picture savedPicture = pictureService.create(attachedPicture);
+                pictureService.savePictureToTaskCommentAtPosition(savedPicture.getId(), taskId,
+                        attachedPicture.getPosition());
+            });
+        }
+        List<String> categories = task.getCategories();
+        if (categories != null) {
+            categories.forEach(category -> addCategory(taskId, category));
+        }
+        List<Answer> answers = task.getAnswers();
+        if (answers != null) {
+            answers.forEach(answer -> {
+                answer.setTaskId(taskId);
+                answerService.create(answer);
+            });
+        }
+        return task;
+    }
+
     @Override
     @Transactional(readOnly = true)
-    public Task createCompositeTask(Long id) {
+    public Task fetchCompositeTask(Long id) {
         LightTask lightTask = read(id);
-        return createCompositeTask(lightTask);
+        return fetchCompositeTask(lightTask);
     }
 
     @Override
     @Transactional(readOnly = true)
     @CheckForNull
-    public Task createCompositeTask(LightTask lightTask) {
+    public Task fetchCompositeTask(LightTask lightTask) {
         if (lightTask == null) {
             return null;
         }
@@ -178,6 +213,7 @@ public class TaskServiceImpl implements TaskService {
         task.setAnswers(answerService.getByTask(id));
         task.setCommentPictures(pictureService.getPicturesOfTaskComment(id));
         task.setTextPictures(pictureService.getPicturesOfTaskText(id));
+        task.setCategories(categoryService.getByTask(id).stream().map(Category::getId).collect(Collectors.toList()));
         return task;
     }
 

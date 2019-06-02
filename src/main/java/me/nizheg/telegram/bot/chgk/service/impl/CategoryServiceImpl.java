@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import lombok.NonNull;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 import me.nizheg.telegram.bot.chgk.service.CategoryService;
@@ -45,6 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryDao.isExists(id);
     }
 
+    @NonNull
     @Override
     public List<Category> getByTask(Long taskId) {
         return categoryDao.getByTask(taskId);

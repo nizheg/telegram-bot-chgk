@@ -2,6 +2,13 @@ package me.nizheg.telegram.bot.chgk.dto;
 
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LightTask implements Serializable {
 
     private static final long serialVersionUID = 4L;
@@ -12,62 +19,6 @@ public class LightTask implements Serializable {
     private Status status = Status.NEW;
     private Long tourId;
     private Integer numberInTour;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getImportedText() {
-        return importedText;
-    }
-
-    public void setImportedText(String importedText) {
-        this.importedText = importedText;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Long getTourId() {
-        return tourId;
-    }
-
-    public void setTourId(Long tourId) {
-        this.tourId = tourId;
-    }
-
-    public Integer getNumberInTour() {
-        return numberInTour;
-    }
-
-    public void setNumberInTour(Integer numberInTour) {
-        this.numberInTour = numberInTour;
-    }
 
     public enum Status {
         NEW, PUBLISH_READY, PUBLISHED, DELETED

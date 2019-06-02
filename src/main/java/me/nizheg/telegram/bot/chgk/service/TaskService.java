@@ -51,9 +51,11 @@ public interface TaskService {
 
     void removeCategory(Long taskId, String categoryId);
 
-    Task createCompositeTask(Long id);
+    Task create(Task task);
 
-    Task createCompositeTask(LightTask lightTask);
+    Task fetchCompositeTask(Long id);
+
+    Task fetchCompositeTask(LightTask lightTask);
 
     LightTask getNextTaskInTournament(Tournament currentTournament, @Nullable Task currentTask);
 

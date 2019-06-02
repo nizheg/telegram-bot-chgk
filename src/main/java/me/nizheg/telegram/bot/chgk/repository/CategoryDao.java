@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.repository;
 
 import java.util.List;
 
+import lombok.NonNull;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 
 /**
@@ -18,6 +19,7 @@ public interface CategoryDao {
 
     void delete(String id);
 
+    @NonNull
     List<Category> getByTask(Long taskId);
 
     List<Category> getCollection();

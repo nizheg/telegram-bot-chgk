@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import me.nizheg.telegram.bot.chgk.dto.LightTask;
+import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.TaskLoaderService;
 import me.nizheg.telegram.bot.chgk.service.TourLoaderService;
 
@@ -33,7 +34,7 @@ public class TaskLoaderController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public List<LightTask> loadTasks(@RequestParam int complexity) {
+    public List<Task> loadTasks(@RequestParam int complexity) {
         if (logger.isDebugEnabled()) {
             logger.debug("load tasks");
         }

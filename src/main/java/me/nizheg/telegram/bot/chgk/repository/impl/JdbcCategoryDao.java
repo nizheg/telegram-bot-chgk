@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
+import lombok.NonNull;
 import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.repository.CategoryDao;
 
@@ -52,6 +53,7 @@ public class JdbcCategoryDao implements CategoryDao {
     }
 
     @Override
+    @NonNull
     public List<Category> getByTask(Long taskId) {
         return template.query(
                 "select c.* from task_category tc inner join category c on c.id = tc.category_id where tc.task_id = ? order by c.position",
