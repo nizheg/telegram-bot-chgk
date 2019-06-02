@@ -3,6 +3,9 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,14 +27,17 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 @RequiredArgsConstructor
 public class TaskLoaderServiceImpl implements TaskLoaderService {
 
+    private static LocalDate V2_START_DATE = LocalDate.of(2019, Month.MARCH, 1);
+
     private final TasksImporter tasksImporter;
     private final TaskService taskService;
 
     @Override
     @Transactional
     public List<Task> loadTasks(int complexity) {
-        Search search = tasksImporter.importTasks(complexity);
-        return loadQuestions(search.getQuestion());
+        LocalDate toDate = V2_START_DATE;
+        Search search = tasksImporter.importTasks(complexity, toDate);
+        return loadQuestions(search.getQuestion(), newTaskBuilder(toDate));
     }
 
     @Override
@@ -39,10 +45,11 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
     public List<Task> loadTour(String id) {
         Tournament tournament = tasksImporter.importTour(id);
         List<Question> questions = tournament.getQuestion();
-        return loadQuestions(questions);
+        ZonedDateTime zonedDateTime = tournament.getCreatedAt().toGregorianCalendar().toZonedDateTime();
+        return loadQuestions(questions, newTaskBuilder(zonedDateTime.toLocalDate()));
     }
 
-    private List<Task> loadQuestions(List<Question> questions) {
+    private List<Task> loadQuestions(List<Question> questions, TaskBuilder taskBuilder) {
         List<Task> tasks = new ArrayList<>();
         for (Question question : questions) {
             if (taskService.isExist(question.getQuestion())) {
@@ -52,7 +59,7 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
                 continue;
             }
 
-            Task task = newTaskBuilder()
+            Task task = taskBuilder
                     .questionText(question.getQuestion()).questionComment(question.getComments())
                     .tourIdAndNumber(question.getParentId(), question.getNumber())
                     .questionComplexity(question.getComplexity())
@@ -63,8 +70,11 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
         return tasks;
     }
 
-    private TaskBuilder newTaskBuilder() {
-        return new TaskBuilderImpl();
+    private TaskBuilder newTaskBuilder(LocalDate toDate) {
+        if (toDate.isAfter(V2_START_DATE)) {
+            return new TaskBuilderV2();
+        }
+        return new TaskBuilderV1();
     }
 
     private void updateTourInformation(LightTask foundTask, Question question) {

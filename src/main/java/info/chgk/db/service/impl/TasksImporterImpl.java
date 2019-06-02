@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+
 import info.chgk.db.service.TasksImporter;
 import info.chgk.db.xml.Search;
 import info.chgk.db.xml.Tournament;
@@ -18,7 +20,7 @@ public class TasksImporterImpl implements TasksImporter {
     private String sourceUrl;
 
     @Override
-    public Search importTasks(int complexity) {
+    public Search importTasks(int complexity, LocalDate toDate) {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(sourceUrl + "/xml/random/answers/types1/complexity" + complexity,
                 Search.class);

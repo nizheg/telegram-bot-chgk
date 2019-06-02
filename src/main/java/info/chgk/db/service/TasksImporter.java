@@ -1,5 +1,7 @@
 package info.chgk.db.service;
 
+import java.time.LocalDate;
+
 import info.chgk.db.xml.Search;
 import info.chgk.db.xml.Tournament;
 
@@ -10,7 +12,7 @@ import info.chgk.db.xml.Tournament;
  */
 public interface TasksImporter {
 
-    Search importTasks(int complexity);
+    Search importTasks(int complexity, LocalDate toDate);
 
     Tournament importTour(String id);
 }

@@ -15,13 +15,13 @@ import me.nizheg.telegram.bot.chgk.dto.Category;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.TaskBuilder;
 
-public class TaskBuilderImpl implements TaskBuilder {
+public class TaskBuilderV1 implements TaskBuilder {
 
     private static final String CATEGORY_PREFIX = "db";
     private static final Pattern PATTERN = Pattern.compile("(.*)\\[(.*)\\](.*)");
     private final Task task;
 
-    public TaskBuilderImpl() {
+    public TaskBuilderV1() {
         task = new Task();
         task.setAnswers(new ArrayList<>());
     }
