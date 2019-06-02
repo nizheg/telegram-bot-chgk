@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import info.chgk.db.service.TasksImporter;
 import info.chgk.db.xml.Search;
@@ -16,14 +17,16 @@ import info.chgk.db.xml.Tournament;
 @Service
 public class TasksImporterImpl implements TasksImporter {
 
+    private final DateTimeFormatter parameterFormatter = DateTimeFormatter.ISO_LOCAL_DATE;
     @Value("${chgk.db.url}")
     private String sourceUrl;
 
     @Override
     public Search importTasks(int complexity, LocalDate toDate) {
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(sourceUrl + "/xml/random/answers/types1/complexity" + complexity,
-                Search.class);
+        return restTemplate.getForObject(
+                sourceUrl + "/xml/random/answers/types1/complexity" + complexity + "/to_" +
+                        parameterFormatter.format(toDate), Search.class);
     }
 
     @Override

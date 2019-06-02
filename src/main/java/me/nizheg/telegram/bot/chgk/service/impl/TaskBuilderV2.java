@@ -36,10 +36,12 @@ public class TaskBuilderV2 implements TaskBuilder {
     @Override
     public TaskBuilder questionText(String taskText) {
         task.setImportedText(taskText);
-        taskText = removeRedundantNewlines(taskText);
-        taskText = resolveTags(taskText);
+        taskText = cleanHtmlParagraph(taskText);
+        taskText = TelegramHtmlUtil.escape(taskText);
+        taskText = resolveHandout(taskText);
         List<AttachedPicture> attachedPictures = new ArrayList<>();
         taskText = parseImagesToList(taskText, attachedPictures);
+        taskText = createParagraph(taskText);
         taskText = decorateBlitz(taskText);
         taskText = decorateDoublet(taskText);
         task.setText(taskText);
@@ -47,29 +49,37 @@ public class TaskBuilderV2 implements TaskBuilder {
         return this;
     }
 
+    private String cleanHtmlParagraph(String text) {
+        return text
+                .replace("<p>", "")
+                .replace("</p>", "");
+
+    }
+
+    private String createParagraph(String text) {
+        return text.replace("\n", "\n   ");
+    }
+
     @Override
     public TaskBuilder questionComment(String taskComment) {
-        taskComment = removeRedundantNewlines(taskComment);
-        taskComment = resolveTags(taskComment);
+        taskComment = cleanHtmlParagraph(taskComment);
+        taskComment = TelegramHtmlUtil.escape(taskComment);
         List<AttachedPicture> attachedPictures = new ArrayList<>();
         taskComment = parseImagesToList(taskComment, attachedPictures);
+        taskComment = createParagraph(taskComment);
         task.setComment(taskComment);
         task.setCommentPictures(attachedPictures);
         return this;
     }
 
-    private String removeRedundantNewlines(String text) {
-        final String newlineReplacement = "==newline==";
-        final String newLineReplaceTarget = "\n   ";
-        return text.replace(newLineReplaceTarget, newlineReplacement)
-                .replace("\n", " ")
-                .replace(newlineReplacement, newLineReplaceTarget);
-    }
-
-    private String resolveTags(String text) {
-        return TelegramHtmlUtil.escape(text)
-                .replace(TelegramHtmlUtil.escape("   <раздатка>"), "Раздаточный материал<i>")
-                .replace(TelegramHtmlUtil.escape("</раздатка>"), "</i>");
+    private String resolveHandout(String text) {
+        if (text.contains("[Раздаточный материал")) {
+            return text.replace("[Раздаточный материал:", "Раздаточный материал<i>")
+                    .replaceFirst("\n]", "\n</i>");
+        } else {
+            return text.replaceAll(TelegramHtmlUtil.escape("\\s*<раздатка>\n?"), "Раздаточный материал<i>\n")
+                    .replaceAll(TelegramHtmlUtil.escape("\n?\\s*</раздатка>"), "\n</i>");
+        }
     }
 
     private String parseImagesToList(String text, List<AttachedPicture> attachedPictures) {
@@ -84,7 +94,12 @@ public class TaskBuilderV2 implements TaskBuilder {
                 text = text.substring(0, position) + text.substring(matcher.end());
                 AttachedPicture attachedPicture = new AttachedPicture();
                 attachedPicture.setPosition((position + i++));
-                attachedPicture.setSourceUrl("http://db.chgk.info/images/db/" + matcher.group(1));
+                String url = matcher.group(1);
+                if (!url.startsWith("http")) {
+                    attachedPicture.setSourceUrl("http://db.chgk.info/images/db/" + url);
+                } else {
+                    attachedPicture.setSourceUrl(url);
+                }
                 attachedPictures.add(attachedPicture);
             }
         } while (isFound);

@@ -79,9 +79,11 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
 
     private void updateTourInformation(LightTask foundTask, Question question) {
         if (foundTask.getTourId() == null) {
+            taskService.changeStatus(foundTask.getId(), LightTask.Status.NEW);
             foundTask.setTourId(question.getParentId());
             foundTask.setNumberInTour(question.getNumber());
             taskService.update(foundTask);
+            taskService.changeStatus(foundTask.getId(), foundTask.getStatus());
         }
     }
 
