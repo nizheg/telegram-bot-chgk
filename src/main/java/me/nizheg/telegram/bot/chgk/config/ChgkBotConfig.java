@@ -1,6 +1,5 @@
 package me.nizheg.telegram.bot.chgk.config;
 
-import org.apache.commons.lang3.StringUtils;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -8,6 +7,7 @@ import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -41,12 +41,7 @@ import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
 import me.nizheg.telegram.bot.chgk.work.WorkConfig;
-import me.nizheg.telegram.bot.service.CommandExecutor;
-import me.nizheg.telegram.bot.service.ExceptionHandler;
 import me.nizheg.telegram.bot.service.PropertyService;
-import me.nizheg.telegram.bot.service.impl.CommandExecutorImpl;
-import me.nizheg.telegram.bot.service.impl.CommandExecutorWithPrecondition;
-import me.nizheg.telegram.bot.service.impl.PreconditionChainStep;
 import me.nizheg.telegram.bot.starter.config.AppConfig;
 import me.nizheg.telegram.bot.starter.util.BotInfo;
 
@@ -64,21 +59,20 @@ public class ChgkBotConfig {
     private PropertyService propertyService;
 
     @Bean
-    @Autowired
-    public CommandExecutor commandExecutor(
-            BotInfo botInfo,
-            ChatService chatService,
-            ExceptionHandler exceptionHandler,
-            Supplier<TelegramApiClient> telegramApiClientSupplier) {
-        CommandExecutor commandExecutor = new CommandExecutorImpl(exceptionHandler);
-        PreconditionChainStep chainHead = new CheckMessageNotBlank();
-        PreconditionChainStep lastChainStep = chainHead.setSuccessor(new CheckChatActive(chatService));
-        String channelName = propertyService.getValue("bot.channel");
-        if (StringUtils.isNotBlank(channelName)) {
-            lastChainStep.setSuccessor(new CheckUserInChannel(botInfo, channelName,
-                    telegramApiClientSupplier, usersInChannelCache()));
-        }
-        return new CommandExecutorWithPrecondition(commandExecutor, exceptionHandler, chainHead);
+    public CheckChatActive checkChatActive(ChatService chatService) {
+        return new CheckChatActive(chatService);
+    }
+
+    @Bean
+    public CheckMessageNotBlank checkMessageNotBlank() {
+        return new CheckMessageNotBlank();
+    }
+
+    @Bean
+    public CheckUserInChannel checkUserInChannel(
+            @Value("${bot.channel}") String channelName,
+            BotInfo botInfo, Supplier<TelegramApiClient> telegramApiClientSupplier) {
+        return new CheckUserInChannel(botInfo, channelName, telegramApiClientSupplier, usersInChannelCache());
     }
 
     @Bean(initMethod = "init", destroyMethod = "close")
