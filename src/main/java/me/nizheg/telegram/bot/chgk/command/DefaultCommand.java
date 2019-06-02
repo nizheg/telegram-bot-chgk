@@ -37,6 +37,7 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
+import me.nizheg.telegram.bot.starter.service.preconditions.MessageWithText;
 import me.nizheg.telegram.bot.starter.util.BotInfo;
 import me.nizheg.telegram.util.Emoji;
 

@@ -36,7 +36,6 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckChatActive;
-import me.nizheg.telegram.bot.chgk.service.impl.CheckMessageNotBlank;
 import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
@@ -61,11 +60,6 @@ public class ChgkBotConfig {
     @Bean
     public CheckChatActive checkChatActive(ChatService chatService) {
         return new CheckChatActive(chatService);
-    }
-
-    @Bean
-    public CheckMessageNotBlank checkMessageNotBlank() {
-        return new CheckMessageNotBlank();
     }
 
     @Bean
