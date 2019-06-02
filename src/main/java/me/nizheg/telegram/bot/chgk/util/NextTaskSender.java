@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -24,6 +26,7 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.exception.CurrentTaskIsOtherException;
 import me.nizheg.telegram.bot.chgk.exception.GameException;
 import me.nizheg.telegram.bot.chgk.exception.TournamentIsNotSelectedException;
+import me.nizheg.telegram.bot.starter.util.BotInfo;
 import me.nizheg.telegram.util.Emoji;
 
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
@@ -33,6 +36,7 @@ import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneRow;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class NextTaskSender {
 
     private final Supplier<TelegramApiClient> telegramApiClientSupplier;

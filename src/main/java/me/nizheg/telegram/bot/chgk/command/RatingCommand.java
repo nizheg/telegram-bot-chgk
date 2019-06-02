@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -18,6 +19,7 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.util.Emoji;
 
+@Component
 public class RatingCommand extends ChatCommand {
 
     private static final String PARAMS_FORMAT = "([+-][0-9]+) ([0-9]+)";
@@ -32,6 +34,11 @@ public class RatingCommand extends ChatCommand {
         super(telegramApiClientSupplier);
         Validate.notNull(taskRatingService, "taskRatingService should be defined");
         this.taskRatingService = taskRatingService;
+    }
+
+    @Override
+    public int getPriority() {
+        return 150;
     }
 
     @Override

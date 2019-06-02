@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
@@ -21,6 +22,7 @@ import me.nizheg.telegram.util.Emoji;
  * @author Nikolay Zhegalin
  */
 @UserInChannel
+@Component
 public class TimerCommand extends ChatCommand {
 
     private final static String COMMAND_NAME_TIMER_SET = "timer";
@@ -37,6 +39,11 @@ public class TimerCommand extends ChatCommand {
         super(telegramApiClientSupplier);
         Validate.notNull(chatGameService, "chatGameService should be defined");
         this.chatGameService = chatGameService;
+    }
+
+    @Override
+    public int getPriority() {
+        return 110;
     }
 
     @Override

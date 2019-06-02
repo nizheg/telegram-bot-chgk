@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import me.nizheg.telegram.bot.chgk.service.PictureService;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class TaskSender {
 
     private final Supplier<TelegramApiClient> telegramApiClientSupplier;

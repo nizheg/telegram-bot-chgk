@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -34,6 +35,7 @@ import static me.nizheg.telegram.bot.api.util.TelegramHtmlUtil.escape;
  * @author Nikolay Zhegalin
  */
 @ChatActive
+@Component
 public class TourCommand extends ChatCommand {
 
     private static final String COMMAND_FORMAT = "tour_?([0-9]+)?";
@@ -54,6 +56,11 @@ public class TourCommand extends ChatCommand {
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.tourList = tourList;
+    }
+
+    @Override
+    public int getPriority() {
+        return 90;
     }
 
     protected ChatService getChatService() {

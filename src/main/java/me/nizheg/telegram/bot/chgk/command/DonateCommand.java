@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.function.Supplier;
@@ -36,6 +37,7 @@ import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.urlButton;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class DonateCommand extends ChatCommand {
 
     private final PaymentService paymentService;
@@ -51,6 +53,11 @@ public class DonateCommand extends ChatCommand {
         Validate.notNull(propertyService, "propertyService should be defined");
         this.paymentService = paymentService;
         this.propertyService = propertyService;
+    }
+
+    @Override
+    public int getPriority() {
+        return 170;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -16,6 +18,7 @@ import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class AnswerSender implements AnswerOperation {
 
     private final TaskSender taskSender;

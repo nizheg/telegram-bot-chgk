@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,6 +10,7 @@ import me.nizheg.telegram.util.Emoji;
 
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
 
+@Component
 public class RatingHelper {
 
     public List<InlineKeyboardButton> createRatingButtons(long taskId) {

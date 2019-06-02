@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -31,6 +32,7 @@ import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackData
  */
 @UserInChannel
 @ChatActive
+@Component
 public class RepeatCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -53,6 +55,11 @@ public class RepeatCommand extends ChatCommand {
         this.chatGameService = chatGameService;
         this.taskSender = taskSender;
         this.warningSender = warningSender;
+    }
+
+    @Override
+    public int getPriority() {
+        return 30;
     }
 
     protected ChatService getChatService() {

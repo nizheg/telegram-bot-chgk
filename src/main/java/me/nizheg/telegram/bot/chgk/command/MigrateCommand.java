@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
@@ -22,6 +23,7 @@ import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.util.TelegramApiUtil;
 
 @UserInChannel
+@Component
 public class MigrateCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -37,6 +39,11 @@ public class MigrateCommand extends ChatCommand {
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.cipher = cipher;
+    }
+
+    @Override
+    public int getPriority() {
+        return 160;
     }
 
     @Override

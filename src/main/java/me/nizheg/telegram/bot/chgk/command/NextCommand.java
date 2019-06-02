@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.springframework.stereotype.Component;
+
 import java.util.function.Supplier;
 
 import lombok.NonNull;
@@ -20,6 +22,7 @@ import me.nizheg.telegram.bot.command.CommandException;
  */
 @UserInChannel
 @ChatActive
+@Component
 public class NextCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -35,6 +38,11 @@ public class NextCommand extends ChatCommand {
         this.chatService = chatService;
         this.chatGameService = chatGameService;
         this.nextTaskSender = nextTaskSender;
+    }
+
+    @Override
+    public int getPriority() {
+        return 60;
     }
 
     protected ChatService getChatService() {

@@ -7,6 +7,7 @@ import org.ehcache.event.EventOrdering;
 import org.ehcache.event.EventType;
 import org.ehcache.impl.events.CacheEventAdapter;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -34,6 +35,7 @@ import me.nizheg.telegram.bot.service.PropertyService;
 
 @CommonsLog
 @RequiredArgsConstructor
+@Service
 public class ChatGameServiceImpl implements ChatGameService {
 
     private final ConcurrentMap<Long, AutoChatGame> autoChatGamesStorage = new ConcurrentHashMap<>();

@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.springframework.stereotype.Component;
+
 import javax.annotation.Nonnull;
 
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.NonCommandMessageProcessor;
 
 @RequiredArgsConstructor
+@Component
 public class SaveForwardedMessage implements NonCommandMessageProcessor {
 
     private final TelegramUserService telegramUserService;

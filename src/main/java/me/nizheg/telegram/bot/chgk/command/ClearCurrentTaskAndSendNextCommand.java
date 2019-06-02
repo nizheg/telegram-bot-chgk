@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
+import org.springframework.stereotype.Component;
+
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -16,6 +18,7 @@ import me.nizheg.telegram.bot.command.CommandException;
  * @author Nikolay Zhegalin
  */
 @UserInChannel
+@Component
 public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
 
     private final ChatGameService chatGameService;
@@ -25,6 +28,11 @@ public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
             @NonNull ChatGameService chatGameService) {
         super(telegramApiClientSupplier);
         this.chatGameService = chatGameService;
+    }
+
+    @Override
+    public int getPriority() {
+        return 120;
     }
 
     @Override

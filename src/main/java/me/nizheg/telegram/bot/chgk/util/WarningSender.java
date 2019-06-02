@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.function.Supplier;
 
 import me.nizheg.telegram.bot.api.model.ParseMode;
@@ -13,6 +15,7 @@ import me.nizheg.telegram.util.Emoji;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class WarningSender implements WarningOperation {
 
     private final Supplier<TelegramApiClient> telegramApiClientSupplier;

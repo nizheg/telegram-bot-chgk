@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +21,9 @@ import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.StatEntry;
 import me.nizheg.telegram.bot.chgk.repository.param.StatSearchParams;
 import me.nizheg.telegram.bot.chgk.service.AnswerLogService;
-import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.starter.util.BotInfo;
 import me.nizheg.telegram.util.Emoji;
 
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
@@ -31,6 +32,7 @@ import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneButton;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class StatCommand extends ChatCommand {
 
     private final AnswerLogService answerLogService;
@@ -45,6 +47,11 @@ public class StatCommand extends ChatCommand {
         Validate.notNull(botInfo, "botInfo should be defined");
         this.answerLogService = answerLogService;
         this.botInfo = botInfo;
+    }
+
+    @Override
+    public int getPriority() {
+        return 80;
     }
 
     @Override

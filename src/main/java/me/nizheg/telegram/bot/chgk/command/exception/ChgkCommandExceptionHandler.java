@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command.exception;
 
+import org.springframework.stereotype.Component;
+
 import java.util.function.Supplier;
 
 import lombok.NonNull;
@@ -19,6 +21,7 @@ import me.nizheg.telegram.util.TelegramApiUtil;
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup.oneButton;
 
+@Component
 @RequiredArgsConstructor
 public class ChgkCommandExceptionHandler implements ExceptionHandler {
 

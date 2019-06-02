@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -19,6 +20,7 @@ import me.nizheg.telegram.bot.command.CommandContext;
  * @author Nikolay Zhegalin
  */
 @ChatActive
+@Component
 public class TournamentCommand extends ChatCommand {
 
     private static final String COMMAND_NAME = "tournament";
@@ -30,6 +32,11 @@ public class TournamentCommand extends ChatCommand {
             @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier, @NonNull TourList tourList) {
         super(telegramApiClientSupplier);
         this.tourList = tourList;
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
     }
 
     @Override

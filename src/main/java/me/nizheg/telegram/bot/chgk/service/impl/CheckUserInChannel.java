@@ -16,12 +16,12 @@ import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
 import me.nizheg.telegram.bot.chgk.command.UserInChannel;
 import me.nizheg.telegram.bot.chgk.command.exception.UserIsNotInChannelException;
-import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.impl.PreconditionChainStep;
 import me.nizheg.telegram.bot.service.impl.PreconditionResult;
+import me.nizheg.telegram.bot.starter.util.BotInfo;
 
 import static me.nizheg.telegram.bot.api.model.ChatType.CHANNEL;
 

@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
@@ -17,6 +18,7 @@ import me.nizheg.telegram.bot.service.CommandsHolder;
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class StartCommand extends ChatCommand {
 
     private final ChatService chatService;
@@ -27,6 +29,11 @@ public class StartCommand extends ChatCommand {
         super(telegramApiClientSupplier);
         Validate.notNull(chatService, "chatService should be defined");
         this.chatService = chatService;
+    }
+
+    @Override
+    public int getPriority() {
+        return 10;
     }
 
     @Override

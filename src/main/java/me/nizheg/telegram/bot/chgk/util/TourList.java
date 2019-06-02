@@ -1,5 +1,7 @@
 package me.nizheg.telegram.bot.chgk.util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -23,6 +25,7 @@ import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackData
 /**
  * @author Nikolay Zhegalin
  */
+@Component
 public class TourList {
 
     private static final String ICON_TOURNAMENT = Emoji.PAGE_WITH_CURL;

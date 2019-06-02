@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import me.nizheg.telegram.util.Emoji;
  * @author Nikolay Zhegalin
  */
 @ChatActive
+@Component
 public class CategoryCommand extends ChatCommand {
 
     private static final String COMMAND_NAME = "category";
@@ -63,6 +65,11 @@ public class CategoryCommand extends ChatCommand {
         this.chatGameService = chatGameService;
         this.taskService = taskService;
         this.tourList = tourList;
+    }
+
+    @Override
+    public int getPriority() {
+        return 20;
     }
 
     protected ChatService getChatService() {

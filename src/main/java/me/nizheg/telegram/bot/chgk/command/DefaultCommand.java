@@ -1,6 +1,7 @@
 package me.nizheg.telegram.bot.chgk.command;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -29,7 +30,6 @@ import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.dto.composite.Task;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
-import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.chgk.util.DateUtils;
 import me.nizheg.telegram.bot.chgk.util.RatingHelper;
 import me.nizheg.telegram.bot.chgk.util.TaskSender;
@@ -37,6 +37,7 @@ import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
 import me.nizheg.telegram.bot.service.CommandsHolder;
+import me.nizheg.telegram.bot.starter.util.BotInfo;
 import me.nizheg.telegram.util.Emoji;
 
 import static java.util.Collections.singletonList;
@@ -47,6 +48,7 @@ import static java.util.Collections.singletonList;
 @UserInChannel
 @MessageWithText
 @ChatActive(notifyUser = false)
+@Component
 public class DefaultCommand extends ChatCommand {
 
     private final ChatGameService chatGameService;
@@ -71,6 +73,11 @@ public class DefaultCommand extends ChatCommand {
         this.ratingHelper = ratingHelper;
         this.botInfo = botInfo;
         this.clock = clock;
+    }
+
+    @Override
+    public int getPriority() {
+        return 140;
     }
 
     @Override

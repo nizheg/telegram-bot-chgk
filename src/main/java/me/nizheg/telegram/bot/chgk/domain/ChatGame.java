@@ -35,8 +35,8 @@ import me.nizheg.telegram.bot.chgk.service.Properties;
 import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
 import me.nizheg.telegram.bot.chgk.service.TourService;
-import me.nizheg.telegram.bot.chgk.util.BotInfo;
 import me.nizheg.telegram.bot.service.PropertyService;
+import me.nizheg.telegram.bot.starter.util.BotInfo;
 
 /**
  * @author Nikolay Zhegalin
