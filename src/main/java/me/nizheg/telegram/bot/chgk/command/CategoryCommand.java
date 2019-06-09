@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
 import me.nizheg.telegram.bot.api.model.KeyboardButton;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyKeyboardMarkup;
@@ -31,12 +32,16 @@ import me.nizheg.telegram.bot.chgk.service.TaskService;
 import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
+import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 import me.nizheg.telegram.util.Emoji;
 
 /**
  * @author Nikolay Zhegalin
  */
 @ChatActive
+@Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
+        failOnUnsatisfied = true,
+        description = "Только администраторы имеют право менять категорию")
 @Component
 public class CategoryCommand extends ChatCommand {
 

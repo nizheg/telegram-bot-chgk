@@ -7,17 +7,22 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
+import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 
 /**
  * @author Nikolay Zhegalin
  */
 @UserInChannel
+@Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
+        failOnUnsatisfied = true,
+        description = "Только администраторы имеют право получать новый вопрос")
 @Component
 public class ClearCurrentTaskAndSendNextCommand extends ChatCommand {
 

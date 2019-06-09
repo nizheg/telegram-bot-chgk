@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Supplier;
 
 import lombok.NonNull;
+import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.command.exception.NoTaskException;
 import me.nizheg.telegram.bot.chgk.domain.ChatGame;
@@ -18,12 +19,16 @@ import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
+import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 
 /**
  * @author Nikolay Zhegalin
  */
 @UserInChannel
 @ChatActive
+@Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
+        failOnUnsatisfied = true,
+        description = "Только администраторы имеют право получать ответ")
 @Component
 public class AnswerCommand extends ChatCommand {
 

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -40,6 +41,7 @@ import me.nizheg.telegram.bot.chgk.service.impl.CheckUserInChannel;
 import me.nizheg.telegram.bot.chgk.util.AnswerSender;
 import me.nizheg.telegram.bot.chgk.util.WarningSender;
 import me.nizheg.telegram.bot.chgk.work.WorkConfig;
+import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.service.PropertyService;
 import me.nizheg.telegram.bot.starter.config.AppConfig;
 import me.nizheg.telegram.bot.starter.util.BotInfo;
@@ -60,6 +62,11 @@ public class ChgkBotConfig {
     @Bean
     public CheckChatActive checkChatActive(ChatService chatService) {
         return new CheckChatActive(chatService);
+    }
+
+    @Bean
+    public Predicate<CommandContext> isCheckingApplicable(ChatService chatService) {
+        return ctx -> chatService.getSettings(ctx.getChatId()).isChatProtected();
     }
 
     @Bean

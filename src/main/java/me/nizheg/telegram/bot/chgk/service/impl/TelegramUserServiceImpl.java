@@ -2,12 +2,17 @@ package me.nizheg.telegram.bot.chgk.service.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+import javax.cache.CacheManager;
+
+import lombok.NonNull;
+import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.chgk.dto.Role;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 import me.nizheg.telegram.bot.chgk.exception.DuplicationException;
@@ -19,26 +24,31 @@ import me.nizheg.telegram.bot.chgk.service.TelegramUserService;
  * @author Nikolay Zhegalin
  */
 @Service
-public class TelegramUserServiceImpl implements TelegramUserService {
+public class TelegramUserServiceImpl extends
+        me.nizheg.telegram.bot.starter.service.impl.TelegramUserServiceImpl
+        implements TelegramUserService {
 
     private final Log logger = LogFactory.getLog(getClass());
     private final TelegramUserDao telegramUserDao;
     private final UserRoleDao userRoleDao;
 
     public TelegramUserServiceImpl(
-            TelegramUserDao telegramUserDao,
-            UserRoleDao userRoleDao) {
+            @NonNull Supplier<TelegramApiClient> telegramApiClientSupplier,
+            @Autowired(required = false) @Nullable CacheManager cacheManager,
+            @NonNull TelegramUserDao telegramUserDao,
+            @NonNull UserRoleDao userRoleDao) {
+        super(telegramApiClientSupplier, cacheManager);
         this.telegramUserDao = telegramUserDao;
         this.userRoleDao = userRoleDao;
     }
 
     @Override
-    public boolean isExist(Long id) {
+    public boolean isExist(long id) {
         return telegramUserDao.isExist(id);
     }
 
     @Override
-    public TelegramUser getTelegramUser(Long id) {
+    public TelegramUser getTelegramUser(long id) {
         return telegramUserDao.read(id);
     }
 
@@ -63,45 +73,7 @@ public class TelegramUserServiceImpl implements TelegramUserService {
     }
 
     @Override
-    public boolean userHasRole(Long telegramUserId, Role role) {
+    public boolean userHasRole(long telegramUserId, Role role) {
         return userRoleDao.userHasRole(telegramUserId, role);
     }
-
-    @Override
-    public List<Role> getRolesOfUser(Long telegramUserId) {
-        return userRoleDao.readRolesOfUser(telegramUserId);
-    }
-
-    @Override
-    public void assignRole(Role role, Long telegramUserId) {
-        userRoleDao.revokeRole(role, telegramUserId);
-        try {
-            userRoleDao.assignRole(role, telegramUserId);
-        } catch (DuplicationException ex) {
-            logger.error("Try once again after error", ex);
-            assignRole(role, telegramUserId);
-        }
-    }
-
-    @Override
-    public void assignRoleTillTime(Role role, Long telegramUserId, Date date) {
-        userRoleDao.revokeRole(role, telegramUserId);
-        try {
-            userRoleDao.assignRoleTillTime(role, telegramUserId, date);
-        } catch (DuplicationException ex) {
-            logger.error("Try once again after error", ex);
-            assignRoleTillTime(role, telegramUserId, date);
-        }
-    }
-
-    @Override
-    public void revokeRole(Role role, Long telegramUserId) {
-        userRoleDao.revokeRole(role, telegramUserId);
-    }
-
-    @Override
-    public void cleanExpiredRoles() {
-        userRoleDao.deleteExpiredRoles();
-    }
-
 }

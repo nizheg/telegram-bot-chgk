@@ -1,8 +1,5 @@
 package me.nizheg.telegram.bot.chgk.service;
 
-import java.util.Date;
-import java.util.List;
-
 import me.nizheg.telegram.bot.chgk.dto.Role;
 import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
 
@@ -11,23 +8,14 @@ import me.nizheg.telegram.bot.chgk.dto.TelegramUser;
  */
 public interface TelegramUserService {
 
-    boolean isExist(Long id);
+    boolean isExist(long id);
 
-    TelegramUser getTelegramUser(Long id);
+    TelegramUser getTelegramUser(long id);
 
     TelegramUser createOrUpdate(TelegramUser telegramUser);
 
     TelegramUser getByUsername(String username);
 
-    boolean userHasRole(Long telegramUserId, Role role);
+    boolean userHasRole(long telegramUserId, Role role);
 
-    List<Role> getRolesOfUser(Long telegramUserId);
-
-    void assignRole(Role role, Long telegramUserId);
-
-    void assignRoleTillTime(Role role, Long telegramUserId, Date date);
-
-    void revokeRole(Role role, Long telegramUserId);
-
-    void cleanExpiredRoles();
 }

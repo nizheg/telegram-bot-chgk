@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
+import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.service.TelegramApiClient;
 import me.nizheg.telegram.bot.api.service.param.ChatId;
@@ -16,12 +17,16 @@ import me.nizheg.telegram.bot.chgk.service.ChatGameService;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
+import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 import me.nizheg.telegram.util.Emoji;
 
 /**
  * @author Nikolay Zhegalin
  */
 @UserInChannel
+@Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
+        failOnUnsatisfied = true,
+        description = "Только администраторы имеют право управлять таймером")
 @Component
 public class TimerCommand extends ChatCommand {
 

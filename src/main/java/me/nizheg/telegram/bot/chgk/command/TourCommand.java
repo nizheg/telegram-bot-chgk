@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.nizheg.telegram.bot.api.model.ChatMemberStatus;
 import me.nizheg.telegram.bot.api.model.InlineKeyboardMarkup;
 import me.nizheg.telegram.bot.api.model.ParseMode;
 import me.nizheg.telegram.bot.api.model.ReplyMarkup;
@@ -27,6 +28,7 @@ import me.nizheg.telegram.bot.chgk.util.TourList;
 import me.nizheg.telegram.bot.command.ChatCommand;
 import me.nizheg.telegram.bot.command.CommandContext;
 import me.nizheg.telegram.bot.command.CommandException;
+import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 
 import static me.nizheg.telegram.bot.api.model.InlineKeyboardButton.callbackDataButton;
 import static me.nizheg.telegram.bot.api.util.TelegramHtmlUtil.escape;
@@ -35,6 +37,9 @@ import static me.nizheg.telegram.bot.api.util.TelegramHtmlUtil.escape;
  * @author Nikolay Zhegalin
  */
 @ChatActive
+@Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
+        failOnUnsatisfied = true,
+        description = "Только администраторы имеют право менять турнир")
 @Component
 public class TourCommand extends ChatCommand {
 

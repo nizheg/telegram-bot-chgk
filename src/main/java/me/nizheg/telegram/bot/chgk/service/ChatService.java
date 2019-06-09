@@ -2,6 +2,7 @@ package me.nizheg.telegram.bot.chgk.service;
 
 import java.util.List;
 
+import me.nizheg.telegram.bot.chgk.domain.ChatSettings;
 import me.nizheg.telegram.bot.chgk.dto.Chat;
 import me.nizheg.telegram.bot.chgk.dto.ChatError;
 
@@ -9,6 +10,8 @@ import me.nizheg.telegram.bot.chgk.dto.ChatError;
  * @author Nikolay Zhegalin
  */
 public interface ChatService {
+
+    ChatSettings getSettings(long chatId);
 
     Chat getChat(long chatId);
 
