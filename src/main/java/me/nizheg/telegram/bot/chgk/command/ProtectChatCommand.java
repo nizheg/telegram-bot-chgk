@@ -14,7 +14,7 @@ import me.nizheg.telegram.bot.starter.service.preconditions.Permission;
 @Component
 @Permission(chatMemberStatuses = {ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR},
         failOnUnsatisfied = true,
-        description = "Тольколь администраторы имеют право снимать ограничение")
+        description = "Только администраторы имеют право снимать ограничение")
 public class ProtectChatCommand extends BooleanSettingCommand {
 
     public ProtectChatCommand(
