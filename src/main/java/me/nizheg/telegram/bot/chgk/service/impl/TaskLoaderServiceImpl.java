@@ -8,6 +8,7 @@ import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import info.chgk.db.service.TasksImporter;
 import info.chgk.db.xml.Question;
@@ -37,7 +38,7 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
     public List<Task> loadTasks(int complexity) {
         LocalDate toDate = V2_START_DATE;
         Search search = tasksImporter.importTasks(complexity, toDate);
-        return loadQuestions(search.getQuestion(), newTaskBuilder(toDate));
+        return loadQuestions(search.getQuestion(), () -> newTaskBuilder(toDate));
     }
 
     @Override
@@ -46,10 +47,10 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
         Tournament tournament = tasksImporter.importTour(id);
         List<Question> questions = tournament.getQuestion();
         ZonedDateTime zonedDateTime = tournament.getCreatedAt().toGregorianCalendar().toZonedDateTime();
-        return loadQuestions(questions, newTaskBuilder(zonedDateTime.toLocalDate()));
+        return loadQuestions(questions, () -> newTaskBuilder(zonedDateTime.toLocalDate()));
     }
 
-    private List<Task> loadQuestions(List<Question> questions, TaskBuilder taskBuilder) {
+    private List<Task> loadQuestions(List<Question> questions, Supplier<TaskBuilder> taskBuilderFactory) {
         List<Task> tasks = new ArrayList<>();
         for (Question question : questions) {
             if (taskService.isExist(question.getQuestion())) {
@@ -59,7 +60,7 @@ public class TaskLoaderServiceImpl implements TaskLoaderService {
                 continue;
             }
 
-            Task task = taskBuilder
+            Task task = taskBuilderFactory.get()
                     .questionText(question.getQuestion()).questionComment(question.getComments())
                     .tourIdAndNumber(question.getParentId(), question.getNumber())
                     .questionComplexity(question.getComplexity())
