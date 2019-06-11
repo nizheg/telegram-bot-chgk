@@ -48,7 +48,7 @@ public class MessageController {
                 .map(p -> telegramUserService.getByUsername(p.getName()))
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         message.setSender(currentUser);
-        if (SendingMessage.RECEIVER_ME.equals(message.getReceiver())
+        if (SendingMessage.RECEIVER_ALL.equals(message.getReceiver())
                 && !userHasAuthority(authentication, "manage_application")) {
             throw new OperationForbiddenException("Forbidden to broadcast");
         }
