@@ -31,6 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/payment/yandex/result").permitAll()
                 .antMatchers("/0d2f72c055554a3d83c31744f7f451e0").permitAll()
                 .antMatchers("/app/admin/**/*.html").hasAuthority("manage_application")
                 .antMatchers("/api/manage/**").hasAuthority("manage_application")
