@@ -79,7 +79,6 @@ public class DonateCommand extends ChatCommand {
             paymentTypeParam = matcher.group(2);
         }
         String receiver = propertyService.getValue(YandexPaymentProperties.RECEIVER);
-        parameters.setReceiver(receiver);
         Message incorrectSumMessage = Message.safeMessageBuilder()
                 .text("Внести пожертвование в поддержку проекта можно <a href=\"https://money.yandex.ru/to/" + receiver + "\">здесь</a>")
                 .chatId(new ChatId(ctx.getChatId()))
@@ -116,6 +115,7 @@ public class DonateCommand extends ChatCommand {
         YandexMoneyPaymentParameters parameters = new YandexMoneyPaymentParameters(ctx.getFrom().getId(), sum);
         String target = propertyService.getValue(YandexPaymentProperties.TARGET);
         parameters.setTargets(target);
+        parameters.setReceiver(receiver);
         parameters.setPaymentTypes(new YandexMoneyPaymentType[] {yandexMoneyPaymentType});
         parameters.setPayForm(YandexMoneyPayForm.DONATE);
         paymentProvider.setPaymentParameters(parameters);
